@@ -21,7 +21,7 @@
   );
 </script>
 
-<button {onclick} class="{bgColorStyle} {fontColorStyle} h-12 rounded-xl font-medium">
+<button {onclick} class="{bgColorStyle} {fontColorStyle} h-12 h-full w-full rounded-xl font-medium">
   <div class="h-full w-full p-3 transition active:scale-95">
     {@render children?.()}
   </div>

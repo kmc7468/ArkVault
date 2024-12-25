@@ -30,6 +30,6 @@
   }
   input:focus + label,
   input:not(:placeholder-shown) + label {
-    @apply text-primary-400 top-0 -translate-y-full text-sm;
+    @apply top-0 -translate-y-full text-sm text-primary-400;
   }
 </style>
