@@ -1,5 +1,7 @@
 import { error, json } from "@sveltejs/kit";
+import ms from "ms";
 import { z } from "zod";
+import env from "$lib/server/loadenv";
 import { login } from "$lib/server/services/auth";
 import type { RequestHandler } from "./$types";
 
@@ -18,6 +20,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
   cookies.set("refreshToken", refreshToken, {
     path: "/api/auth",
+    maxAge: Math.floor(ms(env.jwt.refreshExp) / 1000),
     httpOnly: true,
     secure: true,
     sameSite: "strict",
