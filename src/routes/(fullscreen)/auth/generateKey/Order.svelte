@@ -21,10 +21,10 @@
     {/if}
   </div>
   <div>
-    <p class="flex min-h-8 items-center text-lg font-medium">
+    <p class="flex min-h-8 items-center break-keep text-lg font-medium">
       {title}
     </p>
-    <p class="mb-5 mt-1 text-gray-600">
+    <p class="mb-5 mt-1 break-keep text-gray-600">
       {#if description}
         {description}
       {/if}
