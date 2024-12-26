@@ -3,7 +3,7 @@ import { z } from "zod";
 import { login } from "$lib/server/services/auth";
 import type { RequestHandler } from "./$types";
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, cookies }) => {
   const zodRes = z
     .object({
       email: z.string().email().nonempty(),
@@ -14,5 +14,13 @@ export const POST: RequestHandler = async ({ request }) => {
   if (!zodRes.success) error(400, zodRes.error.message);
 
   const { email, password, pubKey } = zodRes.data;
-  return json(await login(email.trim(), password.trim(), pubKey?.trim()));
+  const { accessToken, refreshToken } = await login(email.trim(), password.trim(), pubKey?.trim());
+
+  cookies.set("refreshToken", refreshToken, {
+    path: "/api/auth",
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+  });
+  return json({ accessToken });
 };

@@ -1,16 +1,18 @@
 import { error, json } from "@sveltejs/kit";
-import { z } from "zod";
 import { refreshToken } from "$lib/server/services/auth";
 import type { RequestHandler } from "./$types";
 
-export const POST: RequestHandler = async ({ request }) => {
-  const zodRes = z
-    .object({
-      refreshToken: z.string().nonempty(),
-    })
-    .safeParse(await request.json());
-  if (!zodRes.success) error(400, zodRes.error.message);
+export const POST: RequestHandler = async ({ cookies }) => {
+  const token = cookies.get("refreshToken");
+  if (!token) error(401, "Token not found");
 
-  const { refreshToken: token } = zodRes.data;
-  return json(await refreshToken(token.trim()));
+  const { accessToken, refreshToken: newToken } = await refreshToken(token.trim());
+
+  cookies.set("refreshToken", newToken, {
+    path: "/api/auth",
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+  });
+  return json({ accessToken });
 };
