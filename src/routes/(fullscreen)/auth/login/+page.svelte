@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Button, TextButton } from "$lib/components/buttons";
+  import { TitleDiv, BottomDiv } from "$lib/components/divs";
   import { TextInput } from "$lib/components/inputs";
   import { requestLogin } from "./service";
 
@@ -20,7 +21,7 @@
 </svelte:head>
 
 <div class="flex h-full flex-col justify-between">
-  <div class="mt-[20%]">
+  <TitleDiv>
     <div class="flex flex-col gap-y-2">
       <h1 class="text-3xl font-bold">환영합니다!</h1>
       <p>서비스를 이용하려면 로그인을 해야해요.</p>
@@ -29,13 +30,13 @@
       <TextInput bind:value={email} placeholder="이메일" />
       <TextInput bind:value={password} placeholder="비밀번호" type="password" />
     </div>
-  </div>
-  <div class="sticky bottom-0 flex w-full flex-col items-center gap-y-2 bg-white">
+  </TitleDiv>
+  <BottomDiv>
     <div class="w-full">
       <Button onclick={login}>로그인</Button>
     </div>
     <div class="w-fit">
       <TextButton>계정이 없어요</TextButton>
     </div>
-  </div>
+  </BottomDiv>
 </div>

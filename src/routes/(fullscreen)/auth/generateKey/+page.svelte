@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Button, TextButton } from "$lib/components/buttons";
+  import { TitleDiv, BottomDiv } from "$lib/components/divs";
   import Order from "./Order.svelte";
 
   import IconKey from "~icons/material-symbols/key";
@@ -29,7 +30,7 @@
 </svetle:head>
 
 <div class="flex h-full flex-col justify-between">
-  <div class="mt-[20%]">
+  <TitleDiv>
     <div class="flex flex-col gap-y-2">
       <h1 class="text-3xl font-bold">암호 키 생성하기</h1>
       <p>회원님의 디바이스 간의 안전한 데이터 동기화를 위해 암호 키를 생성해야 해요.</p>
@@ -45,13 +46,13 @@
         {/each}
       </div>
     </div>
-  </div>
-  <div class="sticky bottom-0 flex w-full flex-col items-center gap-y-2 bg-white">
+  </TitleDiv>
+  <BottomDiv>
     <div class="w-full">
       <Button>새 암호 키 생성하기</Button>
     </div>
     <div class="w-fit">
       <TextButton>키를 갖고 있어요</TextButton>
     </div>
-  </div>
+  </BottomDiv>
 </div>
