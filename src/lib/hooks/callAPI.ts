@@ -35,13 +35,13 @@ const callAPIInternal = async (
       Authorization: `Bearer ${token}`,
     },
   });
-  if (res.status === 401 && retryIfUnauthorized) {
+  if (res.status === 401 && retryIfUnauthorized && token !== undefined) {
     return await callAPIInternal(input, init, null, false);
   }
 
   return res;
 };
 
-export const callAPI = async (input: RequestInfo, init?: RequestInit, token?: string | null) => {
+export default async (input: RequestInfo, init?: RequestInit, token?: string | null) => {
   return await callAPIInternal(input, init, token);
 };
