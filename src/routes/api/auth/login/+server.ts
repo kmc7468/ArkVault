@@ -8,15 +8,15 @@ export const POST: RequestHandler = async ({ request }) => {
     .object({
       email: z.string().email().nonempty(),
       password: z.string().nonempty(),
+      pubKey: z.string().nonempty().optional(),
     })
     .safeParse(await request.json());
   if (!zodRes.success) error(400, zodRes.error.message);
 
-  const { email, password } = zodRes.data;
-  const loginRes = await login(email.trim(), password.trim());
+  const { email, password, pubKey } = zodRes.data;
+  const loginRes = await login(email.trim(), password.trim(), pubKey?.trim());
+  if (!loginRes) error(401, "Invalid email, password, or public key");
 
-  if (!loginRes) error(401, "Invalid email or password");
   const { accessToken, refreshToken } = loginRes;
-
   return json({ accessToken, refreshToken });
 };
