@@ -25,12 +25,12 @@
       <h1 class="text-3xl font-bold">환영합니다!</h1>
       <p>서비스를 이용하려면 로그인을 해야해요.</p>
     </div>
-    <div class="mt-4 flex flex-col gap-y-2">
+    <div class="my-4 flex flex-col gap-y-2">
       <TextInput bind:value={email} placeholder="이메일" />
       <TextInput bind:value={password} placeholder="비밀번호" type="password" />
     </div>
   </div>
-  <div class="sticky bottom-0 flex w-full flex-col items-center gap-y-2">
+  <div class="sticky bottom-0 flex w-full flex-col items-center gap-y-2 bg-white">
     <div class="w-full">
       <Button onclick={login}>로그인</Button>
     </div>
