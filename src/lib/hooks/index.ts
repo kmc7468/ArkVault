@@ -1,2 +1,2 @@
-export { default as callAPI } from "./callAPI";
-export { goto } from "./goto";
+export { callAPI } from "./callAPI";
+export { gotoStateful } from "./gotoStateful";

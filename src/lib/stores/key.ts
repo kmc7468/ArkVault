@@ -1,4 +1,4 @@
 import { writable } from "svelte/store";
 
-export const pubKey = writable<CryptoKey | null>(null);
-export const privKey = writable<CryptoKey | null>(null);
+export const pubKeyStore = writable<CryptoKey | null>(null);
+export const privKeyStore = writable<CryptoKey | null>(null);

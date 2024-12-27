@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Button, TextButton } from "$lib/components/buttons";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
-  import { goto } from "$lib/hooks";
+  import { gotoStateful } from "$lib/hooks";
   import Order from "./Order.svelte";
   import { generateKeyPair } from "./service";
 
@@ -27,7 +27,8 @@
   ];
 
   const generate = async () => {
-    await goto("/key/export", await generateKeyPair());
+    // TODO
+    await gotoStateful("/key/export", await generateKeyPair());
   };
 </script>
 

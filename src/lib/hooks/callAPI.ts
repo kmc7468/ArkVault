@@ -1,29 +1,30 @@
-import { accessToken } from "$lib/stores/auth";
+import { get } from "svelte/store";
+import { accessTokenStore } from "$lib/stores";
 
 const refreshToken = async () => {
-  const res = await fetch("/api/auth/refreshtoken", {
+  const res = await fetch("/api/auth/refreshToken", {
     method: "POST",
     credentials: "same-origin",
   });
   if (!res.ok) {
-    accessToken.set(null);
+    accessTokenStore.set(null);
     throw new Error("Failed to refresh token");
   }
 
   const data = await res.json();
   const token = data.accessToken as string;
 
-  accessToken.set(token);
+  accessTokenStore.set(token);
   return token;
 };
 
 const callAPIInternal = async (
   input: RequestInfo,
-  init?: RequestInit,
-  token?: string | null,
+  init: RequestInit | undefined,
+  token: string | null,
   retryIfUnauthorized = true,
 ): Promise<Response> => {
-  if (token === null) {
+  if (!token) {
     token = await refreshToken();
     retryIfUnauthorized = false;
   }
@@ -35,13 +36,13 @@ const callAPIInternal = async (
       Authorization: `Bearer ${token}`,
     },
   });
-  if (res.status === 401 && retryIfUnauthorized && token !== undefined) {
+  if (res.status === 401 && retryIfUnauthorized) {
     return await callAPIInternal(input, init, null, false);
   }
 
   return res;
 };
 
-export default async (input: RequestInfo, init?: RequestInit, token?: string | null) => {
-  return await callAPIInternal(input, init, token);
+export const callAPI = async (input: RequestInfo, init?: RequestInit) => {
+  return await callAPIInternal(input, init, get(accessTokenStore));
 };

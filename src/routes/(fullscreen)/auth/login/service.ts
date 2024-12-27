@@ -1,5 +1,5 @@
 import { callAPI } from "$lib/hooks";
-import { accessToken } from "$lib/stores/auth";
+import { accessTokenStore } from "$lib/stores";
 
 export const requestLogin = async (email: string, password: string) => {
   const res = await callAPI("/api/auth/login", {
@@ -16,6 +16,6 @@ export const requestLogin = async (email: string, password: string) => {
   const data = await res.json();
   const token = data.accessToken as string;
 
-  accessToken.set(token);
+  accessTokenStore.set(token);
   return true;
 };
