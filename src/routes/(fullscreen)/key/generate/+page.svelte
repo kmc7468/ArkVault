@@ -1,7 +1,9 @@
 <script lang="ts">
   import { Button, TextButton } from "$lib/components/buttons";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
+  import { goto } from "$lib/hooks";
   import Order from "./Order.svelte";
+  import { generateKeyPair } from "./service";
 
   import IconKey from "~icons/material-symbols/key";
 
@@ -23,6 +25,10 @@
         "서버를 포함한 제3자는 데이터의 내용을 알 수 없어요. 개인 키가 이 디바이스에만 저장되기 때문이에요.",
     },
   ];
+
+  const generate = async () => {
+    await goto("/key/export", await generateKeyPair());
+  };
 </script>
 
 <svetle:head>
@@ -49,7 +55,7 @@
   </TitleDiv>
   <BottomDiv>
     <div class="w-full">
-      <Button>새 암호 키 생성하기</Button>
+      <Button onclick={generate}>새 암호 키 생성하기</Button>
     </div>
     <div class="w-fit">
       <TextButton>키를 갖고 있어요</TextButton>

@@ -1,4 +1,5 @@
 import { storeKeyPairIntoIndexedDB } from "$lib/indexedDB";
+import { pubKey, privKey } from "$lib/stores/key";
 
 type KeyType = "public" | "private";
 
@@ -16,20 +17,6 @@ const generateRSAKeyPair = async () => {
   return keyPair;
 };
 
-const exportKeyAsPem = async (key: CryptoKey, type: KeyType) => {
-  const exportedKey = await window.crypto.subtle.exportKey(
-    type === "public" ? "spki" : "pkcs8",
-    key,
-  );
-  const exportedKeyBase64 = btoa(String.fromCharCode(...new Uint8Array(exportedKey)))
-    .match(/.{1,64}/g)!
-    .join("\n");
-
-  const pemHeader = type === "public" ? "PUBLIC" : "PRIVATE";
-  const pem = `-----BEGIN ${pemHeader} KEY-----\n${exportedKeyBase64}\n-----END ${pemHeader} KEY-----\n`;
-  return pem;
-};
-
 const makeRSAKeyNonextractable = async (key: CryptoKey, type: KeyType) => {
   const format = type === "public" ? "spki" : "pkcs8";
   const keyUsage = type === "public" ? "encrypt" : "decrypt";
@@ -45,13 +32,25 @@ const makeRSAKeyNonextractable = async (key: CryptoKey, type: KeyType) => {
   );
 };
 
+const exportKeyToBase64 = async (key: CryptoKey, type: KeyType) => {
+  const exportedKey = await window.crypto.subtle.exportKey(
+    type === "public" ? "spki" : "pkcs8",
+    key,
+  );
+  return btoa(String.fromCharCode(...new Uint8Array(exportedKey)));
+};
+
 export const generateKeyPair = async () => {
   const keyPair = await generateRSAKeyPair();
-
   const privKeySecure = await makeRSAKeyNonextractable(keyPair.privateKey, "private");
+
+  pubKey.set(keyPair.publicKey);
+  privKey.set(privKeySecure);
+
   await storeKeyPairIntoIndexedDB(keyPair.publicKey, privKeySecure);
 
-  const pubKeyPem = await exportKeyAsPem(keyPair.publicKey, "public");
-  const privKeyPem = await exportKeyAsPem(keyPair.privateKey, "private");
-  return { pubKeyPem, privKeyPem };
+  return {
+    pubKeyBase64: await exportKeyToBase64(keyPair.publicKey, "public"),
+    privKeyBase64: await exportKeyToBase64(keyPair.privateKey, "private"),
+  };
 };
