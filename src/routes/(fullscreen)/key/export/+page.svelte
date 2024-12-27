@@ -2,6 +2,7 @@
   import { Button, TextButton } from "$lib/components/buttons";
   import { BottomDiv } from "$lib/components/divs";
   import BeforeContinueModal from "./BeforeContinueModal.svelte";
+  import { requestPubKeyRegistration } from "./service";
 
   import IconKey from "~icons/material-symbols/key";
 
@@ -15,8 +16,14 @@
     console.log(data.privKeyBase64);
   };
 
-  const continueWithoutExport = () => {
+  const continueWithoutExport = async () => {
     isBeforeContinueModalOpen = false;
+
+    const ok = await requestPubKeyRegistration(data.pubKeyBase64);
+    if (!ok) {
+      // TODO
+      return;
+    }
 
     // TODO
   };

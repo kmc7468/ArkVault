@@ -13,7 +13,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
       pubKey: z.string().nonempty().optional(),
     })
     .safeParse(await request.json());
-  if (!zodRes.success) error(400, zodRes.error.message);
+  if (!zodRes.success) error(400, "Invalid request body");
 
   const { email, password, pubKey } = zodRes.data;
   const { accessToken, refreshToken } = await login(email.trim(), password.trim(), pubKey?.trim());

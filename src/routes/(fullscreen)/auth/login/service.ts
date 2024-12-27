@@ -1,8 +1,7 @@
-import { callAPI } from "$lib/hooks";
 import { accessTokenStore } from "$lib/stores";
 
 export const requestLogin = async (email: string, password: string) => {
-  const res = await callAPI("/api/auth/login", {
+  const res = await fetch("/api/auth/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
