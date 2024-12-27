@@ -1,10 +1,25 @@
 <script lang="ts">
   import { Button, TextButton } from "$lib/components/buttons";
   import { BottomDiv } from "$lib/components/divs";
+  import BeforeContinueModal from "./BeforeContinueModal.svelte";
 
   import IconKey from "~icons/material-symbols/key";
 
   let { data } = $props();
+
+  let isBeforeContinueModalOpen = $state(false);
+
+  const exportKeyPair = () => {
+    // TODO
+    console.log(data.pubKeyBase64);
+    console.log(data.privKeyBase64);
+  };
+
+  const continueWithoutExport = () => {
+    isBeforeContinueModalOpen = false;
+
+    // TODO
+  };
 </script>
 
 <svetle:head>
@@ -27,17 +42,22 @@
     </div>
     <BottomDiv>
       <div class="w-full">
-        <Button
-          onclick={() => {
-            // TODO
-            console.log(data.privKeyBase64);
-            console.log(data.pubKeyBase64);
-          }}>암호 키 내보내기</Button
-        >
+        <Button onclick={exportKeyPair}>암호 키 내보내기</Button>
       </div>
       <div class="w-fit">
-        <TextButton>내보내지 않을래요</TextButton>
+        <TextButton
+          onclick={() => {
+            isBeforeContinueModalOpen = true;
+          }}
+        >
+          내보내지 않을래요
+        </TextButton>
       </div>
     </BottomDiv>
   </div>
 </div>
+
+<BeforeContinueModal
+  bind:isOpen={isBeforeContinueModalOpen}
+  onContinueClick={continueWithoutExport}
+/>
