@@ -12,4 +12,7 @@ export default {
     accessExp: env.JWT_ACCESS_TOKEN_EXPIRES || "5m",
     refreshExp: env.JWT_REFRESH_TOKEN_EXPIRES || "14d",
   },
+  challenge: {
+    pubKeyExp: env.PUBKEY_CHALLENGE_EXPIRES || "5m",
+  },
 };

@@ -1,9 +1,11 @@
 import { redirect, type ServerInit, type Handle } from "@sveltejs/kit";
 import schedule from "node-schedule";
+import { cleanupExpiredUserClientChallenges } from "$lib/server/db/client";
 import { cleanupExpiredRefreshTokens } from "$lib/server/db/token";
 
 export const init: ServerInit = () => {
   schedule.scheduleJob("0 * * * *", () => {
+    cleanupExpiredUserClientChallenges();
     cleanupExpiredRefreshTokens();
   });
 };

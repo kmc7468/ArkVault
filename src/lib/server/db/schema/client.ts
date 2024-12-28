@@ -2,8 +2,9 @@ import { sqliteTable, text, integer, primaryKey } from "drizzle-orm/sqlite-core"
 import { user } from "./user";
 
 export enum UserClientState {
-  PENDING = 0,
-  ACTIVE = 1,
+  Challenging = 0,
+  Pending = 1,
+  Active = 2,
 }
 
 export const client = sqliteTable("client", {
@@ -20,10 +21,23 @@ export const userClient = sqliteTable(
     clientId: integer("client_id")
       .notNull()
       .references(() => client.id),
-    state: integer("state").notNull().default(0),
+    state: integer("state").notNull().default(UserClientState.Challenging),
     encKey: text("encrypted_key"),
   },
   (t) => ({
     pk: primaryKey({ columns: [t.userId, t.clientId] }),
   }),
 );
+
+export const userClientChallenge = sqliteTable("user_client_challenge", {
+  id: integer("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => user.id),
+  clientId: integer("client_id")
+    .notNull()
+    .references(() => client.id),
+  challenge: text("challenge").notNull().unique(),
+  allowedIp: text("allowed_ip").notNull(),
+  expiresAt: integer("expires_at").notNull(),
+});

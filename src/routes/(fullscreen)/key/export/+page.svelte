@@ -38,11 +38,11 @@
     isBeforeContinueModalOpen = false;
     isBeforeContinueBottomSheetOpen = false;
 
-    if (await requestPubKeyRegistration(data.pubKeyBase64)) {
+    if (await requestPubKeyRegistration(data.pubKeyBase64, $keyPairStore.privateKey)) {
       await storeKeyPairPersistently($keyPairStore);
       await goto(data.redirectPath);
     } else {
-      // TODO
+      // TODO: Error handling
     }
   };
 </script>

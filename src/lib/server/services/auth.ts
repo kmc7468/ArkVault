@@ -1,7 +1,7 @@
 import { error } from "@sveltejs/kit";
 import argon2 from "argon2";
 import { v4 as uuidv4 } from "uuid";
-import { getClientByPubKey } from "$lib/server/db/client";
+import { getClientByPubKey, getUserClient } from "$lib/server/db/client";
 import { getUserByEmail } from "$lib/server/db/user";
 import {
   getRefreshToken,
@@ -9,6 +9,7 @@ import {
   rotateRefreshToken,
   revokeRefreshToken,
 } from "$lib/server/db/token";
+import { UserClientState } from "$lib/server/db/schema";
 import { issueToken, verifyToken, TokenError } from "$lib/server/modules/auth";
 
 const verifyPassword = async (hash: string, password: string) => {
@@ -36,8 +37,11 @@ export const login = async (email: string, password: string, pubKey?: string) =>
   }
 
   const client = pubKey ? await getClientByPubKey(pubKey) : undefined;
+  const userClient = client ? await getUserClient(user.id, client.id) : undefined;
   if (client === null) {
     error(401, "Invalid public key");
+  } else if (client && (!userClient || userClient.state === UserClientState.Challenging)) {
+    error(401, "Unregistered public key");
   }
 
   return {
