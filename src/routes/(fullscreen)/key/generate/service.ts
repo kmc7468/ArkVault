@@ -1,5 +1,5 @@
 import { storeKeyPairIntoIndexedDB } from "$lib/indexedDB";
-import { pubKeyStore, privKeyStore } from "$lib/stores";
+import { keyPairStore } from "$lib/stores";
 
 type KeyType = "public" | "private";
 
@@ -42,12 +42,13 @@ const exportKeyToBase64 = async (key: CryptoKey, type: KeyType) => {
 
 export const generateKeyPair = async () => {
   const keyPair = await generateRSAKeyPair();
-  const privKeySecure = await makeRSAKeyNonextractable(keyPair.privateKey, "private");
+  const privKeySecured = await makeRSAKeyNonextractable(keyPair.privateKey, "private");
 
-  pubKeyStore.set(keyPair.publicKey);
-  privKeyStore.set(privKeySecure);
-
-  await storeKeyPairIntoIndexedDB(keyPair.publicKey, privKeySecure);
+  keyPairStore.set({
+    publicKey: keyPair.publicKey,
+    privateKey: privKeySecured,
+  });
+  await storeKeyPairIntoIndexedDB(keyPair.publicKey, privKeySecured);
 
   return {
     pubKeyBase64: await exportKeyToBase64(keyPair.publicKey, "public"),

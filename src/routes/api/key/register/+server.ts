@@ -18,5 +18,5 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
   }
 
   await registerPubKey(userId, zodRes.data.pubKey);
-  return text("Public key registered");
+  return text("Public key registered", { headers: { "Content-Type": "text/plain" } });
 };
