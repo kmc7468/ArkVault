@@ -4,7 +4,7 @@ import { authenticate } from "$lib/server/modules/auth";
 import { registerPubKey } from "$lib/server/services/key";
 import type { RequestHandler } from "./$types";
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, cookies }) => {
   const zodRes = z
     .object({
       pubKey: z.string().base64().nonempty(),
@@ -12,7 +12,7 @@ export const POST: RequestHandler = async ({ request }) => {
     .safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");
 
-  const { userId, clientId } = authenticate(request);
+  const { userId, clientId } = authenticate(cookies);
   if (clientId) {
     error(403, "Forbidden");
   }

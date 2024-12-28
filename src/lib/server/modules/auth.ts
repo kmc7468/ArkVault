@@ -1,4 +1,4 @@
-import { error } from "@sveltejs/kit";
+import { error, type Cookies } from "@sveltejs/kit";
 import jwt from "jsonwebtoken";
 import env from "$lib/server/loadenv";
 
@@ -35,13 +35,13 @@ export const verifyToken = (token: string) => {
   }
 };
 
-export const authenticate = (request: Request) => {
-  const accessToken = request.headers.get("Authorization");
-  if (!accessToken?.startsWith("Bearer ")) {
-    error(401, "Access token required");
+export const authenticate = (cookies: Cookies) => {
+  const accessToken = cookies.get("accessToken");
+  if (!accessToken) {
+    error(401, "Access token not found");
   }
 
-  const tokenPayload = verifyToken(accessToken.slice(7));
+  const tokenPayload = verifyToken(accessToken);
   if (tokenPayload === TokenError.EXPIRED) {
     error(401, "Access token expired");
   } else if (tokenPayload === TokenError.INVALID || tokenPayload.type !== "access") {

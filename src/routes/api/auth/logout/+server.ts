@@ -4,8 +4,11 @@ import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ cookies }) => {
   const token = cookies.get("refreshToken");
-  if (!token) error(401, "Token not found");
+  if (!token) error(401, "Refresh token not found");
 
   await logout(token.trim());
-  return text("Logged out");
+
+  cookies.delete("accessToken", { path: "/" });
+  cookies.delete("refreshToken", { path: "/api/auth" });
+  return text("Logged out", { headers: { "Content-Type": "text/plain" } });
 };

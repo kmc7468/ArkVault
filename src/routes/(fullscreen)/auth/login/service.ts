@@ -1,5 +1,3 @@
-import { accessTokenStore } from "$lib/stores";
-
 export const requestLogin = async (email: string, password: string) => {
   const res = await fetch("/api/auth/login", {
     method: "POST",
@@ -8,13 +6,5 @@ export const requestLogin = async (email: string, password: string) => {
     },
     body: JSON.stringify({ email, password }),
   });
-  if (!res.ok) {
-    return false;
-  }
-
-  const data = await res.json();
-  const token = data.accessToken as string;
-
-  accessTokenStore.set(token);
-  return true;
+  return res.ok;
 };

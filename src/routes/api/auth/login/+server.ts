@@ -1,4 +1,4 @@
-import { error, json } from "@sveltejs/kit";
+import { error, text } from "@sveltejs/kit";
 import ms from "ms";
 import { z } from "zod";
 import env from "$lib/server/loadenv";
@@ -10,7 +10,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     .object({
       email: z.string().email().nonempty(),
       password: z.string().nonempty(),
-      pubKey: z.string().nonempty().optional(),
+      pubKey: z.string().base64().nonempty().optional(),
     })
     .safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");
@@ -18,12 +18,15 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
   const { email, password, pubKey } = zodRes.data;
   const { accessToken, refreshToken } = await login(email.trim(), password.trim(), pubKey?.trim());
 
+  cookies.set("accessToken", accessToken, {
+    path: "/",
+    maxAge: Math.floor(ms(env.jwt.accessExp) / 1000),
+    sameSite: "strict",
+  });
   cookies.set("refreshToken", refreshToken, {
     path: "/api/auth",
     maxAge: Math.floor(ms(env.jwt.refreshExp) / 1000),
-    httpOnly: true,
-    secure: true,
     sameSite: "strict",
   });
-  return json({ accessToken });
+  return text("Logged in", { headers: { "Content-Type": "text/plain" } });
 };

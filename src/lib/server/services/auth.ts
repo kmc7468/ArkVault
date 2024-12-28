@@ -71,7 +71,7 @@ export const logout = async (refreshToken: string) => {
   await revokeRefreshToken(jti);
 };
 
-export const refreshToken = async (refreshToken: string) => {
+export const refreshTokens = async (refreshToken: string) => {
   const { jti: oldJti, userId, clientId } = await verifyRefreshToken(refreshToken);
   const newJti = uuidv4();
 
