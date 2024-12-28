@@ -1,6 +1,9 @@
+import { building } from "$app/environment";
 import { env } from "$env/dynamic/private";
 
-if (!env.JWT_SECRET) throw new Error("JWT_SECRET is not set");
+if (!building) {
+  if (!env.JWT_SECRET) throw new Error("JWT_SECRET is not set");
+}
 
 export default {
   databaseUrl: env.DATABASE_URL || "local.db",
