@@ -1,31 +1,49 @@
 <script lang="ts">
+  import { saveAs } from "file-saver";
+  import { goto } from "$app/navigation";
   import { Button, TextButton } from "$lib/components/buttons";
   import { BottomDiv } from "$lib/components/divs";
+  import { keyPairStore } from "$lib/stores";
+  import BeforeContinueBottomSheet from "./BeforeContinueBottomSheet.svelte";
   import BeforeContinueModal from "./BeforeContinueModal.svelte";
-  import { requestPubKeyRegistration } from "./service";
+  import {
+    createBlobFromKeyPairBase64,
+    requestPubKeyRegistration,
+    storeKeyPairPersistently,
+  } from "./service";
 
   import IconKey from "~icons/material-symbols/key";
 
   let { data } = $props();
 
   let isBeforeContinueModalOpen = $state(false);
+  let isBeforeContinueBottomSheetOpen = $state(false);
 
   const exportKeyPair = () => {
-    // TODO
-    console.log(data.pubKeyBase64);
-    console.log(data.privKeyBase64);
+    const keyPairBlob = createBlobFromKeyPairBase64(data.pubKeyBase64, data.privKeyBase64);
+    saveAs(keyPairBlob, "arkvalut-keypair.pem");
+
+    if (!isBeforeContinueBottomSheetOpen) {
+      setTimeout(() => {
+        isBeforeContinueBottomSheetOpen = true;
+      }, 1000);
+    }
   };
 
-  const continueWithoutExport = async () => {
-    isBeforeContinueModalOpen = false;
-
-    const ok = await requestPubKeyRegistration(data.pubKeyBase64);
-    if (!ok) {
-      // TODO
-      return;
+  const registerPubKey = async () => {
+    if (!$keyPairStore) {
+      throw new Error("Failed to find key pair");
     }
 
-    // TODO
+    isBeforeContinueModalOpen = false;
+    isBeforeContinueBottomSheetOpen = false;
+
+    if (await requestPubKeyRegistration(data.pubKeyBase64)) {
+      await storeKeyPairPersistently($keyPairStore);
+      await goto(data.redirectPath);
+    } else {
+      // TODO
+    }
   };
 </script>
 
@@ -64,7 +82,9 @@
   </div>
 </div>
 
-<BeforeContinueModal
-  bind:isOpen={isBeforeContinueModalOpen}
-  onContinueClick={continueWithoutExport}
+<BeforeContinueModal bind:isOpen={isBeforeContinueModalOpen} onContinueClick={registerPubKey} />
+<BeforeContinueBottomSheet
+  bind:isOpen={isBeforeContinueBottomSheetOpen}
+  onRetryClick={exportKeyPair}
+  onContinueClick={registerPubKey}
 />

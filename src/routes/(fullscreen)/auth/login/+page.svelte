@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { get } from "svelte/store";
   import { goto } from "$app/navigation";
   import { Button, TextButton } from "$lib/components/buttons";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
@@ -17,7 +16,7 @@
 
     if (await requestLogin(email, password)) {
       await goto(
-        get(keyPairStore)
+        $keyPairStore
           ? data.redirectPath
           : "/key/generate?redirect=" + encodeURIComponent(data.redirectPath),
       );

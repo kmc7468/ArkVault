@@ -1,11 +1,15 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { Button, TextButton } from "$lib/components/buttons";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
   import { gotoStateful } from "$lib/hooks";
+  import { keyPairStore } from "$lib/stores";
   import Order from "./Order.svelte";
   import { generateKeyPair } from "./service";
 
   import IconKey from "~icons/material-symbols/key";
+
+  let { data } = $props();
 
   const orders = [
     {
@@ -27,9 +31,21 @@
   ];
 
   const generate = async () => {
-    // TODO
-    await gotoStateful("/key/export", await generateKeyPair());
+    // TODO: Loading indicator
+
+    const keyPair = await generateKeyPair();
+    await gotoStateful("/key/export", {
+      redirectPath: data.redirectPath,
+      pubKeyBase64: keyPair.pubKeyBase64,
+      privKeyBase64: keyPair.privKeyBase64,
+    });
   };
+
+  $effect(() => {
+    if ($keyPairStore) {
+      goto(data.redirectPath);
+    }
+  });
 </script>
 
 <svetle:head>

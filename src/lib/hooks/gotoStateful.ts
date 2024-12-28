@@ -3,6 +3,7 @@ import { goto } from "$app/navigation";
 type Path = "/key/export";
 
 interface KeyExportState {
+  redirectPath: string;
   pubKeyBase64: string;
   privKeyBase64: string;
 }

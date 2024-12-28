@@ -23,8 +23,10 @@
         color="gray"
         onclick={() => {
           isOpen = false;
-        }}>아니요</Button
+        }}
       >
+        아니요
+      </Button>
       <Button onclick={onContinueClick}>계속합니다</Button>
     </div>
   </div>

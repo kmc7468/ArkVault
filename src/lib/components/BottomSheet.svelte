@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { fade } from "svelte/transition";
+  import { fade, fly } from "svelte/transition";
 
   interface Props {
     children: Snippet;
@@ -17,10 +17,14 @@
     onclick={() => {
       isOpen = false;
     }}
-    class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 px-2"
-    transition:fade={{ duration: 100 }}
+    class="fixed inset-0 flex items-end justify-center"
   >
-    <div onclick={(e) => e.stopPropagation()} class="max-w-full rounded-2xl bg-white p-4">
+    <div class="absolute inset-0 bg-black bg-opacity-50" transition:fade={{ duration: 100 }}></div>
+    <div
+      onclick={(e) => e.stopPropagation()}
+      class="z-10 flex max-h-[70vh] min-h-[30vh] w-full items-stretch rounded-t-2xl bg-white p-4"
+      transition:fly={{ y: 100, duration: 200 }}
+    >
       {@render children?.()}
     </div>
   </div>
