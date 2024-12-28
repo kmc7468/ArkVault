@@ -27,7 +27,7 @@
       >
         아니요
       </Button>
-      <Button onclick={onContinueClick}>계속합니다</Button>
+      <Button onclick={onContinueClick}>계속할게요</Button>
     </div>
   </div>
 </Modal>

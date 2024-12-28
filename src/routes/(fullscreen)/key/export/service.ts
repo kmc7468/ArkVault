@@ -8,8 +8,8 @@ export const createBlobFromKeyPairBase64 = (pubKeyBase64: string, privKeyBase64:
     throw new Error("Failed to format key pair");
   }
 
-  const pubKeyPem = `-----BEGIN PUBLIC KEY-----\n${pubKeyFormatted}\n-----END PUBLIC KEY-----`;
-  const privKeyPem = `-----BEGIN PRIVATE KEY-----\n${privKeyFormatted}\n-----END PRIVATE KEY-----`;
+  const pubKeyPem = `-----BEGIN RSA PUBLIC KEY-----\n${pubKeyFormatted}\n-----END RSA PUBLIC KEY-----`;
+  const privKeyPem = `-----BEGIN RSA PRIVATE KEY-----\n${privKeyFormatted}\n-----END RSA PRIVATE KEY-----`;
   return new Blob([`${pubKeyPem}\n${privKeyPem}\n`], { type: "text/plain" });
 };
 
