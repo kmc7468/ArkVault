@@ -1,8 +1,11 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { Button, TextButton } from "$lib/components/buttons";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
   import { TextInput } from "$lib/components/inputs";
   import { requestLogin } from "./service";
+
+  let { data } = $props();
 
   let email = $state("");
   let password = $state("");
@@ -11,8 +14,11 @@
     // TODO: Validation
 
     const ok = await requestLogin(email, password);
-
-    // TODO: Action
+    if (ok) {
+      goto(data.redirectPath);
+    } else {
+      // TODO: Alert
+    }
   };
 </script>
 
