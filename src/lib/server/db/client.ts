@@ -17,6 +17,10 @@ export const getClientByPubKey = async (pubKey: string) => {
   return clients[0] ?? null;
 };
 
+export const createUserClient = async (userId: number, clientId: number) => {
+  await db.insert(userClient).values({ userId, clientId }).execute();
+};
+
 export const getUserClient = async (userId: number, clientId: number) => {
   const userClients = await db
     .select()

@@ -5,6 +5,8 @@ import { promisify } from "util";
 import {
   createClient,
   getClientByPubKey,
+  createUserClient,
+  getUserClient,
   createUserClientChallenge,
   getUserClientChallenge,
   setUserClientStateToPending,
@@ -25,20 +27,30 @@ const generateChallenge = async (userId: number, ip: string, clientId: number, p
 };
 
 export const registerPubKey = async (userId: number, ip: string, pubKey: string) => {
-  if (await getClientByPubKey(pubKey)) {
-    error(409, "Public key already registered");
+  const client = await getClientByPubKey(pubKey);
+  let clientId;
+
+  if (client) {
+    const userClient = await getUserClient(userId, client.id);
+    if (userClient) {
+      error(409, "Public key already registered");
+    }
+
+    await createUserClient(userId, client.id);
+    clientId = client.id;
+  } else {
+    const pubKeyPem = `-----BEGIN PUBLIC KEY-----\n${pubKey}\n-----END PUBLIC KEY-----`;
+    const pubKeyObject = createPublicKey(pubKeyPem);
+    if (
+      pubKeyObject.asymmetricKeyType !== "rsa" ||
+      pubKeyObject.asymmetricKeyDetails?.modulusLength !== 4096
+    ) {
+      error(400, "Invalid public key");
+    }
+
+    clientId = await createClient(pubKey, userId);
   }
 
-  const pubKeyPem = `-----BEGIN PUBLIC KEY-----\n${pubKey}\n-----END PUBLIC KEY-----`;
-  const pubKeyObject = createPublicKey(pubKeyPem);
-  if (
-    pubKeyObject.asymmetricKeyType !== "rsa" ||
-    pubKeyObject.asymmetricKeyDetails?.modulusLength !== 4096
-  ) {
-    error(400, "Invalid public key");
-  }
-
-  const clientId = await createClient(pubKey, userId);
   return await generateChallenge(userId, ip, clientId, pubKey);
 };
 

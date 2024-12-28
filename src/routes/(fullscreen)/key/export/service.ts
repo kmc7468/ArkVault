@@ -1,5 +1,6 @@
 import { callAPI } from "$lib/hooks";
 import { storeKeyPairIntoIndexedDB } from "$lib/indexedDB";
+import { decryptRSACiphertext } from "$lib/modules/crypto";
 
 export const createBlobFromKeyPairBase64 = (pubKeyBase64: string, privKeyBase64: string) => {
   const pubKeyFormatted = pubKeyBase64.match(/.{1,64}/g)?.join("\n");
@@ -11,18 +12,6 @@ export const createBlobFromKeyPairBase64 = (pubKeyBase64: string, privKeyBase64:
   const pubKeyPem = `-----BEGIN RSA PUBLIC KEY-----\n${pubKeyFormatted}\n-----END RSA PUBLIC KEY-----`;
   const privKeyPem = `-----BEGIN RSA PRIVATE KEY-----\n${privKeyFormatted}\n-----END RSA PRIVATE KEY-----`;
   return new Blob([`${pubKeyPem}\n${privKeyPem}\n`], { type: "text/plain" });
-};
-
-const decryptChallenge = async (challenge: string, privateKey: CryptoKey) => {
-  const challengeBuffer = Uint8Array.from(atob(challenge), (c) => c.charCodeAt(0));
-  const answer = await window.crypto.subtle.decrypt(
-    {
-      name: "RSA-OAEP",
-    } satisfies RsaOaepParams,
-    privateKey,
-    challengeBuffer,
-  );
-  return btoa(String.fromCharCode(...new Uint8Array(answer)));
 };
 
 export const requestPubKeyRegistration = async (pubKeyBase64: string, privateKey: CryptoKey) => {
@@ -37,7 +26,7 @@ export const requestPubKeyRegistration = async (pubKeyBase64: string, privateKey
 
   const data = await res.json();
   const challenge = data.challenge as string;
-  const answer = await decryptChallenge(challenge, privateKey);
+  const answer = await decryptRSACiphertext(challenge, privateKey);
 
   res = await callAPI("/api/key/verify", {
     method: "POST",

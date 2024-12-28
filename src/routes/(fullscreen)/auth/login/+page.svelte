@@ -14,7 +14,7 @@
   const login = async () => {
     // TODO: Validation
 
-    if (await requestLogin(email, password)) {
+    if (await requestLogin(email, password, $keyPairStore)) {
       await goto(
         $keyPairStore
           ? data.redirectPath
