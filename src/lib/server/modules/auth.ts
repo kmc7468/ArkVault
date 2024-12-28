@@ -41,7 +41,7 @@ export const authenticate = (cookies: Cookies) => {
     error(401, "Access token not found");
   }
 
-  const tokenPayload = verifyToken(accessToken);
+  const tokenPayload = verifyToken(accessToken.trim());
   if (tokenPayload === TokenError.EXPIRED) {
     error(401, "Access token expired");
   } else if (tokenPayload === TokenError.INVALID || tokenPayload.type !== "access") {

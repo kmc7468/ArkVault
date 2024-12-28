@@ -7,6 +7,7 @@ import {
   getRefreshToken,
   registerRefreshToken,
   rotateRefreshToken,
+  upgradeRefreshToken,
   revokeRefreshToken,
 } from "$lib/server/db/token";
 import { UserClientState } from "$lib/server/db/schema";
@@ -84,6 +85,30 @@ export const refreshTokens = async (refreshToken: string) => {
   }
   return {
     accessToken: issueAccessToken(userId, clientId),
+    refreshToken: issueToken({ type: "refresh", jti: newJti }),
+  };
+};
+
+export const upgradeTokens = async (refreshToken: string, pubKey: string) => {
+  const { jti: oldJti, userId, clientId } = await verifyRefreshToken(refreshToken);
+  if (clientId) {
+    error(403, "Forbidden");
+  }
+
+  const client = await getClientByPubKey(pubKey);
+  const userClient = client ? await getUserClient(userId, client.id) : undefined;
+  if (!client) {
+    error(401, "Invalid public key");
+  } else if (client && (!userClient || userClient.state === UserClientState.Challenging)) {
+    error(401, "Unregistered public key");
+  }
+
+  const newJti = uuidv4();
+  if (!(await upgradeRefreshToken(oldJti, newJti, client.id))) {
+    error(500, "Refresh token not found");
+  }
+  return {
+    accessToken: issueAccessToken(userId, client.id),
     refreshToken: issueToken({ type: "refresh", jti: newJti }),
   };
 };

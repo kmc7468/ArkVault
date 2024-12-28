@@ -17,6 +17,7 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
     error(403, "Forbidden");
   }
 
-  const challenge = await registerPubKey(userId, getClientAddress(), zodRes.data.pubKey);
+  const { pubKey } = zodRes.data;
+  const challenge = await registerPubKey(userId, getClientAddress(), pubKey.trim());
   return json({ challenge });
 };

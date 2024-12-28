@@ -9,6 +9,7 @@
   import {
     createBlobFromKeyPairBase64,
     requestPubKeyRegistration,
+    requestTokenUpgrade,
     storeKeyPairPersistently,
   } from "./service";
 
@@ -40,7 +41,12 @@
 
     if (await requestPubKeyRegistration(data.pubKeyBase64, $keyPairStore.privateKey)) {
       await storeKeyPairPersistently($keyPairStore);
-      await goto(data.redirectPath);
+
+      if (await requestTokenUpgrade(data.pubKeyBase64)) {
+        await goto(data.redirectPath);
+      } else {
+        // TODO: Error handling
+      }
     } else {
       // TODO: Error handling
     }

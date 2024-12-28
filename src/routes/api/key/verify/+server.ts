@@ -17,6 +17,7 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
     error(403, "Forbidden");
   }
 
-  await verifyPubKey(userId, getClientAddress(), zodRes.data.answer);
+  const { answer } = zodRes.data;
+  await verifyPubKey(userId, getClientAddress(), answer.trim());
   return text("Key verified", { headers: { "Content-Type": "text/plain" } });
 };

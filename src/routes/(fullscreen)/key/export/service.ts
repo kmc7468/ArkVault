@@ -38,6 +38,17 @@ export const requestPubKeyRegistration = async (pubKeyBase64: string, privateKey
   return res.ok;
 };
 
+export const requestTokenUpgrade = async (pubKeyBase64: string) => {
+  const res = await fetch("/api/auth/upgradeToken", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ pubKey: pubKeyBase64 }),
+  });
+  return res.ok;
+};
+
 export const storeKeyPairPersistently = async (keyPair: CryptoKeyPair) => {
   await storeKeyPairIntoIndexedDB(keyPair.publicKey, keyPair.privateKey);
 };
