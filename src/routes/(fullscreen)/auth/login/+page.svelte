@@ -1,8 +1,10 @@
 <script lang="ts">
+  import { get } from "svelte/store";
   import { goto } from "$app/navigation";
   import { Button, TextButton } from "$lib/components/buttons";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
   import { TextInput } from "$lib/components/inputs";
+  import { keyPairStore } from "$lib/stores";
   import { requestLogin } from "./service";
 
   let { data } = $props();
@@ -13,9 +15,12 @@
   const login = async () => {
     // TODO: Validation
 
-    const ok = await requestLogin(email, password);
-    if (ok) {
-      goto(data.redirectPath);
+    if (await requestLogin(email, password)) {
+      await goto(
+        get(keyPairStore)
+          ? data.redirectPath
+          : "/key/generate?redirect=" + encodeURIComponent(data.redirectPath),
+      );
     } else {
       // TODO: Alert
     }

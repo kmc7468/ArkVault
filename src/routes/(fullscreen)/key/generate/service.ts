@@ -1,4 +1,3 @@
-import { storeKeyPairIntoIndexedDB } from "$lib/indexedDB";
 import { keyPairStore } from "$lib/stores";
 
 type KeyType = "public" | "private";
@@ -48,7 +47,6 @@ export const generateKeyPair = async () => {
     publicKey: keyPair.publicKey,
     privateKey: privKeySecured,
   });
-  await storeKeyPairIntoIndexedDB(keyPair.publicKey, privKeySecured);
 
   return {
     pubKeyBase64: await exportKeyToBase64(keyPair.publicKey, "public"),

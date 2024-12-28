@@ -9,8 +9,7 @@ export const init: ServerInit = () => {
 };
 
 export const handle: Handle = async ({ event, resolve }) => {
-  const path = event.url.pathname;
-  if (path.startsWith("/api") || path.startsWith("/auth")) {
+  if (["/api", "/auth"].some((path) => event.url.pathname.startsWith(path))) {
     return await resolve(event);
   }
 
@@ -18,6 +17,9 @@ export const handle: Handle = async ({ event, resolve }) => {
   if (accessToken) {
     return await resolve(event);
   } else {
-    redirect(302, "/auth/login?redirect=" + encodeURIComponent(path));
+    redirect(
+      302,
+      "/auth/login?redirect=" + encodeURIComponent(event.url.pathname + event.url.search),
+    );
   }
 };
