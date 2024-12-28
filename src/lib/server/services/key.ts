@@ -1,5 +1,5 @@
 import { error } from "@sveltejs/kit";
-import { randomBytes, publicEncrypt } from "crypto";
+import { randomBytes, publicEncrypt, createPublicKey } from "crypto";
 import ms from "ms";
 import { promisify } from "util";
 import {
@@ -27,6 +27,15 @@ const generateChallenge = async (userId: number, ip: string, clientId: number, p
 export const registerPubKey = async (userId: number, ip: string, pubKey: string) => {
   if (await getClientByPubKey(pubKey)) {
     error(409, "Public key already registered");
+  }
+
+  const pubKeyPem = `-----BEGIN PUBLIC KEY-----\n${pubKey}\n-----END PUBLIC KEY-----`;
+  const pubKeyObject = createPublicKey(pubKeyPem);
+  if (
+    pubKeyObject.asymmetricKeyType !== "rsa" ||
+    pubKeyObject.asymmetricKeyDetails?.modulusLength !== 4096
+  ) {
+    error(400, "Invalid public key");
   }
 
   const clientId = await createClient(pubKey, userId);
