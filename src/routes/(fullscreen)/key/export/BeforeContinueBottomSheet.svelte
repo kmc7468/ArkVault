@@ -17,8 +17,8 @@
     <div class="space-y-2">
       <p class="break-keep text-xl font-bold">암호 키 파일을 저장하셨나요?</p>
       <p class="break-keep">
-        보안상의 이유로 지금 시점 이후로는 암호 키를 파일로 내보낼 수 없어요. 파일이 저장되었는지
-        다시 한 번 확인해 주세요.
+        암호 키 파일은 유출 방지를 위해 이 화면에서만 저장할 수 있어요. 파일이 잘 저장되었는지 다시
+        한 번 확인해 주세요.
       </p>
     </div>
     <BottomDiv>
