@@ -5,8 +5,10 @@ import { client, userClient } from "./schema";
 export const createClient = async (pubKey: string, userId: number) => {
   await db.transaction(async (tx) => {
     const insertRes = await tx.insert(client).values({ pubKey }).returning({ id: client.id });
-    const { id: clientId } = insertRes[0]!;
-    await tx.insert(userClient).values({ userId, clientId });
+    await tx.insert(userClient).values({
+      userId,
+      clientId: insertRes[0]!.id,
+    });
   });
 };
 

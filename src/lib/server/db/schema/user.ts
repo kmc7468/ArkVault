@@ -5,9 +5,3 @@ export const user = sqliteTable("user", {
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
 });
-
-export const revokedToken = sqliteTable("revoked_token", {
-  id: integer("id").primaryKey(),
-  token: text("token").notNull().unique(),
-  revokedAt: integer("revoked_at").notNull(),
-});
