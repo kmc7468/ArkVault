@@ -1,6 +1,6 @@
 import { and, eq, gt, lte } from "drizzle-orm";
 import db from "./drizzle";
-import { client, userClient, userClientChallenge, UserClientState } from "./schema";
+import { client, userClient, userClientChallenge } from "./schema";
 
 export const createClient = async (pubKey: string, userId: number) => {
   return await db.transaction(async (tx) => {
@@ -33,12 +33,12 @@ export const getUserClient = async (userId: number, clientId: number) => {
 export const setUserClientStateToPending = async (userId: number, clientId: number) => {
   await db
     .update(userClient)
-    .set({ state: UserClientState.Pending })
+    .set({ state: "pending" })
     .where(
       and(
         eq(userClient.userId, userId),
         eq(userClient.clientId, clientId),
-        eq(userClient.state, UserClientState.Challenging),
+        eq(userClient.state, "challenging"),
       ),
     )
     .execute();
@@ -49,7 +49,7 @@ export const createUserClientChallenge = async (
   clientId: number,
   challenge: string,
   allowedIp: string,
-  expiresAt: number,
+  expiresAt: Date,
 ) => {
   await db
     .insert(userClientChallenge)
@@ -71,7 +71,7 @@ export const getUserClientChallenge = async (challenge: string, ip: string) => {
       and(
         eq(userClientChallenge.challenge, challenge),
         eq(userClientChallenge.allowedIp, ip),
-        gt(userClientChallenge.expiresAt, Date.now()),
+        gt(userClientChallenge.expiresAt, new Date()),
       ),
     )
     .execute();
@@ -81,6 +81,6 @@ export const getUserClientChallenge = async (challenge: string, ip: string) => {
 export const cleanupExpiredUserClientChallenges = async () => {
   await db
     .delete(userClientChallenge)
-    .where(lte(userClientChallenge.expiresAt, Date.now()))
+    .where(lte(userClientChallenge.expiresAt, new Date()))
     .execute();
 };

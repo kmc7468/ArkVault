@@ -14,7 +14,7 @@ import {
 import env from "$lib/server/loadenv";
 
 const expiresIn = ms(env.challenge.pubKeyExp);
-const expiresAt = () => Date.now() + expiresIn;
+const expiresAt = () => new Date(Date.now() + expiresIn);
 
 const generateChallenge = async (userId: number, ip: string, clientId: number, pubKey: string) => {
   const challenge = await promisify(randomBytes)(32);

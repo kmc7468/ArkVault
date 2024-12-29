@@ -6,7 +6,7 @@ import db from "./drizzle";
 import { refreshToken } from "./schema";
 
 const expiresIn = ms(env.jwt.refreshExp);
-const expiresAt = () => Date.now() + expiresIn;
+const expiresAt = () => new Date(Date.now() + expiresIn);
 
 export const registerRefreshToken = async (
   userId: number,
@@ -71,5 +71,5 @@ export const revokeRefreshToken = async (tokenId: string) => {
 };
 
 export const cleanupExpiredRefreshTokens = async () => {
-  await db.delete(refreshToken).where(lte(refreshToken.expiresAt, Date.now())).execute();
+  await db.delete(refreshToken).where(lte(refreshToken.expiresAt, new Date())).execute();
 };

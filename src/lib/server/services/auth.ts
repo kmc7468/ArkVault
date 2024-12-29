@@ -10,7 +10,6 @@ import {
   upgradeRefreshToken,
   revokeRefreshToken,
 } from "$lib/server/db/token";
-import { UserClientState } from "$lib/server/db/schema";
 import { issueToken, verifyToken, TokenError } from "$lib/server/modules/auth";
 
 const verifyPassword = async (hash: string, password: string) => {
@@ -41,7 +40,7 @@ export const login = async (email: string, password: string, pubKey?: string) =>
   const userClient = client ? await getUserClient(user.id, client.id) : undefined;
   if (client === null) {
     error(401, "Invalid public key");
-  } else if (client && (!userClient || userClient.state === UserClientState.Challenging)) {
+  } else if (client && (!userClient || userClient.state === "challenging")) {
     error(401, "Unregistered public key");
   }
 
@@ -99,7 +98,7 @@ export const upgradeTokens = async (refreshToken: string, pubKey: string) => {
   const userClient = client ? await getUserClient(userId, client.id) : undefined;
   if (!client) {
     error(401, "Invalid public key");
-  } else if (client && (!userClient || userClient.state === UserClientState.Challenging)) {
+  } else if (client && (!userClient || userClient.state === "challenging")) {
     error(401, "Unregistered public key");
   }
 

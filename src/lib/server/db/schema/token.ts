@@ -10,7 +10,7 @@ export const refreshToken = sqliteTable(
       .notNull()
       .references(() => user.id),
     clientId: integer("client_id").references(() => client.id),
-    expiresAt: integer("expires_at").notNull(), // Only used for cleanup
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(), // Only used for cleanup
   },
   (t) => ({
     unq: unique().on(t.userId, t.clientId),

@@ -1,15 +1,9 @@
 import { sqliteTable, text, integer, primaryKey } from "drizzle-orm/sqlite-core";
 import { user } from "./user";
 
-export enum UserClientState {
-  Challenging = 0,
-  Pending = 1,
-  Active = 2,
-}
-
 export const client = sqliteTable("client", {
   id: integer("id").primaryKey(),
-  pubKey: text("public_key").notNull().unique(),
+  pubKey: text("public_key").notNull().unique(), // Base64
 });
 
 export const userClient = sqliteTable(
@@ -21,7 +15,9 @@ export const userClient = sqliteTable(
     clientId: integer("client_id")
       .notNull()
       .references(() => client.id),
-    state: integer("state").notNull().default(UserClientState.Challenging),
+    state: text("state", { enum: ["challenging", "pending", "active"] })
+      .notNull()
+      .default("challenging"),
     encKey: text("encrypted_key"),
   },
   (t) => ({
@@ -37,7 +33,7 @@ export const userClientChallenge = sqliteTable("user_client_challenge", {
   clientId: integer("client_id")
     .notNull()
     .references(() => client.id),
-  challenge: text("challenge").notNull().unique(),
+  challenge: text("challenge").notNull().unique(), // Base64
   allowedIp: text("allowed_ip").notNull(),
-  expiresAt: integer("expires_at").notNull(),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
 });
