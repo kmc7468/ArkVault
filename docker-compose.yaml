@@ -1,0 +1,15 @@
+services:
+  server:
+    container_name: arkvault-server
+    build: .
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_URL=/app/data/database.sqlite
+      - JWT_SECRET=${JWT_SECRET:?}
+      - JWT_ACCESS_TOKEN_EXPIRES
+      - JWT_REFRESH_TOKEN_EXPIRES
+      - PUBKEY_CHALLENGE_EXPIRES
+    ports:
+      - ${PORT:-80}:3000
