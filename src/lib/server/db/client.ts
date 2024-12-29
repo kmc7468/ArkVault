@@ -47,7 +47,7 @@ export const setUserClientStateToPending = async (userId: number, clientId: numb
 export const createUserClientChallenge = async (
   userId: number,
   clientId: number,
-  challenge: string,
+  answer: string,
   allowedIp: string,
   expiresAt: Date,
 ) => {
@@ -56,20 +56,20 @@ export const createUserClientChallenge = async (
     .values({
       userId,
       clientId,
-      challenge,
+      answer,
       allowedIp,
       expiresAt,
     })
     .execute();
 };
 
-export const getUserClientChallenge = async (challenge: string, ip: string) => {
+export const getUserClientChallenge = async (answer: string, ip: string) => {
   const challenges = await db
     .select()
     .from(userClientChallenge)
     .where(
       and(
-        eq(userClientChallenge.challenge, challenge),
+        eq(userClientChallenge.answer, answer),
         eq(userClientChallenge.allowedIp, ip),
         gt(userClientChallenge.expiresAt, new Date()),
       ),

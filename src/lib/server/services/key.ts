@@ -17,13 +17,13 @@ const expiresIn = ms(env.challenge.pubKeyExp);
 const expiresAt = () => new Date(Date.now() + expiresIn);
 
 const generateChallenge = async (userId: number, ip: string, clientId: number, pubKey: string) => {
-  const challenge = await promisify(randomBytes)(32);
-  const challengeBase64 = challenge.toString("base64");
-  await createUserClientChallenge(userId, clientId, challengeBase64, ip, expiresAt());
+  const answer = await promisify(randomBytes)(32);
+  const answerBase64 = answer.toString("base64");
+  await createUserClientChallenge(userId, clientId, answerBase64, ip, expiresAt());
 
   const pubKeyPem = `-----BEGIN PUBLIC KEY-----\n${pubKey}\n-----END PUBLIC KEY-----`;
-  const challengeEncrypted = publicEncrypt({ key: pubKeyPem, oaepHash: "sha256" }, challenge);
-  return challengeEncrypted.toString("base64");
+  const challenge = publicEncrypt({ key: pubKeyPem, oaepHash: "sha256" }, answer);
+  return challenge.toString("base64");
 };
 
 export const registerPubKey = async (userId: number, ip: string, pubKey: string) => {

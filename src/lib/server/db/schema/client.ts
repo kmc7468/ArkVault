@@ -18,7 +18,6 @@ export const userClient = sqliteTable(
     state: text("state", { enum: ["challenging", "pending", "active"] })
       .notNull()
       .default("challenging"),
-    encKey: text("encrypted_key"),
   },
   (t) => ({
     pk: primaryKey({ columns: [t.userId, t.clientId] }),
@@ -33,7 +32,7 @@ export const userClientChallenge = sqliteTable("user_client_challenge", {
   clientId: integer("client_id")
     .notNull()
     .references(() => client.id),
-  challenge: text("challenge").notNull().unique(), // Base64
+  answer: text("challenge").notNull().unique(), // Base64
   allowedIp: text("allowed_ip").notNull(),
   expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
 });
