@@ -6,12 +6,23 @@ import {
   createClient,
   getClientByPubKey,
   createUserClient,
+  getAllUserClients,
   getUserClient,
   createUserClientChallenge,
   getUserClientChallenge,
   setUserClientStateToPending,
 } from "$lib/server/db/client";
 import env from "$lib/server/loadenv";
+
+export const getUserClientList = async (userId: number) => {
+  const userClients = await getAllUserClients(userId);
+  return {
+    userClients: userClients.map(({ clientId, state }) => ({
+      id: clientId,
+      state,
+    })),
+  };
+};
 
 const expiresIn = ms(env.challenge.pubKeyExp);
 const expiresAt = () => new Date(Date.now() + expiresIn);

@@ -1,5 +1,5 @@
 import { error } from "@sveltejs/kit";
-import { getAllValidUserClients } from "$lib/server/db/client";
+import { getAllUserClients } from "$lib/server/db/client";
 import {
   getAllValidClientMeks,
   getActiveMek,
@@ -23,11 +23,12 @@ export const registerNewActiveMek = async (
   createdBy: number,
   clientMeks: ClientMek[],
 ) => {
-  const userClients = await getAllValidUserClients(userId);
+  const userClients = await getAllUserClients(userId);
+  const activeUserClients = userClients.filter(({ state }) => state === "active");
   if (
-    clientMeks.length !== userClients.length ||
+    clientMeks.length !== activeUserClients.length ||
     !clientMeks.every((clientMek) =>
-      userClients.some((userClient) => userClient.clientId === clientMek.clientId),
+      activeUserClients.some((userClient) => userClient.clientId === clientMek.clientId),
     )
   ) {
     error(400, "Invalid key list");
