@@ -1,11 +1,13 @@
 import { error } from "@sveltejs/kit";
-import { getAllUserClients } from "$lib/server/db/client";
+import { getAllUserClients, setUserClientStateToActive } from "$lib/server/db/client";
 import {
   getAllValidClientMeks,
-  getActiveMek,
+  registerInitialMek,
   registerActiveMek,
+  getNextActiveMekVersion,
   type ClientMek,
 } from "$lib/server/db/mek";
+import { isInitialMekNeeded } from "$lib/server/modules/mek";
 
 export const getClientMekList = async (userId: number, clientId: number) => {
   const clientMeks = await getAllValidClientMeks(userId, clientId);
@@ -16,6 +18,19 @@ export const getClientMekList = async (userId: number, clientId: number) => {
       mek: clientMek.client_master_encryption_key.encMek,
     })),
   };
+};
+
+export const registerInitialActiveMek = async (
+  userId: number,
+  createdBy: number,
+  encMek: string,
+) => {
+  if (!(await isInitialMekNeeded(userId))) {
+    error(403, "Forbidden");
+  }
+
+  await registerInitialMek(userId, createdBy, encMek);
+  await setUserClientStateToActive(userId, createdBy);
 };
 
 export const registerNewActiveMek = async (
@@ -34,7 +49,6 @@ export const registerNewActiveMek = async (
     error(400, "Invalid key list");
   }
 
-  const oldActiveMek = await getActiveMek(userId);
-  const newMekVersion = (oldActiveMek?.version ?? 0) + 1;
+  const newMekVersion = await getNextActiveMekVersion(userId);
   await registerActiveMek(userId, newMekVersion, createdBy, clientMeks);
 };

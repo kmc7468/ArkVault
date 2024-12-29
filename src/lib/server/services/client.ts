@@ -7,13 +7,12 @@ import {
   getClientByPubKey,
   createUserClient,
   getAllUserClients,
-  countActiveUserClients,
   getUserClient,
   createUserClientChallenge,
   getUserClientChallenge,
   setUserClientStateToPending,
 } from "$lib/server/db/client";
-import { getActiveMek } from "$lib/server/db/mek";
+import { isInitialMekNeeded } from "$lib/server/modules/mek";
 import env from "$lib/server/loadenv";
 
 export const getUserClientList = async (userId: number) => {
@@ -73,13 +72,9 @@ export const getUserClientStatus = async (userId: number, clientId: number) => {
     error(500, "Invalid access token");
   }
 
-  const activeMek = await getActiveMek(userId);
-  const activeUserClientCount = await countActiveUserClients(userId);
-  const isInitialMekNeeded = !activeMek && activeUserClientCount === 0;
-
   return {
     state: userClient.state,
-    isInitialMekNeeded,
+    isInitialMekNeeded: await isInitialMekNeeded(userId),
   };
 };
 

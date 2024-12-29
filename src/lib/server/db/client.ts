@@ -25,15 +25,6 @@ export const getAllUserClients = async (userId: number) => {
   return await db.select().from(userClient).where(eq(userClient.userId, userId)).execute();
 };
 
-export const countActiveUserClients = async (userId: number) => {
-  const userClients = await db
-    .select({ count: count() })
-    .from(userClient)
-    .where(and(eq(userClient.userId, userId), eq(userClient.state, "active")))
-    .execute();
-  return userClients[0]?.count ?? null;
-};
-
 export const getUserClient = async (userId: number, clientId: number) => {
   const userClients = await db
     .select()
@@ -52,6 +43,20 @@ export const setUserClientStateToPending = async (userId: number, clientId: numb
         eq(userClient.userId, userId),
         eq(userClient.clientId, clientId),
         eq(userClient.state, "challenging"),
+      ),
+    )
+    .execute();
+};
+
+export const setUserClientStateToActive = async (userId: number, clientId: number) => {
+  await db
+    .update(userClient)
+    .set({ state: "active" })
+    .where(
+      and(
+        eq(userClient.userId, userId),
+        eq(userClient.clientId, clientId),
+        eq(userClient.state, "pending"),
       ),
     )
     .execute();

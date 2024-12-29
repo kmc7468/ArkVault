@@ -1,5 +1,6 @@
 import { error, type Cookies } from "@sveltejs/kit";
 import jwt from "jsonwebtoken";
+import { getUserClient } from "$lib/server/db/client";
 import env from "$lib/server/loadenv";
 
 type TokenPayload =
@@ -17,6 +18,8 @@ export enum TokenError {
   EXPIRED,
   INVALID,
 }
+
+type Permission = "pendingClient" | "activeClient";
 
 export const issueToken = (payload: TokenPayload) => {
   return jwt.sign(payload, env.jwt.secret, {
@@ -53,3 +56,35 @@ export const authenticate = (cookies: Cookies) => {
     clientId: tokenPayload.clientId,
   };
 };
+
+export async function authorize(
+  cookies: Cookies,
+  requiredPermission: "pendingClient",
+): Promise<{ userId: number; clientId: number }>;
+
+export async function authorize(
+  cookies: Cookies,
+  requiredPermission: "activeClient",
+): Promise<{ userId: number; clientId: number }>;
+
+export async function authorize(
+  cookies: Cookies,
+  requiredPermission: Permission,
+): Promise<{ userId: number; clientId?: number }> {
+  const tokenPayload = authenticate(cookies);
+  const { userId, clientId } = tokenPayload;
+  const userClient = clientId ? await getUserClient(userId, clientId) : undefined;
+
+  switch (requiredPermission) {
+    case "pendingClient":
+      if (!userClient || userClient.state !== "pending") {
+        error(403, "Forbidden");
+      }
+      return tokenPayload;
+    case "activeClient":
+      if (!userClient || userClient.state !== "active") {
+        error(403, "Forbidden");
+      }
+      return tokenPayload;
+  }
+}

@@ -1,4 +1,4 @@
-import { and, or, eq, lt } from "drizzle-orm";
+import { and, or, eq, lt, desc } from "drizzle-orm";
 import db from "./drizzle";
 import { mek, clientMek, userClient } from "./schema";
 
@@ -6,6 +6,30 @@ export interface ClientMek {
   clientId: number;
   encMek: string;
 }
+
+export const registerInitialMek = async (userId: number, createdBy: number, encMek: string) => {
+  await db.transaction(async (tx) => {
+    await tx
+      .insert(mek)
+      .values({
+        userId,
+        version: 1,
+        createdBy,
+        createdAt: new Date(),
+        state: "active",
+      })
+      .execute();
+    await tx
+      .insert(clientMek)
+      .values({
+        userId,
+        clientId: createdBy,
+        mekVersion: 1,
+        encMek,
+      })
+      .execute();
+  });
+};
 
 export const registerActiveMek = async (
   userId: number,
@@ -63,13 +87,27 @@ export const registerActiveMek = async (
   });
 };
 
-export const getActiveMek = async (userId: number) => {
+export const getInitialMek = async (userId: number) => {
   const meks = await db
     .select()
     .from(mek)
-    .where(and(eq(mek.userId, userId), eq(mek.state, "active")))
+    .where(and(eq(mek.userId, userId), eq(mek.version, 1)))
     .execute();
   return meks[0] ?? null;
+};
+
+export const getNextActiveMekVersion = async (userId: number) => {
+  const meks = await db
+    .select({ version: mek.version })
+    .from(mek)
+    .where(eq(mek.userId, userId))
+    .orderBy(desc(mek.version))
+    .limit(1)
+    .execute();
+  if (!meks[0]) {
+    throw new Error("No MEK found");
+  }
+  return meks[0].version + 1;
 };
 
 export const getAllValidClientMeks = async (userId: number, clientId: number) => {
