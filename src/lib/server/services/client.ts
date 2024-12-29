@@ -7,11 +7,13 @@ import {
   getClientByPubKey,
   createUserClient,
   getAllUserClients,
+  countActiveUserClients,
   getUserClient,
   createUserClientChallenge,
   getUserClientChallenge,
   setUserClientStateToPending,
 } from "$lib/server/db/client";
+import { getActiveMek } from "$lib/server/db/mek";
 import env from "$lib/server/loadenv";
 
 export const getUserClientList = async (userId: number) => {
@@ -63,6 +65,22 @@ export const registerUserClient = async (userId: number, ip: string, pubKey: str
   }
 
   return await generateChallenge(userId, ip, clientId, pubKey);
+};
+
+export const getUserClientStatus = async (userId: number, clientId: number) => {
+  const userClient = await getUserClient(userId, clientId);
+  if (!userClient) {
+    error(500, "Invalid access token");
+  }
+
+  const activeMek = await getActiveMek(userId);
+  const activeUserClientCount = await countActiveUserClients(userId);
+  const isInitialMekNeeded = !activeMek && activeUserClientCount === 0;
+
+  return {
+    state: userClient.state,
+    isInitialMekNeeded,
+  };
 };
 
 export const verifyUserClient = async (userId: number, ip: string, answer: string) => {

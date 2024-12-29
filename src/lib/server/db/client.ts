@@ -1,4 +1,4 @@
-import { and, eq, gt, lte } from "drizzle-orm";
+import { and, eq, gt, lte, count } from "drizzle-orm";
 import db from "./drizzle";
 import { client, userClient, userClientChallenge } from "./schema";
 
@@ -23,6 +23,15 @@ export const createUserClient = async (userId: number, clientId: number) => {
 
 export const getAllUserClients = async (userId: number) => {
   return await db.select().from(userClient).where(eq(userClient.userId, userId)).execute();
+};
+
+export const countActiveUserClients = async (userId: number) => {
+  const userClients = await db
+    .select({ count: count() })
+    .from(userClient)
+    .where(and(eq(userClient.userId, userId), eq(userClient.state, "active")))
+    .execute();
+  return userClients[0]?.count ?? null;
 };
 
 export const getUserClient = async (userId: number, clientId: number) => {
