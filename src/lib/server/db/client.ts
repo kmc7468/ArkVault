@@ -21,6 +21,14 @@ export const createUserClient = async (userId: number, clientId: number) => {
   await db.insert(userClient).values({ userId, clientId }).execute();
 };
 
+export const getAllValidUserClients = async (userId: number) => {
+  return await db
+    .select()
+    .from(userClient)
+    .where(and(eq(userClient.userId, userId), eq(userClient.state, "active")))
+    .execute();
+};
+
 export const getUserClient = async (userId: number, clientId: number) => {
   const userClients = await db
     .select()

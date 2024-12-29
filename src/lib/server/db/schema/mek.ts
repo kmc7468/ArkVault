@@ -13,9 +13,8 @@ export const mek = sqliteTable(
       .notNull()
       .references(() => client.id),
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
-    state: text("state", { enum: ["pending", "active", "retired", "dead"] })
-      .notNull()
-      .default("pending"),
+    state: text("state", { enum: ["active", "retired", "dead"] }).notNull(),
+    retiredAt: integer("retired_at", { mode: "timestamp_ms" }),
   },
   (t) => ({
     pk: primaryKey({ columns: [t.userId, t.version] }),
@@ -36,27 +35,6 @@ export const clientMek = sqliteTable(
   },
   (t) => ({
     pk: primaryKey({ columns: [t.userId, t.clientId, t.mekVersion] }),
-    ref: foreignKey({
-      columns: [t.userId, t.mekVersion],
-      foreignColumns: [mek.userId, mek.version],
-    }),
-  }),
-);
-
-export const mekChallenge = sqliteTable(
-  "master_encryption_key_challenge",
-  {
-    userId: integer("user_id")
-      .notNull()
-      .references(() => user.id),
-    mekVersion: integer("master_encryption_key_version").notNull(),
-    answer: text("answer").notNull().unique(), // Base64
-    challenge: text("challenge").unique(), // Base64
-    allowedIp: text("allowed_ip").notNull(),
-    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
-  },
-  (t) => ({
-    pk: primaryKey({ columns: [t.userId, t.mekVersion] }),
     ref: foreignKey({
       columns: [t.userId, t.mekVersion],
       foreignColumns: [mek.userId, mek.version],
