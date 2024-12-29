@@ -5,20 +5,19 @@ import { registerInitialActiveMek } from "$lib/server/services/mek";
 import type { RequestHandler } from "@sveltejs/kit";
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
+  const { userId, clientId } = authenticate(cookies);
+  if (!clientId) {
+    error(403, "Forbidden");
+  }
+
   const zodRes = z
     .object({
       mek: z.string().base64().nonempty(),
     })
     .safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");
-
-  const { userId, clientId } = authenticate(cookies);
-  if (!clientId) {
-    error(403, "Forbidden");
-  }
-
   const { mek } = zodRes.data;
-  await registerInitialActiveMek(userId, clientId, mek);
 
+  await registerInitialActiveMek(userId, clientId, mek);
   return text("MEK registered", { headers: { "Content-Type": "text/plain" } });
 };

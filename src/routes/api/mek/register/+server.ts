@@ -5,6 +5,8 @@ import { registerNewActiveMek } from "$lib/server/services/mek";
 import type { RequestHandler } from "@sveltejs/kit";
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
+  const { userId, clientId } = await authorize(cookies, "activeClient");
+
   const zodRes = z
     .object({
       meks: z.array(
@@ -16,9 +18,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     })
     .safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");
-
-  const { userId, clientId } = await authorize(cookies, "activeClient");
   const { meks } = zodRes.data;
+
   await registerNewActiveMek(
     userId,
     clientId,
@@ -27,6 +28,5 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
       encMek: mek.trim(),
     })),
   );
-
   return text("MEK registered", { headers: { "Content-Type": "text/plain" } });
 };
