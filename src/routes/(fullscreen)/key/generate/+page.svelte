@@ -5,7 +5,7 @@
   import { gotoStateful } from "$lib/hooks";
   import { keyPairStore } from "$lib/stores";
   import Order from "./Order.svelte";
-  import { generateKeyPair } from "./service";
+  import { generateKeyPair, generateMekDraft } from "./service";
 
   import IconKey from "~icons/material-symbols/key";
 
@@ -33,11 +33,14 @@
   const generate = async () => {
     // TODO: Loading indicator
 
-    const keyPair = await generateKeyPair();
+    const { pubKeyBase64, privKeyBase64 } = await generateKeyPair();
+    const { mekDraft } = await generateMekDraft();
+
     await gotoStateful("/key/export", {
       redirectPath: data.redirectPath,
-      pubKeyBase64: keyPair.pubKeyBase64,
-      privKeyBase64: keyPair.privKeyBase64,
+      pubKeyBase64,
+      privKeyBase64,
+      mekDraft,
     });
   };
 

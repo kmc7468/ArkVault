@@ -6,6 +6,7 @@ interface KeyExportState {
   redirectPath: string;
   pubKeyBase64: string;
   privKeyBase64: string;
+  mekDraft: ArrayBuffer;
 }
 
 const useAutoNull = <T>(value: T | null) => {

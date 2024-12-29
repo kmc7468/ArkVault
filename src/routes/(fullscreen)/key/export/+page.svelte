@@ -9,8 +9,9 @@
   import {
     createBlobFromKeyPairBase64,
     requestPubKeyRegistration,
-    requestTokenUpgrade,
     storeKeyPairPersistently,
+    requestTokenUpgrade,
+    requestInitialMekRegistration,
   } from "./service";
 
   import IconKey from "~icons/material-symbols/key";
@@ -39,16 +40,22 @@
     isBeforeContinueModalOpen = false;
     isBeforeContinueBottomSheetOpen = false;
 
-    if (await requestPubKeyRegistration(data.pubKeyBase64, $keyPairStore.privateKey)) {
+    try {
+      if (!(await requestPubKeyRegistration(data.pubKeyBase64, $keyPairStore.privateKey)))
+        throw new Error("Failed to register public key");
+
       await storeKeyPairPersistently($keyPairStore);
 
-      if (await requestTokenUpgrade(data.pubKeyBase64)) {
-        await goto(data.redirectPath);
-      } else {
-        // TODO: Error handling
-      }
-    } else {
+      if (!(await requestTokenUpgrade(data.pubKeyBase64)))
+        throw new Error("Failed to upgrade token");
+
+      if (!(await requestInitialMekRegistration(data.mekDraft, $keyPairStore.publicKey)))
+        throw new Error("Failed to register initial MEK");
+
+      await goto(data.redirectPath);
+    } catch (e) {
       // TODO: Error handling
+      throw e;
     }
   };
 </script>

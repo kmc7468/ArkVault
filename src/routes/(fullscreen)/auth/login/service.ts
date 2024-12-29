@@ -1,4 +1,4 @@
-import { exportRSAKeyToBase64 } from "$lib/modules/crypto";
+import { encodeToBase64, exportRSAKey } from "$lib/modules/crypto";
 import { requestPubKeyRegistration } from "../../key/export/service";
 
 const callLoginAPI = async (email: string, password: string, pubKeyBase64?: string) => {
@@ -22,7 +22,7 @@ export const requestLogin = async (
   registerPubKey = true,
 ): Promise<boolean> => {
   const pubKeyBase64 = keyPair
-    ? await exportRSAKeyToBase64(keyPair.publicKey, "public")
+    ? encodeToBase64((await exportRSAKey(keyPair.publicKey, "public")).key)
     : undefined;
   let loginRes = await callLoginAPI(email, password, pubKeyBase64);
   if (loginRes.ok) {

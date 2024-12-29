@@ -1,6 +1,11 @@
 import { callAPI } from "$lib/hooks";
 import { storeKeyPairIntoIndexedDB } from "$lib/indexedDB";
-import { decryptRSACiphertext } from "$lib/modules/crypto";
+import {
+  encodeToBase64,
+  decodeFromBase64,
+  encryptRSAPlaintext,
+  decryptRSACiphertext,
+} from "$lib/modules/crypto";
 
 export const createBlobFromKeyPairBase64 = (pubKeyBase64: string, privKeyBase64: string) => {
   const pubKeyFormatted = pubKeyBase64.match(/.{1,64}/g)?.join("\n");
@@ -26,16 +31,20 @@ export const requestPubKeyRegistration = async (pubKeyBase64: string, privateKey
 
   const data = await res.json();
   const challenge = data.challenge as string;
-  const answer = await decryptRSACiphertext(challenge, privateKey);
+  const answer = await decryptRSACiphertext(decodeFromBase64(challenge), privateKey);
 
   res = await callAPI("/api/client/verify", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ answer }),
+    body: JSON.stringify({ answer: encodeToBase64(answer) }),
   });
   return res.ok;
+};
+
+export const storeKeyPairPersistently = async (keyPair: CryptoKeyPair) => {
+  await storeKeyPairIntoIndexedDB(keyPair.publicKey, keyPair.privateKey);
 };
 
 export const requestTokenUpgrade = async (pubKeyBase64: string) => {
@@ -49,6 +58,17 @@ export const requestTokenUpgrade = async (pubKeyBase64: string) => {
   return res.ok;
 };
 
-export const storeKeyPairPersistently = async (keyPair: CryptoKeyPair) => {
-  await storeKeyPairIntoIndexedDB(keyPair.publicKey, keyPair.privateKey);
+export const requestInitialMekRegistration = async (
+  mekDraft: ArrayBuffer,
+  publicKey: CryptoKey,
+) => {
+  const mekDraftEncrypted = await encryptRSAPlaintext(mekDraft, publicKey);
+  const res = await callAPI("/api/mek/register/initial", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ mek: encodeToBase64(mekDraftEncrypted) }),
+  });
+  return res.ok || res.status === 403;
 };

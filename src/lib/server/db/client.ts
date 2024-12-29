@@ -1,4 +1,4 @@
-import { and, eq, gt, lte, count } from "drizzle-orm";
+import { and, eq, gt, lte } from "drizzle-orm";
 import db from "./drizzle";
 import { client, userClient, userClientChallenge } from "./schema";
 

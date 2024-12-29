@@ -1,9 +1,13 @@
 import {
+  encodeToBase64,
   generateRSAKeyPair,
   makeRSAKeyNonextractable,
-  exportRSAKeyToBase64,
+  exportRSAKey,
+  generateAESKey,
+  makeAESKeyNonextractable,
+  exportAESKey,
 } from "$lib/modules/crypto";
-import { keyPairStore } from "$lib/stores";
+import { keyPairStore, mekStore } from "$lib/stores";
 
 export const generateKeyPair = async () => {
   const keyPair = await generateRSAKeyPair();
@@ -15,7 +19,21 @@ export const generateKeyPair = async () => {
   });
 
   return {
-    pubKeyBase64: await exportRSAKeyToBase64(keyPair.publicKey, "public"),
-    privKeyBase64: await exportRSAKeyToBase64(keyPair.privateKey, "private"),
+    pubKeyBase64: encodeToBase64((await exportRSAKey(keyPair.publicKey, "public")).key),
+    privKeyBase64: encodeToBase64((await exportRSAKey(keyPair.privateKey, "private")).key),
+  };
+};
+
+export const generateMekDraft = async () => {
+  const mek = await generateAESKey();
+  const mekSecured = await makeAESKeyNonextractable(mek);
+
+  mekStore.update((meks) => {
+    meks.set(meks.size, mekSecured);
+    return meks;
+  });
+
+  return {
+    mekDraft: await exportAESKey(mek),
   };
 };
