@@ -1,4 +1,4 @@
-const refreshToken = async () => {
+export const refreshToken = async () => {
   return await fetch("/api/auth/refreshToken", { method: "POST" });
 };
 

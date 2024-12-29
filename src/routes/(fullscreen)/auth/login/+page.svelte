@@ -1,8 +1,10 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { Button, TextButton } from "$lib/components/buttons";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
   import { TextInput } from "$lib/components/inputs";
+  import { refreshToken } from "$lib/hooks/callAPI";
   import { keyPairStore } from "$lib/stores";
   import { requestLogin } from "./service";
 
@@ -24,6 +26,13 @@
       // TODO: Alert
     }
   };
+
+  onMount(async () => {
+    const res = await refreshToken();
+    if (res.ok) {
+      await goto(data.redirectPath);
+    }
+  });
 </script>
 
 <svelte:head>
