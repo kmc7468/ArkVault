@@ -15,7 +15,7 @@ export const createBlobFromKeyPairBase64 = (pubKeyBase64: string, privKeyBase64:
 };
 
 export const requestPubKeyRegistration = async (pubKeyBase64: string, privateKey: CryptoKey) => {
-  let res = await callAPI("/api/key/register", {
+  let res = await callAPI("/api/client/register", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -28,7 +28,7 @@ export const requestPubKeyRegistration = async (pubKeyBase64: string, privateKey
   const challenge = data.challenge as string;
   const answer = await decryptRSACiphertext(challenge, privateKey);
 
-  res = await callAPI("/api/key/verify", {
+  res = await callAPI("/api/client/verify", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

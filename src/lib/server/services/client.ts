@@ -26,7 +26,7 @@ const generateChallenge = async (userId: number, ip: string, clientId: number, p
   return challenge.toString("base64");
 };
 
-export const registerPubKey = async (userId: number, ip: string, pubKey: string) => {
+export const registerUserClient = async (userId: number, ip: string, pubKey: string) => {
   const client = await getClientByPubKey(pubKey);
   let clientId;
 
@@ -54,7 +54,7 @@ export const registerPubKey = async (userId: number, ip: string, pubKey: string)
   return await generateChallenge(userId, ip, clientId, pubKey);
 };
 
-export const verifyPubKey = async (userId: number, ip: string, answer: string) => {
+export const verifyUserClient = async (userId: number, ip: string, answer: string) => {
   const challenge = await getUserClientChallenge(answer, ip);
   if (!challenge) {
     error(401, "Invalid challenge answer");

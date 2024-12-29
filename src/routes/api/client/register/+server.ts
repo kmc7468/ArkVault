@@ -1,13 +1,13 @@
-import { error, text } from "@sveltejs/kit";
+import { error, json } from "@sveltejs/kit";
 import { z } from "zod";
 import { authenticate } from "$lib/server/modules/auth";
-import { verifyPubKey } from "$lib/server/services/key";
+import { registerUserClient } from "$lib/server/services/client";
 import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ request, cookies, getClientAddress }) => {
   const zodRes = z
     .object({
-      answer: z.string().base64().nonempty(),
+      pubKey: z.string().base64().nonempty(),
     })
     .safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");
@@ -17,7 +17,7 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
     error(403, "Forbidden");
   }
 
-  const { answer } = zodRes.data;
-  await verifyPubKey(userId, getClientAddress(), answer.trim());
-  return text("Key verified", { headers: { "Content-Type": "text/plain" } });
+  const { pubKey } = zodRes.data;
+  const challenge = await registerUserClient(userId, getClientAddress(), pubKey.trim());
+  return json({ challenge });
 };
