@@ -1,6 +1,7 @@
 import { callAPI } from "$lib/hooks";
 import { storeRSAKey } from "$lib/indexedDB";
 import { encodeToBase64, encryptRSAPlaintext } from "$lib/modules/crypto";
+import type { ClientKeys } from "$lib/stores";
 
 export { requestTokenUpgrade } from "$lib/services/auth";
 export { requestClientRegistration } from "$lib/services/key";
@@ -10,44 +11,41 @@ type ExportedKeyPairs = {
   exportedAt: Date;
 } & {
   version: 1;
-  encKeyPair: { pubKey: string; privKey: string };
-  sigKeyPair: { pubKey: string; privKey: string };
+  encryptKey: string;
+  decryptKey: string;
+  verifyKey: string;
+  signKey: string;
 };
 
-export const makeKeyPairsSaveable = (
-  encKeyPair: { pubKeyBase64: string; privKeyBase64: string },
-  sigKeyPair: { pubKeyBase64: string; privKeyBase64: string },
+export const exportClientKeys = (
+  encryptKeyBase64: string,
+  decryptKeyBase64: string,
+  verifyKeyBase64: string,
+  signKeyBase64: string,
 ) => {
   return {
     version: 1,
     generator: "ArkVault",
     exportedAt: new Date(),
-    encKeyPair: {
-      pubKey: encKeyPair.pubKeyBase64,
-      privKey: encKeyPair.privKeyBase64,
-    },
-    sigKeyPair: {
-      pubKey: sigKeyPair.pubKeyBase64,
-      privKey: sigKeyPair.privKeyBase64,
-    },
+    encryptKey: encryptKeyBase64,
+    decryptKey: decryptKeyBase64,
+    verifyKey: verifyKeyBase64,
+    signKey: signKeyBase64,
   } satisfies ExportedKeyPairs;
 };
 
-export const storeKeyPairsPersistently = async (
-  encKeyPair: CryptoKeyPair,
-  sigKeyPair: CryptoKeyPair,
-) => {
-  await storeRSAKey(encKeyPair.publicKey, "encrypt");
-  await storeRSAKey(encKeyPair.privateKey, "decrypt");
-  await storeRSAKey(sigKeyPair.publicKey, "verify");
-  await storeRSAKey(sigKeyPair.privateKey, "sign");
+export const storeClientKeys = async (clientKeys: ClientKeys) => {
+  await storeRSAKey(clientKeys.encryptKey, "encrypt");
+  await storeRSAKey(clientKeys.decryptKey, "decrypt");
+  await storeRSAKey(clientKeys.signKey, "sign");
+  await storeRSAKey(clientKeys.verifyKey, "verify");
 };
 
 export const requestInitialMekRegistration = async (
   mekDraft: ArrayBuffer,
-  publicKey: CryptoKey,
+  encryptKey: CryptoKey,
 ) => {
-  const mekDraftEncrypted = await encryptRSAPlaintext(mekDraft, publicKey);
+  const mekDraftEncrypted = await encryptRSAPlaintext(mekDraft, encryptKey);
   const res = await callAPI("/api/mek/register/initial", {
     method: "POST",
     headers: {

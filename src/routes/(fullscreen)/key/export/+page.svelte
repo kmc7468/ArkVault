@@ -3,13 +3,13 @@
   import { goto } from "$app/navigation";
   import { Button, TextButton } from "$lib/components/buttons";
   import { BottomDiv } from "$lib/components/divs";
-  import { keyPairsStore } from "$lib/stores";
+  import { clientKeyStore } from "$lib/stores";
   import BeforeContinueBottomSheet from "./BeforeContinueBottomSheet.svelte";
   import BeforeContinueModal from "./BeforeContinueModal.svelte";
   import {
-    makeKeyPairsSaveable,
+    exportClientKeys,
     requestClientRegistration,
-    storeKeyPairsPersistently,
+    storeClientKeys,
     requestTokenUpgrade,
     requestInitialMekRegistration,
   } from "./service";
@@ -22,9 +22,16 @@
   let isBeforeContinueBottomSheetOpen = $state(false);
 
   const exportKeyPair = () => {
-    const keyPairsSaveable = makeKeyPairsSaveable(data.encKeyPair, data.sigKeyPair);
-    const keyPairsBlob = new Blob([JSON.stringify(keyPairsSaveable)], { type: "application/json" });
-    saveAs(keyPairsBlob, "arkvalut-key.json");
+    const clientKeysExported = exportClientKeys(
+      data.encryptKeyBase64,
+      data.decryptKeyBase64,
+      data.verifyKeyBase64,
+      data.signKeyBase64,
+    );
+    const clientKeysBlob = new Blob([JSON.stringify(clientKeysExported)], {
+      type: "application/json",
+    });
+    saveAs(clientKeysBlob, "arkvalut-clientkey.json");
 
     if (!isBeforeContinueBottomSheetOpen) {
       setTimeout(() => {
@@ -34,7 +41,7 @@
   };
 
   const registerPubKey = async () => {
-    if (!$keyPairsStore) {
+    if (!$clientKeyStore) {
       throw new Error("Failed to find key pair");
     }
 
@@ -44,29 +51,27 @@
     try {
       if (
         !(await requestClientRegistration(
-          data.encKeyPair.pubKeyBase64,
-          $keyPairsStore.encKeyPair.privateKey,
-          data.sigKeyPair.pubKeyBase64,
-          $keyPairsStore.sigKeyPair.privateKey,
+          data.encryptKeyBase64,
+          $clientKeyStore.decryptKey,
+          data.verifyKeyBase64,
+          $clientKeyStore.signKey,
         ))
       )
-        throw new Error("Failed to register public key");
+        throw new Error("Failed to register client");
 
-      await storeKeyPairsPersistently($keyPairsStore.encKeyPair, $keyPairsStore.sigKeyPair);
+      await storeClientKeys($clientKeyStore);
 
       if (
         !(await requestTokenUpgrade(
-          data.encKeyPair.pubKeyBase64,
-          $keyPairsStore.encKeyPair.privateKey,
-          data.sigKeyPair.pubKeyBase64,
-          $keyPairsStore.sigKeyPair.privateKey,
+          data.encryptKeyBase64,
+          $clientKeyStore.decryptKey,
+          data.verifyKeyBase64,
+          $clientKeyStore.signKey,
         ))
       )
         throw new Error("Failed to upgrade token");
 
-      if (
-        !(await requestInitialMekRegistration(data.mekDraft, $keyPairsStore.encKeyPair.publicKey))
-      )
+      if (!(await requestInitialMekRegistration(data.mekDraft, $clientKeyStore.encryptKey)))
         throw new Error("Failed to register initial MEK");
 
       await goto(data.redirectPath);

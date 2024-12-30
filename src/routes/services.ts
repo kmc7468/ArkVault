@@ -1,16 +1,13 @@
 import { getRSAKey } from "$lib/indexedDB";
-import { keyPairsStore } from "$lib/stores";
+import { clientKeyStore } from "$lib/stores";
 
-export const prepareKeyPairStores = async () => {
-  const encPubKey = await getRSAKey("encrypt");
-  const encPrivKey = await getRSAKey("decrypt");
-  const sigPubKey = await getRSAKey("verify");
-  const sigPrivKey = await getRSAKey("sign");
-  if (encPubKey && encPrivKey && sigPubKey && sigPrivKey) {
-    keyPairsStore.set({
-      encKeyPair: { publicKey: encPubKey, privateKey: encPrivKey },
-      sigKeyPair: { publicKey: sigPubKey, privateKey: sigPrivKey },
-    });
+export const prepareClientKeyStore = async () => {
+  const encryptKey = await getRSAKey("encrypt");
+  const decryptKey = await getRSAKey("decrypt");
+  const signKey = await getRSAKey("sign");
+  const verifyKey = await getRSAKey("verify");
+  if (encryptKey && decryptKey && signKey && verifyKey) {
+    clientKeyStore.set({ encryptKey, decryptKey, signKey, verifyKey });
     return true;
   } else {
     return false;

@@ -5,7 +5,7 @@
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
   import { TextInput } from "$lib/components/inputs";
   import { refreshToken } from "$lib/hooks/callAPI";
-  import { keyPairsStore } from "$lib/stores";
+  import { clientKeyStore } from "$lib/stores";
   import { requestLogin, requestTokenUpgrade } from "./service";
 
   let { data } = $props();
@@ -19,14 +19,11 @@
     try {
       if (!(await requestLogin(email, password))) throw new Error("Failed to login");
 
-      if (
-        $keyPairsStore &&
-        !(await requestTokenUpgrade($keyPairsStore.encKeyPair, $keyPairsStore.sigKeyPair))
-      )
+      if ($clientKeyStore && !(await requestTokenUpgrade($clientKeyStore)))
         throw new Error("Failed to upgrade token");
 
       await goto(
-        $keyPairsStore
+        $clientKeyStore
           ? data.redirectPath
           : "/key/generate?redirect=" + encodeURIComponent(data.redirectPath),
       );

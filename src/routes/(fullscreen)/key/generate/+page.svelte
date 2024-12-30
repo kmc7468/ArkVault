@@ -3,9 +3,9 @@
   import { Button, TextButton } from "$lib/components/buttons";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
   import { gotoStateful } from "$lib/hooks";
-  import { keyPairsStore } from "$lib/stores";
+  import { clientKeyStore } from "$lib/stores";
   import Order from "./Order.svelte";
-  import { generateKeyPairs, generateMekDraft } from "./service";
+  import { generateClientKeys, generateMekDraft } from "./service";
 
   import IconKey from "~icons/material-symbols/key";
 
@@ -34,19 +34,18 @@
   const generate = async () => {
     // TODO: Loading indicator
 
-    const { encKeyPair, sigKeyPair } = await generateKeyPairs();
+    const clientKeys = await generateClientKeys();
     const { mekDraft } = await generateMekDraft();
 
     await gotoStateful("/key/export", {
+      ...clientKeys,
       redirectPath: data.redirectPath,
-      encKeyPair,
-      sigKeyPair,
       mekDraft,
     });
   };
 
   $effect(() => {
-    if ($keyPairsStore) {
+    if ($clientKeyStore) {
       goto(data.redirectPath);
     }
   });

@@ -1,9 +1,11 @@
 import { writable } from "svelte/store";
 
-interface KeyPairs {
-  encKeyPair: CryptoKeyPair;
-  sigKeyPair: CryptoKeyPair;
+export interface ClientKeys {
+  encryptKey: CryptoKey;
+  decryptKey: CryptoKey;
+  signKey: CryptoKey;
+  verifyKey: CryptoKey;
 }
 
-export const keyPairsStore = writable<KeyPairs | null>(null);
+export const clientKeyStore = writable<ClientKeys | null>(null);
 export const mekStore = writable<Map<number, CryptoKey>>(new Map());

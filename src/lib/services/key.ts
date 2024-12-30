@@ -7,10 +7,10 @@ import {
 } from "$lib/modules/crypto";
 
 export const requestClientRegistration = async (
-  encPubKeyBase64: string,
-  encPrivKey: CryptoKey,
-  sigPubKeyBase64: string,
-  sigPrivKey: CryptoKey,
+  encryptKeyBase64: string,
+  decryptKey: CryptoKey,
+  verifyKeyBase64: string,
+  signKey: CryptoKey,
 ) => {
   let res = await callAPI("/api/client/register", {
     method: "POST",
@@ -18,15 +18,15 @@ export const requestClientRegistration = async (
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      encPubKey: encPubKeyBase64,
-      sigPubKey: sigPubKeyBase64,
+      encPubKey: encryptKeyBase64,
+      sigPubKey: verifyKeyBase64,
     }),
   });
   if (!res.ok) return false;
 
   const { challenge } = await res.json();
-  const answer = await decryptRSACiphertext(decodeFromBase64(challenge), encPrivKey);
-  const sigAnswer = await signRSAMessage(answer, sigPrivKey);
+  const answer = await decryptRSACiphertext(decodeFromBase64(challenge), decryptKey);
+  const sigAnswer = await signRSAMessage(answer, signKey);
 
   res = await callAPI("/api/client/verify", {
     method: "POST",

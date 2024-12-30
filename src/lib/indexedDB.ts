@@ -12,7 +12,7 @@ const keyStore = new Dexie("keyStore") as Dexie & {
 };
 
 keyStore.version(1).stores({
-  rsaKey: "usage, key",
+  rsaKey: "usage",
 });
 
 export const getRSAKey = async (usage: RSAKeyUsage) => {
@@ -21,11 +21,23 @@ export const getRSAKey = async (usage: RSAKeyUsage) => {
 };
 
 export const storeRSAKey = async (key: CryptoKey, usage: RSAKeyUsage) => {
-  if ((usage === "encrypt" || usage === "verify") && !key.extractable) {
-    throw new Error("Public key must be extractable");
-  } else if ((usage === "decrypt" || usage === "sign") && key.extractable) {
-    throw new Error("Private key must be non-extractable");
+  switch (usage) {
+    case "encrypt":
+    case "verify":
+      if (key.type !== "public") {
+        throw new Error("Public key required");
+      } else if (!key.extractable) {
+        throw new Error("Public key must be extractable");
+      }
+      break;
+    case "decrypt":
+    case "sign":
+      if (key.type !== "private") {
+        throw new Error("Private key required");
+      } else if (key.extractable) {
+        throw new Error("Private key must be non-extractable");
+      }
+      break;
   }
-
   await keyStore.rsaKey.put({ usage, key });
 };
