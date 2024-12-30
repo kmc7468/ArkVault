@@ -13,11 +13,12 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
   const zodRes = z
     .object({
       answer: z.string().base64().nonempty(),
+      sigAnswer: z.string().base64().nonempty(),
     })
     .safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");
-  const { answer } = zodRes.data;
+  const { answer, sigAnswer } = zodRes.data;
 
-  await verifyUserClient(userId, getClientAddress(), answer.trim());
+  await verifyUserClient(userId, getClientAddress(), answer.trim(), sigAnswer.trim());
   return text("Client verified", { headers: { "Content-Type": "text/plain" } });
 };

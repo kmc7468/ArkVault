@@ -12,12 +12,18 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
 
   const zodRes = z
     .object({
-      pubKey: z.string().base64().nonempty(),
+      encPubKey: z.string().base64().nonempty(),
+      sigPubKey: z.string().base64().nonempty(),
     })
     .safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");
-  const { pubKey } = zodRes.data;
+  const { encPubKey, sigPubKey } = zodRes.data;
 
-  const challenge = await registerUserClient(userId, getClientAddress(), pubKey.trim());
+  const { challenge } = await registerUserClient(
+    userId,
+    getClientAddress(),
+    encPubKey.trim(),
+    sigPubKey.trim(),
+  );
   return json({ challenge });
 };

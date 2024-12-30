@@ -13,6 +13,7 @@ export default {
     refreshExp: env.JWT_REFRESH_TOKEN_EXPIRES || "14d",
   },
   challenge: {
-    pubKeyExp: env.PUBKEY_CHALLENGE_EXPIRES || "5m",
+    userClientExp: env.USER_CLIENT_CHALLENGE_EXPIRES || "5m",
+    tokenUpgradeExp: env.TOKEN_UPGRADE_CHALLENGE_EXPIRES || "5m",
   },
 };

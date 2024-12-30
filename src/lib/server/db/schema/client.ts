@@ -1,10 +1,17 @@
-import { sqliteTable, text, integer, primaryKey } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, primaryKey, unique } from "drizzle-orm/sqlite-core";
 import { user } from "./user";
 
-export const client = sqliteTable("client", {
-  id: integer("id").primaryKey(),
-  pubKey: text("public_key").notNull().unique(), // Base64
-});
+export const client = sqliteTable(
+  "client",
+  {
+    id: integer("id").primaryKey(),
+    encPubKey: text("encryption_public_key").notNull().unique(), // Base64
+    sigPubKey: text("signature_public_key").notNull().unique(), // Base64
+  },
+  (t) => ({
+    unq: unique().on(t.encPubKey, t.sigPubKey),
+  }),
+);
 
 export const userClient = sqliteTable(
   "user_client",
@@ -35,4 +42,5 @@ export const userClientChallenge = sqliteTable("user_client_challenge", {
   answer: text("challenge").notNull().unique(), // Base64
   allowedIp: text("allowed_ip").notNull(),
   expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  isUsed: integer("is_used", { mode: "boolean" }).notNull().default(false),
 });

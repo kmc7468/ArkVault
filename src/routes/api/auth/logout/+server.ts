@@ -7,8 +7,8 @@ export const POST: RequestHandler = async ({ cookies }) => {
   if (!token) error(401, "Refresh token not found");
 
   await logout(token.trim());
-
   cookies.delete("accessToken", { path: "/" });
   cookies.delete("refreshToken", { path: "/api/auth" });
+
   return text("Logged out", { headers: { "Content-Type": "text/plain" } });
 };

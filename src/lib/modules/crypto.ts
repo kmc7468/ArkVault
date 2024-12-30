@@ -1,3 +1,4 @@
+export type RSAKeyPurpose = "encryption" | "signature";
 export type RSAKeyType = "public" | "private";
 
 export const encodeToBase64 = (data: ArrayBuffer) => {
@@ -8,40 +9,40 @@ export const decodeFromBase64 = (data: string) => {
   return Uint8Array.from(atob(data), (c) => c.charCodeAt(0)).buffer;
 };
 
-export const generateRSAKeyPair = async () => {
-  const keyPair = await window.crypto.subtle.generateKey(
+export const generateRSAKeyPair = async (purpose: RSAKeyPurpose) => {
+  return await window.crypto.subtle.generateKey(
     {
-      name: "RSA-OAEP",
+      name: purpose === "encryption" ? "RSA-OAEP" : "RSA-PSS",
       modulusLength: 4096,
       publicExponent: new Uint8Array([1, 0, 1]),
       hash: "SHA-256",
     } satisfies RsaHashedKeyGenParams,
     true,
-    ["encrypt", "decrypt"],
+    purpose === "encryption" ? ["encrypt", "decrypt"] : ["sign", "verify"],
   );
-  return keyPair;
 };
 
-export const makeRSAKeyNonextractable = async (key: CryptoKey, type: RSAKeyType) => {
-  const { format, key: exportedKey } = await exportRSAKey(key, type);
+export const makeRSAKeyNonextractable = async (key: CryptoKey) => {
+  const { format, key: exportedKey } = await exportRSAKey(key);
   return await window.crypto.subtle.importKey(
     format,
     exportedKey,
-    {
-      name: "RSA-OAEP",
-      hash: "SHA-256",
-    } satisfies RsaHashedImportParams,
+    key.algorithm,
     false,
-    [type === "public" ? "encrypt" : "decrypt"],
+    key.usages,
   );
 };
 
-export const exportRSAKey = async (key: CryptoKey, type: RSAKeyType) => {
-  const format = type === "public" ? ("spki" as const) : ("pkcs8" as const);
+export const exportRSAKey = async (key: CryptoKey) => {
+  const format = key.type === "public" ? ("spki" as const) : ("pkcs8" as const);
   return {
     format,
     key: await window.crypto.subtle.exportKey(format, key),
   };
+};
+
+export const exportRSAKeyToBase64 = async (key: CryptoKey) => {
+  return encodeToBase64((await exportRSAKey(key)).key);
 };
 
 export const encryptRSAPlaintext = async (plaintext: ArrayBuffer, publicKey: CryptoKey) => {
@@ -64,6 +65,17 @@ export const decryptRSACiphertext = async (ciphertext: ArrayBuffer, privateKey: 
   );
 };
 
+export const signRSAMessage = async (message: ArrayBuffer, privateKey: CryptoKey) => {
+  return await window.crypto.subtle.sign(
+    {
+      name: "RSA-PSS",
+      saltLength: 32,
+    } satisfies RsaPssParams,
+    privateKey,
+    message,
+  );
+};
+
 export const generateAESKey = async () => {
   return await window.crypto.subtle.generateKey(
     {
@@ -79,12 +91,9 @@ export const makeAESKeyNonextractable = async (key: CryptoKey) => {
   return await window.crypto.subtle.importKey(
     "raw",
     await exportAESKey(key),
-    {
-      name: "AES-GCM",
-      length: 256,
-    } satisfies AesKeyAlgorithm,
+    key.algorithm,
     false,
-    ["encrypt", "decrypt"],
+    key.usages,
   );
 };
 

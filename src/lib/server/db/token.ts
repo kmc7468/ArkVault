@@ -1,9 +1,9 @@
 import { SqliteError } from "better-sqlite3";
-import { eq, lte } from "drizzle-orm";
+import { and, eq, gt, lte } from "drizzle-orm";
 import ms from "ms";
 import env from "$lib/server/loadenv";
 import db from "./drizzle";
-import { refreshToken } from "./schema";
+import { refreshToken, tokenUpgradeChallenge } from "./schema";
 
 const expiresIn = ms(env.jwt.refreshExp);
 const expiresAt = () => new Date(Date.now() + expiresIn);
@@ -38,15 +38,20 @@ export const getRefreshToken = async (tokenId: string) => {
 };
 
 export const rotateRefreshToken = async (oldTokenId: string, newTokenId: string) => {
-  const res = await db
-    .update(refreshToken)
-    .set({
-      id: newTokenId,
-      expiresAt: expiresAt(),
-    })
-    .where(eq(refreshToken.id, oldTokenId))
-    .execute();
-  return res.changes > 0;
+  return await db.transaction(async (tx) => {
+    await tx
+      .delete(tokenUpgradeChallenge)
+      .where(eq(tokenUpgradeChallenge.refreshTokenId, oldTokenId));
+    const res = await db
+      .update(refreshToken)
+      .set({
+        id: newTokenId,
+        expiresAt: expiresAt(),
+      })
+      .where(eq(refreshToken.id, oldTokenId))
+      .execute();
+    return res.changes > 0;
+  });
 };
 
 export const upgradeRefreshToken = async (
@@ -54,16 +59,21 @@ export const upgradeRefreshToken = async (
   newTokenId: string,
   clientId: number,
 ) => {
-  const res = await db
-    .update(refreshToken)
-    .set({
-      id: newTokenId,
-      clientId,
-      expiresAt: expiresAt(),
-    })
-    .where(eq(refreshToken.id, oldTokenId))
-    .execute();
-  return res.changes > 0;
+  return await db.transaction(async (tx) => {
+    await tx
+      .delete(tokenUpgradeChallenge)
+      .where(eq(tokenUpgradeChallenge.refreshTokenId, oldTokenId));
+    const res = await tx
+      .update(refreshToken)
+      .set({
+        id: newTokenId,
+        clientId,
+        expiresAt: expiresAt(),
+      })
+      .where(eq(refreshToken.id, oldTokenId))
+      .execute();
+    return res.changes > 0;
+  });
 };
 
 export const revokeRefreshToken = async (tokenId: string) => {
@@ -72,4 +82,54 @@ export const revokeRefreshToken = async (tokenId: string) => {
 
 export const cleanupExpiredRefreshTokens = async () => {
   await db.delete(refreshToken).where(lte(refreshToken.expiresAt, new Date())).execute();
+};
+
+export const registerTokenUpgradeChallenge = async (
+  tokenId: string,
+  clientId: number,
+  answer: string,
+  allowedIp: string,
+  expiresAt: Date,
+) => {
+  await db
+    .insert(tokenUpgradeChallenge)
+    .values({
+      refreshTokenId: tokenId,
+      clientId,
+      answer,
+      allowedIp,
+      expiresAt,
+    })
+    .execute();
+};
+
+export const getTokenUpgradeChallenge = async (answer: string, ip: string) => {
+  const challenges = await db
+    .select()
+    .from(tokenUpgradeChallenge)
+    .where(
+      and(
+        eq(tokenUpgradeChallenge.answer, answer),
+        eq(tokenUpgradeChallenge.allowedIp, ip),
+        gt(tokenUpgradeChallenge.expiresAt, new Date()),
+        eq(tokenUpgradeChallenge.isUsed, false),
+      ),
+    )
+    .execute();
+  return challenges[0] ?? null;
+};
+
+export const markTokenUpgradeChallengeAsUsed = async (id: number) => {
+  await db
+    .update(tokenUpgradeChallenge)
+    .set({ isUsed: true })
+    .where(eq(tokenUpgradeChallenge.id, id))
+    .execute();
+};
+
+export const cleanupExpiredTokenUpgradeChallenges = async () => {
+  await db
+    .delete(tokenUpgradeChallenge)
+    .where(lte(tokenUpgradeChallenge.expiresAt, new Date()))
+    .execute();
 };

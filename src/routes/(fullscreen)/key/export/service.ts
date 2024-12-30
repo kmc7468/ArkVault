@@ -1,68 +1,51 @@
 import { callAPI } from "$lib/hooks";
-import { storeKeyPairIntoIndexedDB } from "$lib/indexedDB";
-import {
-  encodeToBase64,
-  decodeFromBase64,
-  encryptRSAPlaintext,
-  decryptRSACiphertext,
-} from "$lib/modules/crypto";
+import { storeRSAKey } from "$lib/indexedDB";
+import { encodeToBase64, encryptRSAPlaintext } from "$lib/modules/crypto";
+import type { ClientKeys } from "$lib/stores";
 
-export const createBlobFromKeyPairBase64 = (pubKeyBase64: string, privKeyBase64: string) => {
-  const pubKeyFormatted = pubKeyBase64.match(/.{1,64}/g)?.join("\n");
-  const privKeyFormatted = privKeyBase64.match(/.{1,64}/g)?.join("\n");
-  if (!pubKeyFormatted || !privKeyFormatted) {
-    throw new Error("Failed to format key pair");
-  }
+export { requestTokenUpgrade } from "$lib/services/auth";
+export { requestClientRegistration } from "$lib/services/key";
 
-  const pubKeyPem = `-----BEGIN RSA PUBLIC KEY-----\n${pubKeyFormatted}\n-----END RSA PUBLIC KEY-----`;
-  const privKeyPem = `-----BEGIN RSA PRIVATE KEY-----\n${privKeyFormatted}\n-----END RSA PRIVATE KEY-----`;
-  return new Blob([`${pubKeyPem}\n${privKeyPem}\n`], { type: "text/plain" });
+type ExportedKeyPairs = {
+  generator: "ArkVault";
+  exportedAt: Date;
+} & {
+  version: 1;
+  encryptKey: string;
+  decryptKey: string;
+  signKey: string;
+  verifyKey: string;
 };
 
-export const requestPubKeyRegistration = async (pubKeyBase64: string, privateKey: CryptoKey) => {
-  let res = await callAPI("/api/client/register", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ pubKey: pubKeyBase64 }),
-  });
-  if (!res.ok) return false;
-
-  const data = await res.json();
-  const challenge = data.challenge as string;
-  const answer = await decryptRSACiphertext(decodeFromBase64(challenge), privateKey);
-
-  res = await callAPI("/api/client/verify", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ answer: encodeToBase64(answer) }),
-  });
-  return res.ok;
+export const exportClientKeys = (
+  encryptKeyBase64: string,
+  decryptKeyBase64: string,
+  signKeyBase64: string,
+  verifyKeyBase64: string,
+) => {
+  return {
+    version: 1,
+    generator: "ArkVault",
+    exportedAt: new Date(),
+    encryptKey: encryptKeyBase64,
+    decryptKey: decryptKeyBase64,
+    signKey: signKeyBase64,
+    verifyKey: verifyKeyBase64,
+  } satisfies ExportedKeyPairs;
 };
 
-export const storeKeyPairPersistently = async (keyPair: CryptoKeyPair) => {
-  await storeKeyPairIntoIndexedDB(keyPair.publicKey, keyPair.privateKey);
-};
-
-export const requestTokenUpgrade = async (pubKeyBase64: string) => {
-  const res = await fetch("/api/auth/upgradeToken", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ pubKey: pubKeyBase64 }),
-  });
-  return res.ok;
+export const storeClientKeys = async (clientKeys: ClientKeys) => {
+  await storeRSAKey(clientKeys.encryptKey, "encrypt");
+  await storeRSAKey(clientKeys.decryptKey, "decrypt");
+  await storeRSAKey(clientKeys.signKey, "sign");
+  await storeRSAKey(clientKeys.verifyKey, "verify");
 };
 
 export const requestInitialMekRegistration = async (
   mekDraft: ArrayBuffer,
-  publicKey: CryptoKey,
+  encryptKey: CryptoKey,
 ) => {
-  const mekDraftEncrypted = await encryptRSAPlaintext(mekDraft, publicKey);
+  const mekDraftEncrypted = await encryptRSAPlaintext(mekDraft, encryptKey);
   const res = await callAPI("/api/mek/register/initial", {
     method: "POST",
     headers: {

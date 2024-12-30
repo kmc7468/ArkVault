@@ -3,14 +3,15 @@
   import { Button, TextButton } from "$lib/components/buttons";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
   import { gotoStateful } from "$lib/hooks";
-  import { keyPairStore } from "$lib/stores";
+  import { clientKeyStore } from "$lib/stores";
   import Order from "./Order.svelte";
-  import { generateKeyPair, generateMekDraft } from "./service";
+  import { generateClientKeys, generateMekDraft } from "./service";
 
   import IconKey from "~icons/material-symbols/key";
 
   let { data } = $props();
 
+  // TODO: Update
   const orders = [
     {
       title: "암호 키는 공개 키와 개인 키로 구성돼요.",
@@ -33,19 +34,18 @@
   const generate = async () => {
     // TODO: Loading indicator
 
-    const { pubKeyBase64, privKeyBase64 } = await generateKeyPair();
+    const clientKeys = await generateClientKeys();
     const { mekDraft } = await generateMekDraft();
 
     await gotoStateful("/key/export", {
+      ...clientKeys,
       redirectPath: data.redirectPath,
-      pubKeyBase64,
-      privKeyBase64,
       mekDraft,
     });
   };
 
   $effect(() => {
-    if ($keyPairStore) {
+    if ($clientKeyStore) {
       goto(data.redirectPath);
     }
   });
