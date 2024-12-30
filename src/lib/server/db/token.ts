@@ -1,9 +1,9 @@
 import { SqliteError } from "better-sqlite3";
-import { eq, lte } from "drizzle-orm";
+import { and, eq, gt, lte } from "drizzle-orm";
 import ms from "ms";
 import env from "$lib/server/loadenv";
 import db from "./drizzle";
-import { refreshToken } from "./schema";
+import { refreshToken, tokenUpgradeChallenge } from "./schema";
 
 const expiresIn = ms(env.jwt.refreshExp);
 const expiresAt = () => new Date(Date.now() + expiresIn);
@@ -72,4 +72,45 @@ export const revokeRefreshToken = async (tokenId: string) => {
 
 export const cleanupExpiredRefreshTokens = async () => {
   await db.delete(refreshToken).where(lte(refreshToken.expiresAt, new Date())).execute();
+};
+
+export const registerTokenUpgradeChallenge = async (
+  tokenId: string,
+  clientId: number,
+  answer: string,
+  allowedIp: string,
+  expiresAt: Date,
+) => {
+  await db
+    .insert(tokenUpgradeChallenge)
+    .values({
+      refreshTokenId: tokenId,
+      clientId,
+      answer,
+      allowedIp,
+      expiresAt,
+    })
+    .execute();
+};
+
+export const getTokenUpgradeChallenge = async (answer: string, ip: string) => {
+  const challenges = await db
+    .select()
+    .from(tokenUpgradeChallenge)
+    .where(
+      and(
+        eq(tokenUpgradeChallenge.answer, answer),
+        eq(tokenUpgradeChallenge.allowedIp, ip),
+        gt(tokenUpgradeChallenge.expiresAt, new Date()),
+      ),
+    )
+    .execute();
+  return challenges[0] ?? null;
+};
+
+export const cleanupExpiredTokenUpgradeChallenges = async () => {
+  await db
+    .delete(tokenUpgradeChallenge)
+    .where(lte(tokenUpgradeChallenge.expiresAt, new Date()))
+    .execute();
 };

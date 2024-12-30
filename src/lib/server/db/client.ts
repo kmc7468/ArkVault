@@ -90,7 +90,7 @@ export const setUserClientStateToActive = async (userId: number, clientId: numbe
     .execute();
 };
 
-export const createUserClientChallenge = async (
+export const registerUserClientChallenge = async (
   userId: number,
   clientId: number,
   answer: string,

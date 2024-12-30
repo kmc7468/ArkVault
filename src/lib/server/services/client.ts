@@ -9,15 +9,10 @@ import {
   getAllUserClients,
   getUserClient,
   setUserClientStateToPending,
-  createUserClientChallenge,
+  registerUserClientChallenge,
   getUserClientChallenge,
 } from "$lib/server/db/client";
-import {
-  generateRandomBytes,
-  verifyPubKey,
-  encryptAsymmetric,
-  verifySignature,
-} from "$lib/server/modules/crypto";
+import { verifyPubKey, verifySignature, generateChallenge } from "$lib/server/modules/crypto";
 import { isInitialMekNeeded } from "$lib/server/modules/mek";
 import env from "$lib/server/loadenv";
 
@@ -31,20 +26,17 @@ export const getUserClientList = async (userId: number) => {
   };
 };
 
-const expiresIn = ms(env.challenge.pubKeyExp);
+const expiresIn = ms(env.challenge.userClientExp);
 const expiresAt = () => new Date(Date.now() + expiresIn);
 
-const generateChallenge = async (
+const createUserClientChallenge = async (
   userId: number,
   ip: string,
   clientId: number,
   encPubKey: string,
 ) => {
-  const answer = await generateRandomBytes(32);
-  const answerBase64 = answer.toString("base64");
-  await createUserClientChallenge(userId, clientId, answerBase64, ip, expiresAt());
-
-  const challenge = encryptAsymmetric(answer, encPubKey);
+  const { answer, challenge } = await generateChallenge(32, encPubKey);
+  await registerUserClientChallenge(userId, clientId, answer.toString("base64"), ip, expiresAt());
   return challenge.toString("base64");
 };
 
@@ -80,7 +72,7 @@ export const registerUserClient = async (
     clientId = await createClient(encPubKey, sigPubKey, userId);
   }
 
-  return { challenge: await generateChallenge(userId, ip, clientId, encPubKey) };
+  return { challenge: await createUserClientChallenge(userId, ip, clientId, encPubKey) };
 };
 
 export const getUserClientStatus = async (userId: number, clientId: number) => {
@@ -114,6 +106,8 @@ export const verifyUserClient = async (
   } else if (!verifySignature(answer, sigAnswer, client.sigPubKey)) {
     error(401, "Invalid challenge answer signature");
   }
+
+  // TODO: Replay attack prevention
 
   await setUserClientStateToPending(userId, challenge.clientId);
 };
