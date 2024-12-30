@@ -1,10 +1,21 @@
-import { and, eq, gt, lte } from "drizzle-orm";
+import { and, or, eq, gt, lte, count } from "drizzle-orm";
 import db from "./drizzle";
 import { client, userClient, userClientChallenge } from "./schema";
 
-export const createClient = async (pubKey: string, userId: number) => {
+export const createClient = async (encPubKey: string, sigPubKey: string, userId: number) => {
   return await db.transaction(async (tx) => {
-    const insertRes = await tx.insert(client).values({ pubKey }).returning({ id: client.id });
+    const clients = await tx
+      .select()
+      .from(client)
+      .where(or(eq(client.encPubKey, sigPubKey), eq(client.sigPubKey, encPubKey)));
+    if (clients.length > 0) {
+      throw new Error("Already used public key(s)");
+    }
+
+    const insertRes = await tx
+      .insert(client)
+      .values({ encPubKey, sigPubKey })
+      .returning({ id: client.id });
     const { id: clientId } = insertRes[0]!;
     await tx.insert(userClient).values({ userId, clientId });
 
@@ -12,9 +23,26 @@ export const createClient = async (pubKey: string, userId: number) => {
   });
 };
 
-export const getClientByPubKey = async (pubKey: string) => {
-  const clients = await db.select().from(client).where(eq(client.pubKey, pubKey)).execute();
+export const getClient = async (clientId: number) => {
+  const clients = await db.select().from(client).where(eq(client.id, clientId)).execute();
   return clients[0] ?? null;
+};
+
+export const getClientByPubKeys = async (encPubKey: string, sigPubKey: string) => {
+  const clients = await db
+    .select()
+    .from(client)
+    .where(and(eq(client.encPubKey, encPubKey), eq(client.sigPubKey, sigPubKey)))
+    .execute();
+  return clients[0] ?? null;
+};
+
+export const countClientByPubKey = async (pubKey: string) => {
+  const clients = await db
+    .select({ count: count() })
+    .from(client)
+    .where(or(eq(client.encPubKey, pubKey), eq(client.encPubKey, pubKey)));
+  return clients[0]?.count ?? 0;
 };
 
 export const createUserClient = async (userId: number, clientId: number) => {

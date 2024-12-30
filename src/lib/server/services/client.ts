@@ -1,17 +1,23 @@
 import { error } from "@sveltejs/kit";
-import { randomBytes, publicEncrypt, createPublicKey } from "crypto";
 import ms from "ms";
-import { promisify } from "util";
 import {
   createClient,
-  getClientByPubKey,
+  getClient,
+  getClientByPubKeys,
+  countClientByPubKey,
   createUserClient,
   getAllUserClients,
   getUserClient,
+  setUserClientStateToPending,
   createUserClientChallenge,
   getUserClientChallenge,
-  setUserClientStateToPending,
 } from "$lib/server/db/client";
+import {
+  generateRandomBytes,
+  verifyPubKey,
+  encryptAsymmetric,
+  verifySignature,
+} from "$lib/server/modules/crypto";
 import { isInitialMekNeeded } from "$lib/server/modules/mek";
 import env from "$lib/server/loadenv";
 
@@ -28,42 +34,53 @@ export const getUserClientList = async (userId: number) => {
 const expiresIn = ms(env.challenge.pubKeyExp);
 const expiresAt = () => new Date(Date.now() + expiresIn);
 
-const generateChallenge = async (userId: number, ip: string, clientId: number, pubKey: string) => {
-  const answer = await promisify(randomBytes)(32);
+const generateChallenge = async (
+  userId: number,
+  ip: string,
+  clientId: number,
+  encPubKey: string,
+) => {
+  const answer = await generateRandomBytes(32);
   const answerBase64 = answer.toString("base64");
   await createUserClientChallenge(userId, clientId, answerBase64, ip, expiresAt());
 
-  const pubKeyPem = `-----BEGIN PUBLIC KEY-----\n${pubKey}\n-----END PUBLIC KEY-----`;
-  const challenge = publicEncrypt({ key: pubKeyPem, oaepHash: "sha256" }, answer);
+  const challenge = encryptAsymmetric(answer, encPubKey);
   return challenge.toString("base64");
 };
 
-export const registerUserClient = async (userId: number, ip: string, pubKey: string) => {
-  const client = await getClientByPubKey(pubKey);
+export const registerUserClient = async (
+  userId: number,
+  ip: string,
+  encPubKey: string,
+  sigPubKey: string,
+) => {
   let clientId;
 
+  const client = await getClientByPubKeys(encPubKey, sigPubKey);
   if (client) {
     const userClient = await getUserClient(userId, client.id);
     if (userClient) {
-      error(409, "Public key already registered");
+      error(409, "Client already registered");
     }
 
     await createUserClient(userId, client.id);
     clientId = client.id;
   } else {
-    const pubKeyPem = `-----BEGIN PUBLIC KEY-----\n${pubKey}\n-----END PUBLIC KEY-----`;
-    const pubKeyObject = createPublicKey(pubKeyPem);
-    if (
-      pubKeyObject.asymmetricKeyType !== "rsa" ||
-      pubKeyObject.asymmetricKeyDetails?.modulusLength !== 4096
+    if (!verifyPubKey(encPubKey) || !verifyPubKey(sigPubKey)) {
+      error(400, "Invalid public key(s)");
+    } else if (encPubKey === sigPubKey) {
+      error(400, "Public keys must be different");
+    } else if (
+      (await countClientByPubKey(encPubKey)) > 0 ||
+      (await countClientByPubKey(sigPubKey)) > 0
     ) {
-      error(400, "Invalid public key");
+      error(409, "Public key(s) already registered");
     }
 
-    clientId = await createClient(pubKey, userId);
+    clientId = await createClient(encPubKey, sigPubKey, userId);
   }
 
-  return await generateChallenge(userId, ip, clientId, pubKey);
+  return { challenge: await generateChallenge(userId, ip, clientId, encPubKey) };
 };
 
 export const getUserClientStatus = async (userId: number, clientId: number) => {
@@ -78,12 +95,24 @@ export const getUserClientStatus = async (userId: number, clientId: number) => {
   };
 };
 
-export const verifyUserClient = async (userId: number, ip: string, answer: string) => {
+export const verifyUserClient = async (
+  userId: number,
+  ip: string,
+  answer: string,
+  sigAnswer: string,
+) => {
   const challenge = await getUserClientChallenge(answer, ip);
   if (!challenge) {
     error(401, "Invalid challenge answer");
   } else if (challenge.userId !== userId) {
     error(403, "Forbidden");
+  }
+
+  const client = await getClient(challenge.clientId);
+  if (!client) {
+    error(500, "Invalid challenge answer");
+  } else if (!verifySignature(answer, sigAnswer, client.sigPubKey)) {
+    error(401, "Invalid challenge answer signature");
   }
 
   await setUserClientStateToPending(userId, challenge.clientId);
