@@ -50,12 +50,16 @@ export const makeRSAKeyNonextractable = async (key: CryptoKey, type: RSAKeyType)
   );
 };
 
-export const exportRSAKey = async (key: CryptoKey, type: RSAKeyType) => {
+const exportRSAKey = async (key: CryptoKey, type: RSAKeyType) => {
   const format = type === "public" ? ("spki" as const) : ("pkcs8" as const);
   return {
     format,
     key: await window.crypto.subtle.exportKey(format, key),
   };
+};
+
+export const exportRSAKeyToBase64 = async (key: CryptoKey, type: RSAKeyType) => {
+  return encodeToBase64((await exportRSAKey(key, type)).key);
 };
 
 export const encryptRSAPlaintext = async (plaintext: ArrayBuffer, publicKey: CryptoKey) => {

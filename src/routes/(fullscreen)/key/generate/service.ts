@@ -1,18 +1,13 @@
 import {
-  encodeToBase64,
   generateRSAEncKeyPair,
   generateRSASigKeyPair,
   makeRSAKeyNonextractable,
-  exportRSAKey,
+  exportRSAKeyToBase64,
   generateAESKey,
   makeAESKeyNonextractable,
   exportAESKey,
 } from "$lib/modules/crypto";
 import { keyPairsStore, mekStore } from "$lib/stores";
-
-const exportRSAKeyToBase64 = async (key: CryptoKey, type: "public" | "private") => {
-  return encodeToBase64((await exportRSAKey(key, type)).key);
-};
 
 export const generateKeyPairs = async () => {
   const encKeyPair = await generateRSAEncKeyPair();

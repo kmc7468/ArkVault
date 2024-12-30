@@ -1,12 +1,9 @@
 import { callAPI } from "$lib/hooks";
 import { storeRSAKey } from "$lib/indexedDB";
-import {
-  encodeToBase64,
-  decodeFromBase64,
-  encryptRSAPlaintext,
-  decryptRSACiphertext,
-  signRSAMessage,
-} from "$lib/modules/crypto";
+import { encodeToBase64, encryptRSAPlaintext } from "$lib/modules/crypto";
+
+export { requestTokenUpgrade } from "$lib/services/auth";
+export { requestClientRegistration } from "$lib/services/key";
 
 type ExportedKeyPairs = {
   generator: "ArkVault";
@@ -36,41 +33,6 @@ export const makeKeyPairsSaveable = (
   } satisfies ExportedKeyPairs;
 };
 
-export const requestClientRegistration = async (
-  encPubKeyBase64: string,
-  encPrivKey: CryptoKey,
-  sigPubKeyBase64: string,
-  sigPrivKey: CryptoKey,
-) => {
-  let res = await callAPI("/api/client/register", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      encPubKey: encPubKeyBase64,
-      sigPubKey: sigPubKeyBase64,
-    }),
-  });
-  if (!res.ok) return false;
-
-  const { challenge } = await res.json();
-  const answer = await decryptRSACiphertext(decodeFromBase64(challenge), encPrivKey);
-  const sigAnswer = await signRSAMessage(answer, sigPrivKey);
-
-  res = await callAPI("/api/client/verify", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      answer: encodeToBase64(answer),
-      sigAnswer: encodeToBase64(sigAnswer),
-    }),
-  });
-  return res.ok;
-};
-
 export const storeKeyPairsPersistently = async (
   encKeyPair: CryptoKeyPair,
   sigKeyPair: CryptoKeyPair,
@@ -79,41 +41,6 @@ export const storeKeyPairsPersistently = async (
   await storeRSAKey(encKeyPair.privateKey, "decrypt");
   await storeRSAKey(sigKeyPair.publicKey, "verify");
   await storeRSAKey(sigKeyPair.privateKey, "sign");
-};
-
-export const requestTokenUpgrade = async (
-  encPubKeyBase64: string,
-  encPrivKey: CryptoKey,
-  sigPubKeyBase64: string,
-  sigPrivKey: CryptoKey,
-) => {
-  let res = await fetch("/api/auth/upgradeToken", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      encPubKey: encPubKeyBase64,
-      sigPubKey: sigPubKeyBase64,
-    }),
-  });
-  if (!res.ok) return false;
-
-  const { challenge } = await res.json();
-  const answer = await decryptRSACiphertext(decodeFromBase64(challenge), encPrivKey);
-  const sigAnswer = await signRSAMessage(answer, sigPrivKey);
-
-  res = await fetch("/api/auth/upgradeToken/verify", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      answer: encodeToBase64(answer),
-      sigAnswer: encodeToBase64(sigAnswer),
-    }),
-  });
-  return res.ok;
 };
 
 export const requestInitialMekRegistration = async (
