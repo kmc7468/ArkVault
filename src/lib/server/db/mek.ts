@@ -2,7 +2,7 @@ import { and, or, eq, lt, desc } from "drizzle-orm";
 import db from "./drizzle";
 import { mek, clientMek, userClient } from "./schema";
 
-export interface ClientMek {
+interface ClientMek {
   clientId: number;
   encMek: string;
 }

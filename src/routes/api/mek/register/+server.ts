@@ -13,6 +13,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
         z.object({
           clientId: z.number(),
           mek: z.string().base64().nonempty(),
+          sigMek: z.string().base64().nonempty(),
         }),
       ),
     })
@@ -23,9 +24,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
   await registerNewActiveMek(
     userId,
     clientId,
-    meks.map(({ clientId, mek }) => ({
+    meks.map(({ clientId, mek, sigMek }) => ({
       clientId,
       encMek: mek.trim(),
+      sigEncMek: sigMek.trim(),
     })),
   );
   return text("MEK registered", { headers: { "Content-Type": "text/plain" } });

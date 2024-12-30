@@ -13,11 +13,12 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
   const zodRes = z
     .object({
       mek: z.string().base64().nonempty(),
+      sigMek: z.string().base64().nonempty(),
     })
     .safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");
-  const { mek } = zodRes.data;
+  const { mek, sigMek } = zodRes.data;
 
-  await registerInitialActiveMek(userId, clientId, mek);
+  await registerInitialActiveMek(userId, clientId, mek, sigMek);
   return text("MEK registered", { headers: { "Content-Type": "text/plain" } });
 };

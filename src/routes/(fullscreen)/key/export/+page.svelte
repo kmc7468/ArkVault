@@ -71,7 +71,13 @@
       )
         throw new Error("Failed to upgrade token");
 
-      if (!(await requestInitialMekRegistration(data.mekDraft, $clientKeyStore.encryptKey)))
+      if (
+        !(await requestInitialMekRegistration(
+          data.mekDraft,
+          $clientKeyStore.encryptKey,
+          $clientKeyStore.signKey,
+        ))
+      )
         throw new Error("Failed to register initial MEK");
 
       await goto(data.redirectPath);
