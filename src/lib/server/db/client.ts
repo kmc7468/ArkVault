@@ -118,10 +118,19 @@ export const getUserClientChallenge = async (answer: string, ip: string) => {
         eq(userClientChallenge.answer, answer),
         eq(userClientChallenge.allowedIp, ip),
         gt(userClientChallenge.expiresAt, new Date()),
+        eq(userClientChallenge.isUsed, false),
       ),
     )
     .execute();
   return challenges[0] ?? null;
+};
+
+export const markUserClientChallengeAsUsed = async (id: number) => {
+  await db
+    .update(userClientChallenge)
+    .set({ isUsed: true })
+    .where(eq(userClientChallenge.id, id))
+    .execute();
 };
 
 export const cleanupExpiredUserClientChallenges = async () => {

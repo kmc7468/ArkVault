@@ -11,6 +11,7 @@ import {
   setUserClientStateToPending,
   registerUserClientChallenge,
   getUserClientChallenge,
+  markUserClientChallengeAsUsed,
 } from "$lib/server/db/client";
 import { verifyPubKey, verifySignature, generateChallenge } from "$lib/server/modules/crypto";
 import { isInitialMekNeeded } from "$lib/server/modules/mek";
@@ -107,7 +108,6 @@ export const verifyUserClient = async (
     error(401, "Invalid challenge answer signature");
   }
 
-  // TODO: Replay attack prevention
-
+  await markUserClientChallengeAsUsed(challenge.id);
   await setUserClientStateToPending(userId, challenge.clientId);
 };

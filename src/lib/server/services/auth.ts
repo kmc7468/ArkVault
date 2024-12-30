@@ -13,6 +13,7 @@ import {
   revokeRefreshToken,
   registerTokenUpgradeChallenge,
   getTokenUpgradeChallenge,
+  markTokenUpgradeChallengeAsUsed,
 } from "$lib/server/db/token";
 import { issueToken, verifyToken, TokenError } from "$lib/server/modules/auth";
 import { verifySignature, generateChallenge } from "$lib/server/modules/crypto";
@@ -152,7 +153,7 @@ export const upgradeToken = async (
     error(401, "Invalid challenge answer signature");
   }
 
-  // TODO: Replay attack prevention
+  await markTokenUpgradeChallengeAsUsed(challenge.id);
 
   const newJti = uuidv4();
   if (!(await upgradeRefreshToken(oldJti, newJti, client.id))) {

@@ -28,4 +28,5 @@ export const tokenUpgradeChallenge = sqliteTable("token_upgrade_challenge", {
   answer: text("challenge").notNull().unique(), // Base64
   allowedIp: text("allowed_ip").notNull(),
   expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  isUsed: integer("is_used", { mode: "boolean" }).notNull().default(false),
 });

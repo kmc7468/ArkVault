@@ -102,10 +102,19 @@ export const getTokenUpgradeChallenge = async (answer: string, ip: string) => {
         eq(tokenUpgradeChallenge.answer, answer),
         eq(tokenUpgradeChallenge.allowedIp, ip),
         gt(tokenUpgradeChallenge.expiresAt, new Date()),
+        eq(tokenUpgradeChallenge.isUsed, false),
       ),
     )
     .execute();
   return challenges[0] ?? null;
+};
+
+export const markTokenUpgradeChallengeAsUsed = async (id: number) => {
+  await db
+    .update(tokenUpgradeChallenge)
+    .set({ isUsed: true })
+    .where(eq(tokenUpgradeChallenge.id, id))
+    .execute();
 };
 
 export const cleanupExpiredTokenUpgradeChallenges = async () => {
