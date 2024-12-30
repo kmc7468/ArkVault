@@ -9,13 +9,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
   const zodRes = z
     .object({
       email: z.string().email().nonempty(),
-      password: z.string().nonempty(),
+      password: z.string().trim().nonempty(),
     })
     .safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");
   const { email, password } = zodRes.data;
 
-  const { accessToken, refreshToken } = await login(email.trim(), password.trim());
+  const { accessToken, refreshToken } = await login(email, password);
   cookies.set("accessToken", accessToken, {
     path: "/",
     maxAge: Math.floor(ms(env.jwt.accessExp) / 1000),

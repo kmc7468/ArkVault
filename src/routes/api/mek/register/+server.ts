@@ -11,7 +11,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     .object({
       meks: z.array(
         z.object({
-          clientId: z.number(),
+          clientId: z.number().int().positive(),
           mek: z.string().base64().nonempty(),
           sigMek: z.string().base64().nonempty(),
         }),
@@ -26,8 +26,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     clientId,
     meks.map(({ clientId, mek, sigMek }) => ({
       clientId,
-      encMek: mek.trim(),
-      sigEncMek: sigMek.trim(),
+      encMek: mek,
+      sigEncMek: sigMek,
     })),
   );
   return text("MEK registered", { headers: { "Content-Type": "text/plain" } });

@@ -17,10 +17,10 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
   const { encPubKey, sigPubKey } = zodRes.data;
 
   const { challenge } = await createTokenUpgradeChallenge(
-    token.trim(),
+    token,
     getClientAddress(),
-    encPubKey.trim(),
-    sigPubKey.trim(),
+    encPubKey,
+    sigPubKey,
   );
   return json({ challenge });
 };

@@ -19,11 +19,6 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
   if (!zodRes.success) error(400, "Invalid request body");
   const { encPubKey, sigPubKey } = zodRes.data;
 
-  const { challenge } = await registerUserClient(
-    userId,
-    getClientAddress(),
-    encPubKey.trim(),
-    sigPubKey.trim(),
-  );
+  const { challenge } = await registerUserClient(userId, getClientAddress(), encPubKey, sigPubKey);
   return json({ challenge });
 };

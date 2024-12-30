@@ -6,7 +6,7 @@ export const POST: RequestHandler = async ({ cookies }) => {
   const token = cookies.get("refreshToken");
   if (!token) error(401, "Refresh token not found");
 
-  await logout(token.trim());
+  await logout(token);
   cookies.delete("accessToken", { path: "/" });
   cookies.delete("refreshToken", { path: "/api/auth" });
 

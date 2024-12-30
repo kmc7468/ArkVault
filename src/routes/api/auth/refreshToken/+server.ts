@@ -6,7 +6,7 @@ export const POST: RequestHandler = async ({ cookies }) => {
   const token = cookies.get("refreshToken");
   if (!token) error(401, "Refresh token not found");
 
-  const { accessToken, refreshToken } = await doRefreshToken(token.trim());
+  const { accessToken, refreshToken } = await doRefreshToken(token);
   cookies.set("accessToken", accessToken, {
     path: "/",
     sameSite: "strict",

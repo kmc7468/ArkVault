@@ -19,6 +19,6 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
   if (!zodRes.success) error(400, "Invalid request body");
   const { answer, sigAnswer } = zodRes.data;
 
-  await verifyUserClient(userId, getClientAddress(), answer.trim(), sigAnswer.trim());
+  await verifyUserClient(userId, getClientAddress(), answer, sigAnswer);
   return text("Client verified", { headers: { "Content-Type": "text/plain" } });
 };

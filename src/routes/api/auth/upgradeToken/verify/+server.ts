@@ -17,10 +17,10 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
   const { answer, sigAnswer } = zodRes.data;
 
   const { accessToken, refreshToken } = await upgradeToken(
-    token.trim(),
+    token,
     getClientAddress(),
-    answer.trim(),
-    sigAnswer.trim(),
+    answer,
+    sigAnswer,
   );
   cookies.set("accessToken", accessToken, {
     path: "/",
