@@ -1,11 +1,11 @@
 import { constants, randomBytes, createPublicKey, publicEncrypt, verify } from "crypto";
 import { promisify } from "util";
 
-const makePubKeyPem = (pubKey: string) =>
+const makePubKeyToPem = (pubKey: string) =>
   `-----BEGIN PUBLIC KEY-----\n${pubKey}\n-----END PUBLIC KEY-----`;
 
 export const verifyPubKey = (pubKey: string) => {
-  const pubKeyPem = makePubKeyPem(pubKey);
+  const pubKeyPem = makePubKeyToPem(pubKey);
   const pubKeyObject = createPublicKey(pubKeyPem);
   return (
     pubKeyObject.asymmetricKeyType === "rsa" &&
@@ -14,7 +14,7 @@ export const verifyPubKey = (pubKey: string) => {
 };
 
 export const encryptAsymmetric = (data: Buffer, encPubKey: string) => {
-  return publicEncrypt({ key: makePubKeyPem(encPubKey), oaepHash: "sha256" }, data);
+  return publicEncrypt({ key: makePubKeyToPem(encPubKey), oaepHash: "sha256" }, data);
 };
 
 export const verifySignature = (data: string, signature: string, sigPubKey: string) => {
@@ -22,7 +22,7 @@ export const verifySignature = (data: string, signature: string, sigPubKey: stri
     "rsa-sha256",
     Buffer.from(data, "base64"),
     {
-      key: makePubKeyPem(sigPubKey),
+      key: makePubKeyToPem(sigPubKey),
       padding: constants.RSA_PKCS1_PSS_PADDING,
     },
     Buffer.from(signature, "base64"),

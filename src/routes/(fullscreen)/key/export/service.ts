@@ -13,15 +13,15 @@ type ExportedKeyPairs = {
   version: 1;
   encryptKey: string;
   decryptKey: string;
-  verifyKey: string;
   signKey: string;
+  verifyKey: string;
 };
 
 export const exportClientKeys = (
   encryptKeyBase64: string,
   decryptKeyBase64: string,
-  verifyKeyBase64: string,
   signKeyBase64: string,
+  verifyKeyBase64: string,
 ) => {
   return {
     version: 1,
@@ -29,8 +29,8 @@ export const exportClientKeys = (
     exportedAt: new Date(),
     encryptKey: encryptKeyBase64,
     decryptKey: decryptKeyBase64,
-    verifyKey: verifyKeyBase64,
     signKey: signKeyBase64,
+    verifyKey: verifyKeyBase64,
   } satisfies ExportedKeyPairs;
 };
 

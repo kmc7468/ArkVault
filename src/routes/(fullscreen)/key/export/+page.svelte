@@ -25,8 +25,8 @@
     const clientKeysExported = exportClientKeys(
       data.encryptKeyBase64,
       data.decryptKeyBase64,
-      data.verifyKeyBase64,
       data.signKeyBase64,
+      data.verifyKeyBase64,
     );
     const clientKeysBlob = new Blob([JSON.stringify(clientKeysExported)], {
       type: "application/json",
