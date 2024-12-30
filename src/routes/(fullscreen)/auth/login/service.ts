@@ -20,8 +20,8 @@ export const requestTokenUpgrade = async ({
   signKey,
   verifyKey,
 }: ClientKeys) => {
-  const encryptKeyBase64 = await exportRSAKeyToBase64(encryptKey, "public");
-  const verifyKeyBase64 = await exportRSAKeyToBase64(verifyKey, "public");
+  const encryptKeyBase64 = await exportRSAKeyToBase64(encryptKey);
+  const verifyKeyBase64 = await exportRSAKeyToBase64(verifyKey);
   if (await requestTokenUpgradeInternal(encryptKeyBase64, decryptKey, verifyKeyBase64, signKey)) {
     return true;
   }
