@@ -1,26 +1,43 @@
 import {
   encodeToBase64,
-  generateRSAKeyPair,
+  generateRSAEncKeyPair,
+  generateRSASigKeyPair,
   makeRSAKeyNonextractable,
   exportRSAKey,
   generateAESKey,
   makeAESKeyNonextractable,
   exportAESKey,
 } from "$lib/modules/crypto";
-import { keyPairStore, mekStore } from "$lib/stores";
+import { keyPairsStore, mekStore } from "$lib/stores";
 
-export const generateKeyPair = async () => {
-  const keyPair = await generateRSAKeyPair();
-  const privKeySecured = await makeRSAKeyNonextractable(keyPair.privateKey, "private");
+const exportRSAKeyToBase64 = async (key: CryptoKey, type: "public" | "private") => {
+  return encodeToBase64((await exportRSAKey(key, type)).key);
+};
 
-  keyPairStore.set({
-    publicKey: keyPair.publicKey,
-    privateKey: privKeySecured,
+export const generateKeyPairs = async () => {
+  const encKeyPair = await generateRSAEncKeyPair();
+  const sigKeyPair = await generateRSASigKeyPair();
+
+  keyPairsStore.set({
+    encKeyPair: {
+      publicKey: encKeyPair.publicKey,
+      privateKey: await makeRSAKeyNonextractable(encKeyPair.privateKey, "private"),
+    },
+    sigKeyPair: {
+      publicKey: sigKeyPair.publicKey,
+      privateKey: await makeRSAKeyNonextractable(sigKeyPair.privateKey, "private"),
+    },
   });
 
   return {
-    pubKeyBase64: encodeToBase64((await exportRSAKey(keyPair.publicKey, "public")).key),
-    privKeyBase64: encodeToBase64((await exportRSAKey(keyPair.privateKey, "private")).key),
+    encKeyPair: {
+      pubKeyBase64: await exportRSAKeyToBase64(encKeyPair.publicKey, "public"),
+      privKeyBase64: await exportRSAKeyToBase64(encKeyPair.privateKey, "private"),
+    },
+    sigKeyPair: {
+      pubKeyBase64: await exportRSAKeyToBase64(sigKeyPair.publicKey, "public"),
+      privKeyBase64: await exportRSAKeyToBase64(sigKeyPair.privateKey, "private"),
+    },
   };
 };
 

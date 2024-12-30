@@ -8,7 +8,7 @@ export const decodeFromBase64 = (data: string) => {
   return Uint8Array.from(atob(data), (c) => c.charCodeAt(0)).buffer;
 };
 
-export const generateRSAKeyPair = async () => {
+export const generateRSAEncKeyPair = async () => {
   const keyPair = await window.crypto.subtle.generateKey(
     {
       name: "RSA-OAEP",
@@ -18,6 +18,20 @@ export const generateRSAKeyPair = async () => {
     } satisfies RsaHashedKeyGenParams,
     true,
     ["encrypt", "decrypt"],
+  );
+  return keyPair;
+};
+
+export const generateRSASigKeyPair = async () => {
+  const keyPair = await window.crypto.subtle.generateKey(
+    {
+      name: "RSA-PSS",
+      modulusLength: 4096,
+      publicExponent: new Uint8Array([1, 0, 1]),
+      hash: "SHA-256",
+    } satisfies RsaHashedKeyGenParams,
+    true,
+    ["sign", "verify"],
   );
   return keyPair;
 };
@@ -61,6 +75,17 @@ export const decryptRSACiphertext = async (ciphertext: ArrayBuffer, privateKey: 
     } satisfies RsaOaepParams,
     privateKey,
     ciphertext,
+  );
+};
+
+export const signRSAMessage = async (message: ArrayBuffer, privateKey: CryptoKey) => {
+  return await window.crypto.subtle.sign(
+    {
+      name: "RSA-PSS",
+      saltLength: 32,
+    } satisfies RsaPssParams,
+    privateKey,
+    message,
   );
 };
 

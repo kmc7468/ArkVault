@@ -1,33 +1,31 @@
 import { Dexie, type EntityTable } from "dexie";
 
-interface KeyPair {
-  type: "publicKey" | "privateKey";
+type RSAKeyUsage = "encrypt" | "decrypt" | "sign" | "verify";
+
+interface RSAKey {
+  usage: RSAKeyUsage;
   key: CryptoKey;
 }
 
 const keyStore = new Dexie("keyStore") as Dexie & {
-  keyPair: EntityTable<KeyPair, "type">;
+  rsaKey: EntityTable<RSAKey, "usage">;
 };
 
 keyStore.version(1).stores({
-  keyPair: "type",
+  rsaKey: "usage, key",
 });
 
-export const getKeyPairFromIndexedDB = async () => {
-  const pubKey = await keyStore.keyPair.get("publicKey");
-  const privKey = await keyStore.keyPair.get("privateKey");
-  return {
-    pubKey: pubKey?.key ?? null,
-    privKey: privKey?.key ?? null,
-  };
+export const getRSAKey = async (usage: RSAKeyUsage) => {
+  const key = await keyStore.rsaKey.get(usage);
+  return key?.key ?? null;
 };
 
-export const storeKeyPairIntoIndexedDB = async (pubKey: CryptoKey, privKey: CryptoKey) => {
-  if (!pubKey.extractable) throw new Error("Public key must be extractable");
-  if (privKey.extractable) throw new Error("Private key must be non-extractable");
+export const storeRSAKey = async (key: CryptoKey, usage: RSAKeyUsage) => {
+  if ((usage === "encrypt" || usage === "verify") && !key.extractable) {
+    throw new Error("Public key must be extractable");
+  } else if ((usage === "decrypt" || usage === "sign") && key.extractable) {
+    throw new Error("Private key must be non-extractable");
+  }
 
-  await keyStore.keyPair.bulkPut([
-    { type: "publicKey", key: pubKey },
-    { type: "privateKey", key: privKey },
-  ]);
+  await keyStore.rsaKey.put({ usage, key });
 };

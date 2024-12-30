@@ -3,13 +3,13 @@
   import { goto } from "$app/navigation";
   import { Button, TextButton } from "$lib/components/buttons";
   import { BottomDiv } from "$lib/components/divs";
-  import { keyPairStore } from "$lib/stores";
+  import { keyPairsStore } from "$lib/stores";
   import BeforeContinueBottomSheet from "./BeforeContinueBottomSheet.svelte";
   import BeforeContinueModal from "./BeforeContinueModal.svelte";
   import {
-    createBlobFromKeyPairBase64,
-    requestPubKeyRegistration,
-    storeKeyPairPersistently,
+    makeKeyPairsSaveable,
+    requestClientRegistration,
+    storeKeyPairsPersistently,
     requestTokenUpgrade,
     requestInitialMekRegistration,
   } from "./service";
@@ -22,8 +22,9 @@
   let isBeforeContinueBottomSheetOpen = $state(false);
 
   const exportKeyPair = () => {
-    const keyPairBlob = createBlobFromKeyPairBase64(data.pubKeyBase64, data.privKeyBase64);
-    saveAs(keyPairBlob, "arkvalut-keypair.pem");
+    const keyPairsSaveable = makeKeyPairsSaveable(data.encKeyPair, data.sigKeyPair);
+    const keyPairsBlob = new Blob([JSON.stringify(keyPairsSaveable)], { type: "application/json" });
+    saveAs(keyPairsBlob, "arkvalut-key.json");
 
     if (!isBeforeContinueBottomSheetOpen) {
       setTimeout(() => {
@@ -33,7 +34,7 @@
   };
 
   const registerPubKey = async () => {
-    if (!$keyPairStore) {
+    if (!$keyPairsStore) {
       throw new Error("Failed to find key pair");
     }
 
@@ -41,15 +42,31 @@
     isBeforeContinueBottomSheetOpen = false;
 
     try {
-      if (!(await requestPubKeyRegistration(data.pubKeyBase64, $keyPairStore.privateKey)))
+      if (
+        !(await requestClientRegistration(
+          data.encKeyPair.pubKeyBase64,
+          $keyPairsStore.encKeyPair.privateKey,
+          data.sigKeyPair.pubKeyBase64,
+          $keyPairsStore.sigKeyPair.privateKey,
+        ))
+      )
         throw new Error("Failed to register public key");
 
-      await storeKeyPairPersistently($keyPairStore);
+      await storeKeyPairsPersistently($keyPairsStore.encKeyPair, $keyPairsStore.sigKeyPair);
 
-      if (!(await requestTokenUpgrade(data.pubKeyBase64)))
+      if (
+        !(await requestTokenUpgrade(
+          data.encKeyPair.pubKeyBase64,
+          $keyPairsStore.encKeyPair.privateKey,
+          data.sigKeyPair.pubKeyBase64,
+          $keyPairsStore.sigKeyPair.privateKey,
+        ))
+      )
         throw new Error("Failed to upgrade token");
 
-      if (!(await requestInitialMekRegistration(data.mekDraft, $keyPairStore.publicKey)))
+      if (
+        !(await requestInitialMekRegistration(data.mekDraft, $keyPairsStore.encKeyPair.publicKey))
+      )
         throw new Error("Failed to register initial MEK");
 
       await goto(data.redirectPath);

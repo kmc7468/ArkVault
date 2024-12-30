@@ -4,8 +4,14 @@ type Path = "/key/export";
 
 interface KeyExportState {
   redirectPath: string;
-  pubKeyBase64: string;
-  privKeyBase64: string;
+  encKeyPair: {
+    pubKeyBase64: string;
+    privKeyBase64: string;
+  };
+  sigKeyPair: {
+    pubKeyBase64: string;
+    privKeyBase64: string;
+  };
   mekDraft: ArrayBuffer;
 }
 
