@@ -36,7 +36,7 @@ export const generateRSASigKeyPair = async () => {
   return keyPair;
 };
 
-export const makeRSAKeyNonextractable = async (key: CryptoKey, type: RSAKeyType) => {
+export const makeRSAEncKeyNonextractable = async (key: CryptoKey, type: RSAKeyType) => {
   const { format, key: exportedKey } = await exportRSAKey(key, type);
   return await window.crypto.subtle.importKey(
     format,
@@ -47,6 +47,20 @@ export const makeRSAKeyNonextractable = async (key: CryptoKey, type: RSAKeyType)
     } satisfies RsaHashedImportParams,
     false,
     [type === "public" ? "encrypt" : "decrypt"],
+  );
+};
+
+export const makeRSASigKeyNonextractable = async (key: CryptoKey, type: RSAKeyType) => {
+  const { format, key: exportedKey } = await exportRSAKey(key, type);
+  return await window.crypto.subtle.importKey(
+    format,
+    exportedKey,
+    {
+      name: "RSA-PSS",
+      hash: "SHA-256",
+    } satisfies RsaHashedImportParams,
+    false,
+    [type === "public" ? "verify" : "sign"],
   );
 };
 

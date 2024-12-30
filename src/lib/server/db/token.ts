@@ -38,15 +38,20 @@ export const getRefreshToken = async (tokenId: string) => {
 };
 
 export const rotateRefreshToken = async (oldTokenId: string, newTokenId: string) => {
-  const res = await db
-    .update(refreshToken)
-    .set({
-      id: newTokenId,
-      expiresAt: expiresAt(),
-    })
-    .where(eq(refreshToken.id, oldTokenId))
-    .execute();
-  return res.changes > 0;
+  return await db.transaction(async (tx) => {
+    await tx
+      .delete(tokenUpgradeChallenge)
+      .where(eq(tokenUpgradeChallenge.refreshTokenId, oldTokenId));
+    const res = await db
+      .update(refreshToken)
+      .set({
+        id: newTokenId,
+        expiresAt: expiresAt(),
+      })
+      .where(eq(refreshToken.id, oldTokenId))
+      .execute();
+    return res.changes > 0;
+  });
 };
 
 export const upgradeRefreshToken = async (
@@ -54,16 +59,21 @@ export const upgradeRefreshToken = async (
   newTokenId: string,
   clientId: number,
 ) => {
-  const res = await db
-    .update(refreshToken)
-    .set({
-      id: newTokenId,
-      clientId,
-      expiresAt: expiresAt(),
-    })
-    .where(eq(refreshToken.id, oldTokenId))
-    .execute();
-  return res.changes > 0;
+  return await db.transaction(async (tx) => {
+    await tx
+      .delete(tokenUpgradeChallenge)
+      .where(eq(tokenUpgradeChallenge.refreshTokenId, oldTokenId));
+    const res = await tx
+      .update(refreshToken)
+      .set({
+        id: newTokenId,
+        clientId,
+        expiresAt: expiresAt(),
+      })
+      .where(eq(refreshToken.id, oldTokenId))
+      .execute();
+    return res.changes > 0;
+  });
 };
 
 export const revokeRefreshToken = async (tokenId: string) => {

@@ -1,7 +1,8 @@
 import {
   generateRSAEncKeyPair,
   generateRSASigKeyPair,
-  makeRSAKeyNonextractable,
+  makeRSAEncKeyNonextractable,
+  makeRSASigKeyNonextractable,
   exportRSAKeyToBase64,
   generateAESKey,
   makeAESKeyNonextractable,
@@ -16,11 +17,11 @@ export const generateKeyPairs = async () => {
   keyPairsStore.set({
     encKeyPair: {
       publicKey: encKeyPair.publicKey,
-      privateKey: await makeRSAKeyNonextractable(encKeyPair.privateKey, "private"),
+      privateKey: await makeRSAEncKeyNonextractable(encKeyPair.privateKey, "private"),
     },
     sigKeyPair: {
       publicKey: sigKeyPair.publicKey,
-      privateKey: await makeRSAKeyNonextractable(sigKeyPair.privateKey, "private"),
+      privateKey: await makeRSASigKeyNonextractable(sigKeyPair.privateKey, "private"),
     },
   });
 
