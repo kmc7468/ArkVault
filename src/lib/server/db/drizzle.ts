@@ -8,7 +8,6 @@ const db = drizzle(client);
 
 export const migrateDB = () => {
   if (process.env.NODE_ENV === "production") {
-    console.log("test");
     migrate(db, { migrationsFolder: "./drizzle" });
   }
 };
