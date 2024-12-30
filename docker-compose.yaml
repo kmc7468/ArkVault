@@ -1,6 +1,5 @@
 services:
   server:
-    container_name: arkvault-server
     build: .
     restart: unless-stopped
     volumes:
