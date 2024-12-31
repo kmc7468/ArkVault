@@ -8,6 +8,7 @@ import {
   createUserClient,
   getAllUserClients,
   getUserClient,
+  getUserClientWithDetails,
   setUserClientStateToPending,
   registerUserClientChallenge,
   getUserClientChallenge,
@@ -16,6 +17,15 @@ import {
 import { verifyPubKey, verifySignature, generateChallenge } from "$lib/server/modules/crypto";
 import { isInitialMekNeeded } from "$lib/server/modules/mek";
 import env from "$lib/server/loadenv";
+
+export const getUserClientEncPubKey = async (userId: number, clientId: number) => {
+  const userClient = await getUserClientWithDetails(userId, clientId);
+  if (!userClient || userClient.user_client.state === "challenging") {
+    error(400, "Invalid client ID");
+  }
+
+  return { encPubKey: userClient.client.encPubKey };
+};
 
 export const getUserClientList = async (userId: number) => {
   const userClients = await getAllUserClients(userId);

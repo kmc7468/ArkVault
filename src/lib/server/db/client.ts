@@ -62,6 +62,16 @@ export const getUserClient = async (userId: number, clientId: number) => {
   return userClients[0] ?? null;
 };
 
+export const getUserClientWithDetails = async (userId: number, clientId: number) => {
+  const userClients = await db
+    .select()
+    .from(userClient)
+    .innerJoin(client, eq(userClient.clientId, client.id))
+    .where(and(eq(userClient.userId, userId), eq(userClient.clientId, clientId)))
+    .execute();
+  return userClients[0] ?? null;
+};
+
 export const setUserClientStateToPending = async (userId: number, clientId: number) => {
   await db
     .update(userClient)

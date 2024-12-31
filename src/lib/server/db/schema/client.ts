@@ -4,7 +4,7 @@ import { user } from "./user";
 export const client = sqliteTable(
   "client",
   {
-    id: integer("id").primaryKey(),
+    id: integer("id").primaryKey({ autoIncrement: true }),
     encPubKey: text("encryption_public_key").notNull().unique(), // Base64
     sigPubKey: text("signature_public_key").notNull().unique(), // Base64
   },
