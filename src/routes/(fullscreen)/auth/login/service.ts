@@ -3,6 +3,8 @@ import { requestTokenUpgrade as requestTokenUpgradeInternal } from "$lib/service
 import { requestClientRegistration } from "$lib/services/key";
 import type { ClientKeys } from "$lib/stores";
 
+export { requestMasterKeyDownload } from "$lib/services/key";
+
 export const requestLogin = async (email: string, password: string) => {
   const res = await fetch("/api/auth/login", {
     method: "POST",

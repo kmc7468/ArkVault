@@ -5,13 +5,17 @@
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
   import { TextInput } from "$lib/components/inputs";
   import { refreshToken } from "$lib/hooks/callAPI";
-  import { clientKeyStore } from "$lib/stores";
-  import { requestLogin, requestTokenUpgrade } from "./service";
+  import { clientKeyStore, masterKeyStore } from "$lib/stores";
+  import { requestLogin, requestTokenUpgrade, requestMasterKeyDownload } from "./service";
 
   let { data } = $props();
 
   let email = $state("");
   let password = $state("");
+
+  const redirect = async (url: string) => {
+    return await goto(`${url}?redirect=${encodeURIComponent(data.redirectPath)}`);
+  };
 
   const login = async () => {
     // TODO: Validation
@@ -19,14 +23,17 @@
     try {
       if (!(await requestLogin(email, password))) throw new Error("Failed to login");
 
-      if ($clientKeyStore && !(await requestTokenUpgrade($clientKeyStore)))
-        throw new Error("Failed to upgrade token");
+      if (!$clientKeyStore) return await redirect("/key/generate");
 
-      await goto(
-        $clientKeyStore
-          ? data.redirectPath
-          : "/key/generate?redirect=" + encodeURIComponent(data.redirectPath),
-      );
+      if (!(await requestTokenUpgrade($clientKeyStore))) throw new Error("Failed to upgrade token");
+
+      // TODO: Multi-user support
+
+      if ($masterKeyStore || (await requestMasterKeyDownload($clientKeyStore.decryptKey))) {
+        await goto(data.redirectPath);
+      } else {
+        await redirect("/client/pending");
+      }
     } catch (e) {
       // TODO: Alert
       throw e;

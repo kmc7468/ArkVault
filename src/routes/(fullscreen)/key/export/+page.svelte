@@ -76,7 +76,7 @@
       )
         throw new Error("Failed to register initial MEK");
 
-      await goto(data.redirectPath);
+      await goto("/client/pending?redirect=" + encodeURIComponent(data.redirectPath));
     } catch (e) {
       // TODO: Error handling
       throw e;
