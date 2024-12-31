@@ -5,7 +5,7 @@
   import { gotoStateful } from "$lib/hooks";
   import { clientKeyStore } from "$lib/stores";
   import Order from "./Order.svelte";
-  import { generateClientKeys, generateMekDraft } from "./service";
+  import { generateClientKeys, generateInitialMasterKey } from "./service";
 
   import IconKey from "~icons/material-symbols/key";
 
@@ -34,13 +34,13 @@
   const generate = async () => {
     // TODO: Loading indicator
 
-    const clientKeys = await generateClientKeys();
-    const { mekDraft } = await generateMekDraft();
+    const { encryptKey, ...clientKeys } = await generateClientKeys();
+    const { masterKeyWrapped } = await generateInitialMasterKey(encryptKey);
 
     await gotoStateful("/key/export", {
       ...clientKeys,
       redirectPath: data.redirectPath,
-      mekDraft,
+      masterKeyWrapped,
     });
   };
 

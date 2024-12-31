@@ -1,13 +1,25 @@
-import { getRSAKey } from "$lib/indexedDB";
-import { clientKeyStore } from "$lib/stores";
+import { getClientKey, getMasterKeys } from "$lib/indexedDB";
+import { clientKeyStore, masterKeyStore } from "$lib/stores";
 
 export const prepareClientKeyStore = async () => {
-  const encryptKey = await getRSAKey("encrypt");
-  const decryptKey = await getRSAKey("decrypt");
-  const signKey = await getRSAKey("sign");
-  const verifyKey = await getRSAKey("verify");
+  const encryptKey = await getClientKey("encrypt");
+  const decryptKey = await getClientKey("decrypt");
+  const signKey = await getClientKey("sign");
+  const verifyKey = await getClientKey("verify");
   if (encryptKey && decryptKey && signKey && verifyKey) {
     clientKeyStore.set({ encryptKey, decryptKey, signKey, verifyKey });
+    return true;
+  } else {
+    return false;
+  }
+};
+
+export const prepareMasterKeyStore = async () => {
+  const masterKeys = await getMasterKeys();
+  if (masterKeys.length > 0) {
+    masterKeyStore.set(
+      new Map(masterKeys.map(({ version, state, key }) => [version, { state, masterKey: key }])),
+    );
     return true;
   } else {
     return false;

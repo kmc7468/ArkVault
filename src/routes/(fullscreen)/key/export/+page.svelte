@@ -11,7 +11,7 @@
     requestClientRegistration,
     storeClientKeys,
     requestTokenUpgrade,
-    requestInitialMekRegistration,
+    requestInitialMasterKeyRegistration,
   } from "./service";
 
   import IconKey from "~icons/material-symbols/key";
@@ -72,11 +72,7 @@
         throw new Error("Failed to upgrade token");
 
       if (
-        !(await requestInitialMekRegistration(
-          data.mekDraft,
-          $clientKeyStore.encryptKey,
-          $clientKeyStore.signKey,
-        ))
+        !(await requestInitialMasterKeyRegistration(data.masterKeyWrapped, $clientKeyStore.signKey))
       )
         throw new Error("Failed to register initial MEK");
 

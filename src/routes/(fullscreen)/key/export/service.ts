@@ -1,6 +1,6 @@
 import { callAPI } from "$lib/hooks";
-import { storeRSAKey } from "$lib/indexedDB";
-import { encodeToBase64, encryptRSAPlaintext, signRequest } from "$lib/modules/crypto";
+import { storeClientKey } from "$lib/indexedDB";
+import { encodeToBase64, signRequest } from "$lib/modules/crypto";
 import type { ClientKeys } from "$lib/stores";
 
 export { requestTokenUpgrade } from "$lib/services/auth";
@@ -35,18 +35,16 @@ export const exportClientKeys = (
 };
 
 export const storeClientKeys = async (clientKeys: ClientKeys) => {
-  await storeRSAKey(clientKeys.encryptKey, "encrypt");
-  await storeRSAKey(clientKeys.decryptKey, "decrypt");
-  await storeRSAKey(clientKeys.signKey, "sign");
-  await storeRSAKey(clientKeys.verifyKey, "verify");
+  await storeClientKey(clientKeys.encryptKey, "encrypt");
+  await storeClientKey(clientKeys.decryptKey, "decrypt");
+  await storeClientKey(clientKeys.signKey, "sign");
+  await storeClientKey(clientKeys.verifyKey, "verify");
 };
 
-export const requestInitialMekRegistration = async (
-  mekDraft: ArrayBuffer,
-  encryptKey: CryptoKey,
+export const requestInitialMasterKeyRegistration = async (
+  masterKeyWrapped: ArrayBuffer,
   signKey: CryptoKey,
 ) => {
-  const mekDraftEncrypted = await encryptRSAPlaintext(mekDraft, encryptKey);
   const res = await callAPI("/api/mek/register/initial", {
     method: "POST",
     headers: {
@@ -54,7 +52,7 @@ export const requestInitialMekRegistration = async (
     },
     body: await signRequest(
       {
-        mek: encodeToBase64(mekDraftEncrypted),
+        mek: encodeToBase64(masterKeyWrapped),
       },
       signKey,
     ),

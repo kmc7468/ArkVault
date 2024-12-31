@@ -1,26 +1,36 @@
 import { Dexie, type EntityTable } from "dexie";
 
-type RSAKeyUsage = "encrypt" | "decrypt" | "sign" | "verify";
+type ClientKeyUsage = "encrypt" | "decrypt" | "sign" | "verify";
 
-interface RSAKey {
-  usage: RSAKeyUsage;
+interface ClientKey {
+  usage: ClientKeyUsage;
+  key: CryptoKey;
+}
+
+type MasterKeyState = "active" | "retired";
+
+interface MasterKey {
+  version: number;
+  state: MasterKeyState;
   key: CryptoKey;
 }
 
 const keyStore = new Dexie("keyStore") as Dexie & {
-  rsaKey: EntityTable<RSAKey, "usage">;
+  clientKey: EntityTable<ClientKey, "usage">;
+  masterKey: EntityTable<MasterKey, "version">;
 };
 
 keyStore.version(1).stores({
-  rsaKey: "usage",
+  clientKey: "usage",
+  masterKey: "version",
 });
 
-export const getRSAKey = async (usage: RSAKeyUsage) => {
-  const key = await keyStore.rsaKey.get(usage);
+export const getClientKey = async (usage: ClientKeyUsage) => {
+  const key = await keyStore.clientKey.get(usage);
   return key?.key ?? null;
 };
 
-export const storeRSAKey = async (key: CryptoKey, usage: RSAKeyUsage) => {
+export const storeClientKey = async (key: CryptoKey, usage: ClientKeyUsage) => {
   switch (usage) {
     case "encrypt":
     case "verify":
@@ -39,5 +49,16 @@ export const storeRSAKey = async (key: CryptoKey, usage: RSAKeyUsage) => {
       }
       break;
   }
-  await keyStore.rsaKey.put({ usage, key });
+  await keyStore.clientKey.put({ usage, key });
+};
+
+export const getMasterKeys = async () => {
+  return await keyStore.masterKey.toArray();
+};
+
+export const storeMasterKeys = async (keys: MasterKey[]) => {
+  if (keys.some(({ key }) => key.extractable)) {
+    throw new Error("Master keys must be non-extractable");
+  }
+  await keyStore.masterKey.bulkPut(keys);
 };

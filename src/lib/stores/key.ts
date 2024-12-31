@@ -7,5 +7,11 @@ export interface ClientKeys {
   verifyKey: CryptoKey;
 }
 
+export interface MasterKey {
+  state: "active" | "retired" | "dead";
+  masterKey: CryptoKey;
+}
+
 export const clientKeyStore = writable<ClientKeys | null>(null);
-export const mekStore = writable<Map<number, CryptoKey>>(new Map());
+
+export const masterKeyStore = writable<Map<number, MasterKey> | null>(null);

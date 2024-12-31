@@ -18,7 +18,7 @@ export const generateRSAKeyPair = async (purpose: RSAKeyPurpose) => {
       hash: "SHA-256",
     } satisfies RsaHashedKeyGenParams,
     true,
-    purpose === "encryption" ? ["encrypt", "decrypt"] : ["sign", "verify"],
+    purpose === "encryption" ? ["encrypt", "decrypt", "wrapKey", "unwrapKey"] : ["sign", "verify"],
   );
 };
 
@@ -99,6 +99,33 @@ export const makeAESKeyNonextractable = async (key: CryptoKey) => {
 
 export const exportAESKey = async (key: CryptoKey) => {
   return await window.crypto.subtle.exportKey("raw", key);
+};
+
+export const wrapAESKeyUsingRSA = async (aesKey: CryptoKey, rsaPublicKey: CryptoKey) => {
+  return await window.crypto.subtle.wrapKey("raw", aesKey, rsaPublicKey, {
+    name: "RSA-OAEP",
+  } satisfies RsaOaepParams);
+};
+
+export const unwrapAESKeyUsingRSA = async (wrappedKey: BufferSource, rsaPrivateKey: CryptoKey) => {
+  return await window.crypto.subtle.unwrapKey(
+    "raw",
+    wrappedKey,
+    rsaPrivateKey,
+    {
+      name: "RSA-OAEP",
+    } satisfies RsaOaepParams,
+    {
+      name: "AES-GCM",
+      length: 256,
+    } satisfies AesKeyGenParams,
+    true,
+    ["encrypt", "decrypt"],
+  );
+};
+
+export const digestSHA256 = async (data: BufferSource) => {
+  return await window.crypto.subtle.digest("SHA-256", data);
 };
 
 export const signRequest = async <T>(data: T, privateKey: CryptoKey) => {

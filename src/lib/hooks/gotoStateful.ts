@@ -10,7 +10,7 @@ interface KeyExportState {
   signKeyBase64: string;
   verifyKeyBase64: string;
 
-  mekDraft: ArrayBuffer;
+  masterKeyWrapped: ArrayBuffer;
 }
 
 const useAutoNull = <T>(value: T | null) => {
