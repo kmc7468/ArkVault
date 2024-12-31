@@ -104,7 +104,7 @@ export const verifyUserClient = async (
   const client = await getClient(challenge.clientId);
   if (!client) {
     error(500, "Invalid challenge answer");
-  } else if (!verifySignature(answer, sigAnswer, client.sigPubKey)) {
+  } else if (!verifySignature(Buffer.from(answer, "base64"), sigAnswer, client.sigPubKey)) {
     error(401, "Invalid challenge answer signature");
   }
 

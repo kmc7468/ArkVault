@@ -1,18 +1,16 @@
 import { error } from "@sveltejs/kit";
-import { getAllUserClients, getClient, setUserClientStateToActive } from "$lib/server/db/client";
+import { getAllUserClients, setUserClientStateToActive } from "$lib/server/db/client";
 import {
   getAllValidClientMeks,
   registerInitialMek,
   registerActiveMek,
   getNextActiveMekVersion,
 } from "$lib/server/db/mek";
-import { verifySignature } from "$lib/server/modules/crypto";
 import { isInitialMekNeeded } from "$lib/server/modules/mek";
 
 interface NewClientMek {
   clientId: number;
   encMek: string;
-  sigEncMek: string;
 }
 
 export const getClientMekList = async (userId: number, clientId: number) => {
@@ -30,17 +28,9 @@ export const registerInitialActiveMek = async (
   userId: number,
   createdBy: number,
   encMek: string,
-  sigEncMek: string,
 ) => {
   if (!(await isInitialMekNeeded(userId))) {
     error(409, "Initial MEK already registered");
-  }
-
-  const client = await getClient(createdBy);
-  if (!client) {
-    error(500, "Invalid access token");
-  } else if (!verifySignature(encMek, sigEncMek, client.sigPubKey)) {
-    error(400, "Invalid signature");
   }
 
   await registerInitialMek(userId, createdBy, encMek);
@@ -61,17 +51,6 @@ export const registerNewActiveMek = async (
     )
   ) {
     error(400, "Invalid key list");
-  }
-
-  const client = await getClient(createdBy);
-  if (!client) {
-    error(500, "Invalid access token");
-  } else if (
-    !clientMeks.every(({ encMek, sigEncMek }) =>
-      verifySignature(encMek, sigEncMek, client.sigPubKey),
-    )
-  ) {
-    error(400, "Invalid signature");
   }
 
   const newMekVersion = await getNextActiveMekVersion(userId);

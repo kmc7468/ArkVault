@@ -28,7 +28,7 @@ export const requestClientRegistration = async (
   const answer = await decryptRSACiphertext(decodeFromBase64(challenge), decryptKey);
   const sigAnswer = await signRSAMessage(answer, signKey);
 
-  res = await callAPI("/api/client/verify", {
+  res = await callAPI("/api/client/register/verify", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -45,7 +45,7 @@ export const exportRSAKeyToBase64 = async (key: CryptoKey) => {
   return encodeToBase64((await exportRSAKey(key)).key);
 };
 
-export const encryptRSAPlaintext = async (plaintext: ArrayBuffer, publicKey: CryptoKey) => {
+export const encryptRSAPlaintext = async (plaintext: BufferSource, publicKey: CryptoKey) => {
   return await window.crypto.subtle.encrypt(
     {
       name: "RSA-OAEP",
@@ -55,7 +55,7 @@ export const encryptRSAPlaintext = async (plaintext: ArrayBuffer, publicKey: Cry
   );
 };
 
-export const decryptRSACiphertext = async (ciphertext: ArrayBuffer, privateKey: CryptoKey) => {
+export const decryptRSACiphertext = async (ciphertext: BufferSource, privateKey: CryptoKey) => {
   return await window.crypto.subtle.decrypt(
     {
       name: "RSA-OAEP",
@@ -65,7 +65,7 @@ export const decryptRSACiphertext = async (ciphertext: ArrayBuffer, privateKey: 
   );
 };
 
-export const signRSAMessage = async (message: ArrayBuffer, privateKey: CryptoKey) => {
+export const signRSAMessage = async (message: BufferSource, privateKey: CryptoKey) => {
   return await window.crypto.subtle.sign(
     {
       name: "RSA-PSS",
@@ -99,4 +99,13 @@ export const makeAESKeyNonextractable = async (key: CryptoKey) => {
 
 export const exportAESKey = async (key: CryptoKey) => {
   return await window.crypto.subtle.exportKey("raw", key);
+};
+
+export const signRequest = async <T>(data: T, privateKey: CryptoKey) => {
+  const dataBuffer = new TextEncoder().encode(JSON.stringify(data));
+  const signature = await signRSAMessage(dataBuffer, privateKey);
+  return JSON.stringify({
+    data,
+    signature: encodeToBase64(signature),
+  });
 };

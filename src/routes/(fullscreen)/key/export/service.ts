@@ -1,6 +1,6 @@
 import { callAPI } from "$lib/hooks";
 import { storeRSAKey } from "$lib/indexedDB";
-import { encodeToBase64, encryptRSAPlaintext, signRSAMessage } from "$lib/modules/crypto";
+import { encodeToBase64, encryptRSAPlaintext, signRequest } from "$lib/modules/crypto";
 import type { ClientKeys } from "$lib/stores";
 
 export { requestTokenUpgrade } from "$lib/services/auth";
@@ -47,16 +47,17 @@ export const requestInitialMekRegistration = async (
   signKey: CryptoKey,
 ) => {
   const mekDraftEncrypted = await encryptRSAPlaintext(mekDraft, encryptKey);
-  const mekDraftEncryptedSigned = await signRSAMessage(mekDraftEncrypted, signKey);
   const res = await callAPI("/api/mek/register/initial", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      mek: encodeToBase64(mekDraftEncrypted),
-      sigMek: encodeToBase64(mekDraftEncryptedSigned),
-    }),
+    body: await signRequest(
+      {
+        mek: encodeToBase64(mekDraftEncrypted),
+      },
+      signKey,
+    ),
   });
   return res.ok || res.status === 409;
 };
