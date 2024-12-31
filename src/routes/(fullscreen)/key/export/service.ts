@@ -1,6 +1,6 @@
 import { callAPI } from "$lib/hooks";
 import { storeClientKey } from "$lib/indexedDB";
-import { encodeToBase64, signRequest } from "$lib/modules/crypto";
+import { encodeToBase64, signRequest, signMasterKeyWrapped } from "$lib/modules/crypto";
 import type { ClientKeys } from "$lib/stores";
 
 export { requestTokenUpgrade } from "$lib/services/auth";
@@ -53,6 +53,7 @@ export const requestInitialMasterKeyRegistration = async (
     body: await signRequest(
       {
         mek: encodeToBase64(masterKeyWrapped),
+        mekSig: await signMasterKeyWrapped(1, masterKeyWrapped, signKey),
       },
       signKey,
     ),

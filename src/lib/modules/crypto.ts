@@ -76,6 +76,22 @@ export const signRSAMessage = async (message: BufferSource, privateKey: CryptoKe
   );
 };
 
+export const verifyRSASignature = async (
+  message: BufferSource,
+  signature: BufferSource,
+  publicKey: CryptoKey,
+) => {
+  return await window.crypto.subtle.verify(
+    {
+      name: "RSA-PSS",
+      saltLength: 32,
+    } satisfies RsaPssParams,
+    publicKey,
+    signature,
+    message,
+  );
+};
+
 export const generateAESKey = async () => {
   return await window.crypto.subtle.generateKey(
     {
@@ -135,4 +151,25 @@ export const signRequest = async <T>(data: T, privateKey: CryptoKey) => {
     data,
     signature: encodeToBase64(signature),
   });
+};
+
+export const signMasterKeyWrapped = async (
+  version: number,
+  masterKeyWrapped: ArrayBuffer,
+  privateKey: CryptoKey,
+) => {
+  const data = JSON.stringify({ version, key: encodeToBase64(masterKeyWrapped) });
+  const dataBuffer = new TextEncoder().encode(data);
+  return encodeToBase64(await signRSAMessage(dataBuffer, privateKey));
+};
+
+export const verifyMasterKeyWrappedSig = async (
+  version: number,
+  masterKeyWrappedBase64: string,
+  masterKeyWrappedSig: string,
+  publicKey: CryptoKey,
+) => {
+  const data = JSON.stringify({ version, key: masterKeyWrappedBase64 });
+  const dataBuffer = new TextEncoder().encode(data);
+  return await verifyRSASignature(dataBuffer, decodeFromBase64(masterKeyWrappedSig), publicKey);
 };

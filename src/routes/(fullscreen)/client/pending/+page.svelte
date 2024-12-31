@@ -16,11 +16,13 @@
     if ($masterKeyStore) {
       goto(data.redirectPath);
     } else if ($clientKeyStore) {
-      requestMasterKeyDownload($clientKeyStore.decryptKey).then(async (ok) => {
-        if (ok) {
-          return await goto(data.redirectPath);
-        }
-      });
+      requestMasterKeyDownload($clientKeyStore.decryptKey, $clientKeyStore.verifyKey).then(
+        async (ok) => {
+          if (ok) {
+            return await goto(data.redirectPath);
+          }
+        },
+      );
     }
   });
 </script>

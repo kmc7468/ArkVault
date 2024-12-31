@@ -29,7 +29,10 @@
 
       // TODO: Multi-user support
 
-      if ($masterKeyStore || (await requestMasterKeyDownload($clientKeyStore.decryptKey))) {
+      if (
+        $masterKeyStore ||
+        (await requestMasterKeyDownload($clientKeyStore.decryptKey, $clientKeyStore.verifyKey))
+      ) {
         await goto(data.redirectPath);
       } else {
         await redirect("/client/pending");

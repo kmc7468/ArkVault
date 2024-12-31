@@ -7,6 +7,7 @@ import {
   signRSAMessage,
   makeAESKeyNonextractable,
   unwrapAESKeyUsingRSA,
+  verifyMasterKeyWrappedSig,
 } from "$lib/modules/crypto";
 import { masterKeyStore } from "$lib/stores";
 
@@ -45,7 +46,7 @@ export const requestClientRegistration = async (
   return res.ok;
 };
 
-export const requestMasterKeyDownload = async (decryptKey: CryptoKey) => {
+export const requestMasterKeyDownload = async (decryptKey: CryptoKey, verfiyKey: CryptoKey) => {
   const res = await callAPI("/api/mek/list", { method: "GET" });
   if (!res.ok) return false;
 
@@ -55,17 +56,28 @@ export const requestMasterKeyDownload = async (decryptKey: CryptoKey) => {
       version: number;
       state: "active" | "retired";
       mek: string;
+      mekSig: string;
     }[];
   };
+
   const masterKeys = await Promise.all(
-    masterKeysWrapped.map(async ({ version, state, mek: masterKeyWrapped }) => ({
-      version,
-      state,
-      masterKey: await makeAESKeyNonextractable(
-        await unwrapAESKeyUsingRSA(decodeFromBase64(masterKeyWrapped), decryptKey),
-      ),
-    })),
+    masterKeysWrapped.map(
+      async ({ version, state, mek: masterKeyWrapped, mekSig: masterKeyWrappedSig }) => ({
+        version,
+        state,
+        masterKey: await makeAESKeyNonextractable(
+          await unwrapAESKeyUsingRSA(decodeFromBase64(masterKeyWrapped), decryptKey),
+        ),
+        isValid: await verifyMasterKeyWrappedSig(
+          version,
+          masterKeyWrapped,
+          masterKeyWrappedSig,
+          verfiyKey,
+        ),
+      }),
+    ),
   );
+  if (!masterKeys.every(({ isValid }) => isValid)) return false;
 
   await storeMasterKeys(
     masterKeys.map(({ version, state, masterKey }) => ({ version, state, key: masterKey })),

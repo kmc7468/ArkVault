@@ -30,8 +30,9 @@ export const clientMek = sqliteTable(
     clientId: integer("client_id")
       .notNull()
       .references(() => client.id),
-    mekVersion: integer("master_encryption_key_version").notNull(),
-    encMek: text("encrypted_master_encryption_key").notNull(),
+    mekVersion: integer("version").notNull(),
+    encMek: text("encrypted_key").notNull(), // Base64
+    encMekSig: text("encrypted_key_signature").notNull(), // Base64
   },
   (t) => ({
     pk: primaryKey({ columns: [t.userId, t.clientId, t.mekVersion] }),

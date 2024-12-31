@@ -11,14 +11,15 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     error(403, "Forbidden");
   }
 
-  const { mek } = await parseSignedRequest(
+  const { mek, mekSig } = await parseSignedRequest(
     clientId,
     await request.json(),
     z.object({
       mek: z.string().base64().nonempty(),
+      mekSig: z.string().base64().nonempty(),
     }),
   );
 
-  await registerInitialActiveMek(userId, clientId, mek);
+  await registerInitialActiveMek(userId, clientId, mek, mekSig);
   return text("MEK registered", { headers: { "Content-Type": "text/plain" } });
 };
