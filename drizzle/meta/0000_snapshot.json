@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "64e2c1ed-92bf-44d1-9094-7e3610b3224f",
+  "id": "901e84cd-f9eb-4329-a374-f71264675515",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "client": {
@@ -12,10 +12,17 @@
           "type": "integer",
           "primaryKey": true,
           "notNull": true,
+          "autoincrement": true
+        },
+        "encryption_public_key": {
+          "name": "encryption_public_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
           "autoincrement": false
         },
-        "public_key": {
-          "name": "public_key",
+        "signature_public_key": {
+          "name": "signature_public_key",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -23,10 +30,25 @@
         }
       },
       "indexes": {
-        "client_public_key_unique": {
-          "name": "client_public_key_unique",
+        "client_encryption_public_key_unique": {
+          "name": "client_encryption_public_key_unique",
           "columns": [
-            "public_key"
+            "encryption_public_key"
+          ],
+          "isUnique": true
+        },
+        "client_signature_public_key_unique": {
+          "name": "client_signature_public_key_unique",
+          "columns": [
+            "signature_public_key"
+          ],
+          "isUnique": true
+        },
+        "client_encryption_public_key_signature_public_key_unique": {
+          "name": "client_encryption_public_key_signature_public_key_unique",
+          "columns": [
+            "encryption_public_key",
+            "signature_public_key"
           ],
           "isUnique": true
         }
@@ -145,6 +167,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "is_used": {
+          "name": "is_used",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
         }
       },
       "indexes": {
@@ -187,6 +217,250 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "directory": {
+      "name": "directory",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "master_encryption_key_version": {
+          "name": "master_encryption_key_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encrypted_data_encryption_key": {
+          "name": "encrypted_data_encryption_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encrypted_at": {
+          "name": "encrypted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encrypted_name": {
+          "name": "encrypted_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "directory_encrypted_data_encryption_key_unique": {
+          "name": "directory_encrypted_data_encryption_key_unique",
+          "columns": [
+            "encrypted_data_encryption_key"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "directory_user_id_user_id_fk": {
+          "name": "directory_user_id_user_id_fk",
+          "tableFrom": "directory",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "directory_parent_id_directory_id_fk": {
+          "name": "directory_parent_id_directory_id_fk",
+          "tableFrom": "directory",
+          "tableTo": "directory",
+          "columnsFrom": [
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "directory_user_id_master_encryption_key_version_master_encryption_key_user_id_version_fk": {
+          "name": "directory_user_id_master_encryption_key_version_master_encryption_key_user_id_version_fk",
+          "tableFrom": "directory",
+          "tableTo": "master_encryption_key",
+          "columnsFrom": [
+            "user_id",
+            "master_encryption_key_version"
+          ],
+          "columnsTo": [
+            "user_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "file": {
+      "name": "file",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "path": {
+          "name": "path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "master_encryption_key_version": {
+          "name": "master_encryption_key_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encrypted_data_encryption_key": {
+          "name": "encrypted_data_encryption_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encrypted_at": {
+          "name": "encrypted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encrypted_name": {
+          "name": "encrypted_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "file_path_unique": {
+          "name": "file_path_unique",
+          "columns": [
+            "path"
+          ],
+          "isUnique": true
+        },
+        "file_encrypted_data_encryption_key_unique": {
+          "name": "file_encrypted_data_encryption_key_unique",
+          "columns": [
+            "encrypted_data_encryption_key"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "file_parent_id_directory_id_fk": {
+          "name": "file_parent_id_directory_id_fk",
+          "tableFrom": "file",
+          "tableTo": "directory",
+          "columnsFrom": [
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "file_user_id_user_id_fk": {
+          "name": "file_user_id_user_id_fk",
+          "tableFrom": "file",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "file_user_id_master_encryption_key_version_master_encryption_key_user_id_version_fk": {
+          "name": "file_user_id_master_encryption_key_version_master_encryption_key_user_id_version_fk",
+          "tableFrom": "file",
+          "tableTo": "master_encryption_key",
+          "columnsFrom": [
+            "user_id",
+            "master_encryption_key_version"
+          ],
+          "columnsTo": [
+            "user_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "client_master_encryption_key": {
       "name": "client_master_encryption_key",
       "columns": {
@@ -204,15 +478,22 @@
           "notNull": true,
           "autoincrement": false
         },
-        "master_encryption_key_version": {
-          "name": "master_encryption_key_version",
+        "version": {
+          "name": "version",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "encrypted_master_encryption_key": {
-          "name": "encrypted_master_encryption_key",
+        "encrypted_key": {
+          "name": "encrypted_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encrypted_key_signature": {
+          "name": "encrypted_key_signature",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -247,13 +528,13 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "client_master_encryption_key_user_id_master_encryption_key_version_master_encryption_key_user_id_version_fk": {
-          "name": "client_master_encryption_key_user_id_master_encryption_key_version_master_encryption_key_user_id_version_fk",
+        "client_master_encryption_key_user_id_version_master_encryption_key_user_id_version_fk": {
+          "name": "client_master_encryption_key_user_id_version_master_encryption_key_user_id_version_fk",
           "tableFrom": "client_master_encryption_key",
           "tableTo": "master_encryption_key",
           "columnsFrom": [
             "user_id",
-            "master_encryption_key_version"
+            "version"
           ],
           "columnsTo": [
             "user_id",
@@ -264,13 +545,13 @@
         }
       },
       "compositePrimaryKeys": {
-        "client_master_encryption_key_user_id_client_id_master_encryption_key_version_pk": {
+        "client_master_encryption_key_user_id_client_id_version_pk": {
           "columns": [
             "client_id",
-            "master_encryption_key_version",
-            "user_id"
+            "user_id",
+            "version"
           ],
-          "name": "client_master_encryption_key_user_id_client_id_master_encryption_key_version_pk"
+          "name": "client_master_encryption_key_user_id_client_id_version_pk"
         }
       },
       "uniqueConstraints": {}
@@ -434,6 +715,100 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "token_upgrade_challenge": {
+      "name": "token_upgrade_challenge",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "refresh_token_id": {
+          "name": "refresh_token_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "challenge": {
+          "name": "challenge",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "allowed_ip": {
+          "name": "allowed_ip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "is_used": {
+          "name": "is_used",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {
+        "token_upgrade_challenge_challenge_unique": {
+          "name": "token_upgrade_challenge_challenge_unique",
+          "columns": [
+            "challenge"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "token_upgrade_challenge_refresh_token_id_refresh_token_id_fk": {
+          "name": "token_upgrade_challenge_refresh_token_id_refresh_token_id_fk",
+          "tableFrom": "token_upgrade_challenge",
+          "tableTo": "refresh_token",
+          "columnsFrom": [
+            "refresh_token_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "token_upgrade_challenge_client_id_client_id_fk": {
+          "name": "token_upgrade_challenge_client_id_client_id_fk",
+          "tableFrom": "token_upgrade_challenge",
+          "tableTo": "client",
+          "columnsFrom": [
+            "client_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "user": {
       "name": "user",
       "columns": {
@@ -442,7 +817,7 @@
           "type": "integer",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": true
         },
         "email": {
           "name": "email",
