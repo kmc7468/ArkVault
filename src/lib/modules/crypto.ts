@@ -92,7 +92,18 @@ export const verifyRSASignature = async (
   );
 };
 
-export const generateAESKey = async () => {
+export const generateAESMasterKey = async () => {
+  return await window.crypto.subtle.generateKey(
+    {
+      name: "AES-KW",
+      length: 256,
+    } satisfies AesKeyGenParams,
+    true,
+    ["wrapKey", "unwrapKey"],
+  );
+};
+
+export const generateAESDataKey = async () => {
   return await window.crypto.subtle.generateKey(
     {
       name: "AES-GCM",
@@ -117,13 +128,45 @@ export const exportAESKey = async (key: CryptoKey) => {
   return await window.crypto.subtle.exportKey("raw", key);
 };
 
-export const wrapAESKeyUsingRSA = async (aesKey: CryptoKey, rsaPublicKey: CryptoKey) => {
+export const encryptAESPlaintext = async (plaintext: BufferSource, aesKey: CryptoKey) => {
+  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+  const ciphertext = await window.crypto.subtle.encrypt(
+    {
+      name: "AES-GCM",
+      iv,
+    } satisfies AesGcmParams,
+    aesKey,
+    plaintext,
+  );
+  return { ciphertext, iv };
+};
+
+export const decryptAESCiphertext = async (
+  ciphertext: BufferSource,
+  iv: BufferSource,
+  aesKey: CryptoKey,
+) => {
+  return await window.crypto.subtle.decrypt(
+    {
+      name: "AES-GCM",
+      iv,
+    } satisfies AesGcmParams,
+    aesKey,
+    ciphertext,
+  );
+};
+
+export const wrapAESMasterKey = async (aesKey: CryptoKey, rsaPublicKey: CryptoKey) => {
   return await window.crypto.subtle.wrapKey("raw", aesKey, rsaPublicKey, {
     name: "RSA-OAEP",
   } satisfies RsaOaepParams);
 };
 
-export const unwrapAESKeyUsingRSA = async (wrappedKey: BufferSource, rsaPrivateKey: CryptoKey) => {
+export const wrapAESDataKey = async (aesKey: CryptoKey, aesWrapKey: CryptoKey) => {
+  return await window.crypto.subtle.wrapKey("raw", aesKey, aesWrapKey, "AES-KW");
+};
+
+export const unwrapAESMasterKey = async (wrappedKey: BufferSource, rsaPrivateKey: CryptoKey) => {
   return await window.crypto.subtle.unwrapKey(
     "raw",
     wrappedKey,
@@ -131,11 +174,20 @@ export const unwrapAESKeyUsingRSA = async (wrappedKey: BufferSource, rsaPrivateK
     {
       name: "RSA-OAEP",
     } satisfies RsaOaepParams,
-    {
-      name: "AES-GCM",
-      length: 256,
-    } satisfies AesKeyGenParams,
+    "AES-KW",
     true,
+    ["wrapKey", "unwrapKey"],
+  );
+};
+
+export const unwrapAESDataKey = async (wrappedKey: BufferSource, aesMasterKey: CryptoKey) => {
+  return await window.crypto.subtle.unwrapKey(
+    "raw",
+    wrappedKey,
+    aesMasterKey,
+    "AES-KW",
+    "AES-GCM",
+    false,
     ["encrypt", "decrypt"],
   );
 };

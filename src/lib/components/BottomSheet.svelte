@@ -18,10 +18,10 @@
     onclick={() => {
       isOpen = false;
     }}
-    class="fixed inset-0 flex items-end justify-center"
+    class="fixed inset-0 z-10 flex items-end justify-center"
   >
     <div class="absolute inset-0 bg-black bg-opacity-50" transition:fade={{ duration: 100 }}></div>
-    <div class="z-10">
+    <div class="z-20 w-full">
       <AdaptiveDiv>
         <div
           onclick={(e) => e.stopPropagation()}

@@ -6,7 +6,7 @@ import {
   decryptRSACiphertext,
   signRSAMessage,
   makeAESKeyNonextractable,
-  unwrapAESKeyUsingRSA,
+  unwrapAESMasterKey,
   verifyMasterKeyWrappedSig,
 } from "$lib/modules/crypto";
 import type {
@@ -51,7 +51,7 @@ export const requestMasterKeyDownload = async (decryptKey: CryptoKey, verfiyKey:
         version,
         state,
         masterKey: await makeAESKeyNonextractable(
-          await unwrapAESKeyUsingRSA(decodeFromBase64(masterKeyWrapped), decryptKey),
+          await unwrapAESMasterKey(decodeFromBase64(masterKeyWrapped), decryptKey),
         ),
         isValid: await verifyMasterKeyWrappedSig(
           version,
@@ -68,7 +68,12 @@ export const requestMasterKeyDownload = async (decryptKey: CryptoKey, verfiyKey:
     masterKeys.map(({ version, state, masterKey }) => ({ version, state, key: masterKey })),
   );
   masterKeyStore.set(
-    new Map(masterKeys.map(({ version, state, masterKey }) => [version, { state, masterKey }])),
+    new Map(
+      masterKeys.map(({ version, state, masterKey }) => [
+        version,
+        { version, state, key: masterKey },
+      ]),
+    ),
   );
 
   return true;

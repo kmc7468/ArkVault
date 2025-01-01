@@ -2,9 +2,8 @@ import {
   generateRSAKeyPair,
   makeRSAKeyNonextractable,
   exportRSAKeyToBase64,
-  generateAESKey,
-  makeAESKeyNonextractable,
-  wrapAESKeyUsingRSA,
+  generateAESMasterKey,
+  wrapAESMasterKey,
 } from "$lib/modules/crypto";
 import { clientKeyStore } from "$lib/stores";
 
@@ -29,9 +28,8 @@ export const generateClientKeys = async () => {
 };
 
 export const generateInitialMasterKey = async (encryptKey: CryptoKey) => {
-  const masterKey = await generateAESKey();
+  const masterKey = await generateAESMasterKey();
   return {
-    masterKey: await makeAESKeyNonextractable(masterKey),
-    masterKeyWrapped: await wrapAESKeyUsingRSA(masterKey, encryptKey),
+    masterKeyWrapped: await wrapAESMasterKey(masterKey, encryptKey),
   };
 };

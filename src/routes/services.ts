@@ -18,7 +18,7 @@ export const prepareMasterKeyStore = async () => {
   const masterKeys = await getMasterKeys();
   if (masterKeys.length > 0) {
     masterKeyStore.set(
-      new Map(masterKeys.map(({ version, state, key }) => [version, { state, masterKey: key }])),
+      new Map(masterKeys.map(({ version, state, key }) => [version, { version, state, key }])),
     );
     return true;
   } else {

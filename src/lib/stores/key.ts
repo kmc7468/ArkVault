@@ -8,8 +8,9 @@ export interface ClientKeys {
 }
 
 export interface MasterKey {
+  version: number;
   state: "active" | "retired" | "dead";
-  masterKey: CryptoKey;
+  key: CryptoKey;
 }
 
 export const clientKeyStore = writable<ClientKeys | null>(null);

@@ -8,7 +8,7 @@
   let { placeholder, type = "text", value = $bindable("") }: Props = $props();
 </script>
 
-<div class="relative mt-6">
+<div class="relative mt-5">
   <input
     bind:value
     {type}

@@ -9,13 +9,13 @@
 
   let { children, color = "primary", onclick }: Props = $props();
 
-  let bgColorStyle = $derived(
+  const bgColorStyle = $derived(
     {
       primary: "bg-primary-600 active:bg-primary-500",
       gray: "bg-gray-300 active:bg-gray-400",
     }[color],
   );
-  let fontColorStyle = $derived(
+  const fontColorStyle = $derived(
     {
       primary: "text-white",
       gray: "text-gray-800",
