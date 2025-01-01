@@ -35,6 +35,15 @@ export const getInitialMek = async (userId: number) => {
   return meks[0] ?? null;
 };
 
+export const getActiveMekVersion = async (userId: number) => {
+  const meks = await db
+    .select({ version: mek.version })
+    .from(mek)
+    .where(and(eq(mek.userId, userId), eq(mek.state, "active")))
+    .execute();
+  return meks[0]?.version ?? null;
+};
+
 export const getAllValidClientMeks = async (userId: number, clientId: number) => {
   return await db
     .select()
