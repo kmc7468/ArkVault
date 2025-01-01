@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { fade, fly } from "svelte/transition";
+  import { AdaptiveDiv } from "$lib/components/divs";
 
   interface Props {
     children: Snippet;
@@ -20,12 +21,16 @@
     class="fixed inset-0 flex items-end justify-center"
   >
     <div class="absolute inset-0 bg-black bg-opacity-50" transition:fade={{ duration: 100 }}></div>
-    <div
-      onclick={(e) => e.stopPropagation()}
-      class="z-10 flex max-h-[70vh] min-h-[30vh] w-full items-stretch rounded-t-2xl bg-white p-4"
-      transition:fly={{ y: 100, duration: 200 }}
-    >
-      {@render children?.()}
+    <div class="z-10">
+      <AdaptiveDiv>
+        <div
+          onclick={(e) => e.stopPropagation()}
+          class="flex max-h-[70vh] min-h-[30vh] w-full items-stretch rounded-t-2xl bg-white p-4"
+          transition:fly={{ y: 100, duration: 200 }}
+        >
+          {@render children?.()}
+        </div>
+      </AdaptiveDiv>
     </div>
   </div>
 {/if}

@@ -2,6 +2,6 @@
   let { children } = $props();
 </script>
 
-<div class="sticky bottom-0 flex w-full flex-col items-center gap-y-2 bg-white">
+<div class="sticky bottom-0 flex w-full flex-col items-center gap-y-2 bg-white pb-2">
   {@render children?.()}
 </div>
