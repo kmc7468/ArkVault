@@ -1,6 +1,6 @@
 import { error, text } from "@sveltejs/kit";
-import { z } from "zod";
 import { authenticate } from "$lib/server/modules/auth";
+import { clientRegisterVerifyRequest } from "$lib/server/schemas/client";
 import { verifyUserClient } from "$lib/server/services/client";
 import type { RequestHandler } from "./$types";
 
@@ -10,12 +10,7 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
     error(403, "Forbidden");
   }
 
-  const zodRes = z
-    .object({
-      answer: z.string().base64().nonempty(),
-      sigAnswer: z.string().base64().nonempty(),
-    })
-    .safeParse(await request.json());
+  const zodRes = clientRegisterVerifyRequest.safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");
   const { answer, sigAnswer } = zodRes.data;
 

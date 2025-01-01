@@ -6,11 +6,11 @@ import { isInitialMekNeeded, verifyClientEncMekSig } from "$lib/server/modules/m
 export const getClientMekList = async (userId: number, clientId: number) => {
   const clientMeks = await getAllValidClientMeks(userId, clientId);
   return {
-    meks: clientMeks.map((clientMek) => ({
+    encMeks: clientMeks.map((clientMek) => ({
       version: clientMek.master_encryption_key.version,
       state: clientMek.master_encryption_key.state,
-      mek: clientMek.client_master_encryption_key.encMek,
-      mekSig: clientMek.client_master_encryption_key.encMekSig,
+      encMek: clientMek.client_master_encryption_key.encMek,
+      encMekSig: clientMek.client_master_encryption_key.encMekSig,
     })),
   };
 };

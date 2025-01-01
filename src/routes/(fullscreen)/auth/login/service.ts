@@ -1,4 +1,5 @@
 import { exportRSAKeyToBase64 } from "$lib/modules/crypto";
+import type { LoginRequest } from "$lib/server/schemas";
 import { requestTokenUpgrade as requestTokenUpgradeInternal } from "$lib/services/auth";
 import { requestClientRegistration } from "$lib/services/key";
 import type { ClientKeys } from "$lib/stores";
@@ -11,7 +12,7 @@ export const requestLogin = async (email: string, password: string) => {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password } satisfies LoginRequest),
   });
   return res.ok;
 };

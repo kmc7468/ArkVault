@@ -1,9 +1,9 @@
 import { error, text } from "@sveltejs/kit";
-import { z } from "zod";
 import { authenticate } from "$lib/server/modules/auth";
 import { parseSignedRequest } from "$lib/server/modules/crypto";
+import { initialMasterKeyRegisterRequest } from "$lib/server/schemas/mek";
 import { registerInitialActiveMek } from "$lib/server/services/mek";
-import type { RequestHandler } from "@sveltejs/kit";
+import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
   const { userId, clientId } = authenticate(cookies);
@@ -14,10 +14,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
   const { mek, mekSig } = await parseSignedRequest(
     clientId,
     await request.json(),
-    z.object({
-      mek: z.string().base64().nonempty(),
-      mekSig: z.string().base64().nonempty(),
-    }),
+    initialMasterKeyRegisterRequest,
   );
 
   await registerInitialActiveMek(userId, clientId, mek, mekSig);

@@ -1,4 +1,4 @@
-import { callAPI } from "$lib/hooks";
+import { callGetApi, callPostApi } from "$lib/hooks";
 import { storeMasterKeys } from "$lib/indexedDB";
 import {
   encodeToBase64,
@@ -9,6 +9,12 @@ import {
   unwrapAESKeyUsingRSA,
   verifyMasterKeyWrappedSig,
 } from "$lib/modules/crypto";
+import type {
+  ClientRegisterRequest,
+  ClientRegisterResponse,
+  ClientRegisterVerifyRequest,
+  MasterKeyListResponse,
+} from "$lib/server/schemas";
 import { masterKeyStore } from "$lib/stores";
 
 export const requestClientRegistration = async (
@@ -17,49 +23,28 @@ export const requestClientRegistration = async (
   verifyKeyBase64: string,
   signKey: CryptoKey,
 ) => {
-  let res = await callAPI("/api/client/register", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      encPubKey: encryptKeyBase64,
-      sigPubKey: verifyKeyBase64,
-    }),
+  let res = await callPostApi<ClientRegisterRequest>("/api/client/register", {
+    encPubKey: encryptKeyBase64,
+    sigPubKey: verifyKeyBase64,
   });
   if (!res.ok) return false;
 
-  const { challenge } = await res.json();
+  const { challenge }: ClientRegisterResponse = await res.json();
   const answer = await decryptRSACiphertext(decodeFromBase64(challenge), decryptKey);
   const sigAnswer = await signRSAMessage(answer, signKey);
 
-  res = await callAPI("/api/client/register/verify", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      answer: encodeToBase64(answer),
-      sigAnswer: encodeToBase64(sigAnswer),
-    }),
+  res = await callPostApi<ClientRegisterVerifyRequest>("/api/client/register/verify", {
+    answer: encodeToBase64(answer),
+    sigAnswer: encodeToBase64(sigAnswer),
   });
   return res.ok;
 };
 
 export const requestMasterKeyDownload = async (decryptKey: CryptoKey, verfiyKey: CryptoKey) => {
-  const res = await callAPI("/api/mek/list", { method: "GET" });
+  const res = await callGetApi("/api/mek/list");
   if (!res.ok) return false;
 
-  const data = await res.json();
-  const { meks: masterKeysWrapped } = data as {
-    meks: {
-      version: number;
-      state: "active" | "retired";
-      mek: string;
-      mekSig: string;
-    }[];
-  };
-
+  const { meks: masterKeysWrapped }: MasterKeyListResponse = await res.json();
   const masterKeys = await Promise.all(
     masterKeysWrapped.map(
       async ({ version, state, mek: masterKeyWrapped, mekSig: masterKeyWrappedSig }) => ({

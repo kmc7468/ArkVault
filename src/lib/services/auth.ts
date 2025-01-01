@@ -4,6 +4,11 @@ import {
   decryptRSACiphertext,
   signRSAMessage,
 } from "$lib/modules/crypto";
+import type {
+  TokenUpgradeRequest,
+  TokenUpgradeResponse,
+  TokenUpgradeVerifyRequest,
+} from "$lib/server/schemas";
 
 export const requestTokenUpgrade = async (
   encryptKeyBase64: string,
@@ -19,11 +24,11 @@ export const requestTokenUpgrade = async (
     body: JSON.stringify({
       encPubKey: encryptKeyBase64,
       sigPubKey: verifyKeyBase64,
-    }),
+    } satisfies TokenUpgradeRequest),
   });
   if (!res.ok) return false;
 
-  const { challenge } = await res.json();
+  const { challenge }: TokenUpgradeResponse = await res.json();
   const answer = await decryptRSACiphertext(decodeFromBase64(challenge), decryptKey);
   const sigAnswer = await signRSAMessage(answer, signKey);
 
@@ -35,7 +40,7 @@ export const requestTokenUpgrade = async (
     body: JSON.stringify({
       answer: encodeToBase64(answer),
       sigAnswer: encodeToBase64(sigAnswer),
-    }),
+    } satisfies TokenUpgradeVerifyRequest),
   });
   return res.ok;
 };

@@ -4,7 +4,7 @@
   import { Button, TextButton } from "$lib/components/buttons";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
   import { TextInput } from "$lib/components/inputs";
-  import { refreshToken } from "$lib/hooks/callAPI";
+  import { refreshToken } from "$lib/hooks/callApi";
   import { clientKeyStore, masterKeyStore } from "$lib/stores";
   import { requestLogin, requestTokenUpgrade, requestMasterKeyDownload } from "./service";
 

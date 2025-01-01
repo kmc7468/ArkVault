@@ -1,2 +1,2 @@
-export { callAPI } from "./callAPI";
-export { gotoStateful } from "./gotoStateful";
+export * from "./callApi";
+export * from "./gotoStateful";
