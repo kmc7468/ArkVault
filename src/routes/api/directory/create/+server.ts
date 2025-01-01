@@ -7,7 +7,7 @@ import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
   const { userId, clientId } = await authorize(cookies, "activeClient");
-  const { parentId, mekVersion, dek, dekIv, name, nameIv } = await parseSignedRequest(
+  const { parentId, mekVersion, dek, name, nameIv } = await parseSignedRequest(
     clientId,
     await request.json(),
     directoryCreateRequest,
@@ -18,7 +18,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     parentId,
     mekVersion,
     encDek: dek,
-    encDekIv: dekIv,
     encName: name,
     encNameIv: nameIv,
   });

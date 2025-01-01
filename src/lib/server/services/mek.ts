@@ -8,7 +8,7 @@ export const getClientMekList = async (userId: number, clientId: number) => {
   return {
     encMeks: clientMeks.map((clientMek) => ({
       version: clientMek.master_encryption_key.version,
-      state: clientMek.master_encryption_key.state,
+      state: clientMek.master_encryption_key.state as "active" | "retired",
       encMek: clientMek.client_master_encryption_key.encMek,
       encMekSig: clientMek.client_master_encryption_key.encMekSig,
     })),

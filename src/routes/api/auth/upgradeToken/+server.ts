@@ -1,5 +1,9 @@
 import { error, json } from "@sveltejs/kit";
-import { tokenUpgradeRequest, tokenUpgradeResponse } from "$lib/server/schemas/auth";
+import {
+  tokenUpgradeRequest,
+  tokenUpgradeResponse,
+  type TokenUpgradeResponse,
+} from "$lib/server/schemas/auth";
 import { createTokenUpgradeChallenge } from "$lib/server/services/auth";
 import type { RequestHandler } from "./$types";
 
@@ -17,5 +21,5 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
     encPubKey,
     sigPubKey,
   );
-  return json(tokenUpgradeResponse.parse({ challenge }));
+  return json(tokenUpgradeResponse.parse({ challenge } satisfies TokenUpgradeResponse));
 };

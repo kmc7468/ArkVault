@@ -1,6 +1,6 @@
 import { json } from "@sveltejs/kit";
 import { authorize } from "$lib/server/modules/auth";
-import { masterKeyListResponse } from "$lib/server/schemas/mek";
+import { masterKeyListResponse, type MasterKeyListResponse } from "$lib/server/schemas/mek";
 import { getClientMekList } from "$lib/server/services/mek";
 import type { RequestHandler } from "./$types";
 
@@ -15,6 +15,6 @@ export const GET: RequestHandler = async ({ cookies }) => {
         mek: encMek,
         mekSig: encMekSig,
       })),
-    }),
+    } satisfies MasterKeyListResponse),
   );
 };

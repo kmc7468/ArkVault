@@ -9,7 +9,6 @@ export interface NewDirectroyParams {
   parentId: DirectroyId;
   mekVersion: number;
   encDek: string;
-  encDekIv: string;
   encName: string;
   encNameIv: string;
 }
@@ -30,7 +29,7 @@ export const registerNewDirectory = async (params: NewDirectroyParams) => {
       parentId: params.parentId === "root" ? null : params.parentId,
       userId: params.userId,
       mekVersion: params.mekVersion,
-      encDek: { ciphertext: params.encDek, iv: params.encDekIv },
+      encDek: params.encDek,
       encryptedAt: now,
       encName: { ciphertext: params.encName, iv: params.encNameIv },
     });

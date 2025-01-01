@@ -4,8 +4,8 @@ import { user } from "./user";
 
 const ciphertext = (name: string) =>
   text(name, { mode: "json" }).$type<{
-    ciphertext: string;
-    iv: string;
+    ciphertext: string; // Base64
+    iv: string; // Base64
   }>();
 
 export const directory = sqliteTable(
@@ -18,7 +18,7 @@ export const directory = sqliteTable(
       .notNull()
       .references(() => user.id),
     mekVersion: integer("master_encryption_key_version").notNull(),
-    encDek: ciphertext("encrypted_data_encryption_key").notNull().unique(),
+    encDek: text("encrypted_data_encryption_key").notNull().unique(), // Base64
     encryptedAt: integer("encrypted_at", { mode: "timestamp_ms" }).notNull(),
     encName: ciphertext("encrypted_name").notNull(),
   },
@@ -45,7 +45,7 @@ export const file = sqliteTable(
       .notNull()
       .references(() => user.id),
     mekVersion: integer("master_encryption_key_version").notNull(),
-    encDek: ciphertext("encrypted_data_encryption_key").notNull().unique(),
+    encDek: text("encrypted_data_encryption_key").notNull().unique(), // Base64
     encryptedAt: integer("encrypted_at", { mode: "timestamp_ms" }).notNull(),
     encName: ciphertext("encrypted_name").notNull(),
   },

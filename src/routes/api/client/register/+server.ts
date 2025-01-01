@@ -1,6 +1,10 @@
 import { error, json } from "@sveltejs/kit";
 import { authenticate } from "$lib/server/modules/auth";
-import { clientRegisterRequest, clientRegisterResponse } from "$lib/server/schemas/client";
+import {
+  clientRegisterRequest,
+  clientRegisterResponse,
+  type ClientRegisterResponse,
+} from "$lib/server/schemas/client";
 import { registerUserClient } from "$lib/server/services/client";
 import type { RequestHandler } from "./$types";
 
@@ -15,5 +19,5 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
   const { encPubKey, sigPubKey } = zodRes.data;
 
   const { challenge } = await registerUserClient(userId, getClientAddress(), encPubKey, sigPubKey);
-  return json(clientRegisterResponse.parse({ challenge }));
+  return json(clientRegisterResponse.parse({ challenge } satisfies ClientRegisterResponse));
 };

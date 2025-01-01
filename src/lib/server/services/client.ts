@@ -22,7 +22,7 @@ export const getUserClientList = async (userId: number) => {
   return {
     userClients: userClients.map(({ clientId, state }) => ({
       id: clientId,
-      state,
+      state: state as "pending" | "active",
     })),
   };
 };
@@ -83,7 +83,7 @@ export const getUserClientStatus = async (userId: number, clientId: number) => {
   }
 
   return {
-    state: userClient.state,
+    state: userClient.state as "pending" | "active",
     isInitialMekNeeded: await isInitialMekNeeded(userId),
   };
 };
