@@ -4,7 +4,7 @@
   let { children } = $props();
 </script>
 
-<div class="h-screen w-screen p-2">
+<div class="h-full w-full p-2">
   <AdaptiveDiv>
     {@render children?.()}
   </AdaptiveDiv>
