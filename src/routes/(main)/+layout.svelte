@@ -4,9 +4,9 @@
   let { children } = $props();
 </script>
 
-<div class="flex h-full w-full flex-col justify-between">
+<div class="flex h-dvh w-full flex-col justify-between">
   <div>
-    {@render children?.()}
+    {@render children()}
   </div>
   <BottomBar />
 </div>

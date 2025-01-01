@@ -55,7 +55,7 @@
   <title>암호 키 생성하기</title>
 </svetle:head>
 
-<div class="flex h-full flex-col justify-between">
+<div class="flex h-full flex-col justify-between overflow-auto">
   <TitleDiv>
     <div class="flex flex-col gap-y-2">
       <h1 class="text-3xl font-bold">암호 키 생성하기</h1>
