@@ -9,7 +9,9 @@
   let { data } = $props();
 
   const fingerprint = $derived(
-    $clientKeyStore ? generateEncryptKeyFingerprint($clientKeyStore.encryptKey) : undefined,
+    $clientKeyStore
+      ? generateEncryptKeyFingerprint($clientKeyStore.encryptKey, $clientKeyStore.verifyKey)
+      : undefined,
   );
 
   $effect(() => {

@@ -1,4 +1,4 @@
-import { signRequest } from "$lib/modules/crypto";
+import { signRequestBody } from "$lib/modules/crypto";
 
 export const refreshToken = async () => {
   return await fetch("/api/auth/refreshToken", { method: "POST" });
@@ -36,6 +36,6 @@ export const callSignedPostApi = async <T>(input: RequestInfo, payload: T, signK
     headers: {
       "Content-Type": "application/json",
     },
-    body: await signRequest(payload, signKey),
+    body: await signRequestBody(payload, signKey),
   });
 };

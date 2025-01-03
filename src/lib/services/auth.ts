@@ -1,9 +1,4 @@
-import {
-  encodeToBase64,
-  decodeFromBase64,
-  decryptRSACiphertext,
-  signRSAMessage,
-} from "$lib/modules/crypto";
+import { encodeToBase64, decryptChallenge, signMessage } from "$lib/modules/crypto";
 import type {
   TokenUpgradeRequest,
   TokenUpgradeResponse,
@@ -29,8 +24,8 @@ export const requestTokenUpgrade = async (
   if (!res.ok) return false;
 
   const { challenge }: TokenUpgradeResponse = await res.json();
-  const answer = await decryptRSACiphertext(decodeFromBase64(challenge), decryptKey);
-  const sigAnswer = await signRSAMessage(answer, signKey);
+  const answer = await decryptChallenge(challenge, decryptKey);
+  const sigAnswer = await signMessage(answer, signKey);
 
   res = await fetch("/api/auth/upgradeToken/verify", {
     method: "POST",

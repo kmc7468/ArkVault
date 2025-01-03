@@ -2,12 +2,10 @@ import { callGetApi, callPostApi } from "$lib/hooks";
 import { storeMasterKeys } from "$lib/indexedDB";
 import {
   encodeToBase64,
-  decodeFromBase64,
-  decryptRSACiphertext,
-  signRSAMessage,
-  makeAESKeyNonextractable,
-  unwrapAESMasterKey,
-  verifyMasterKeyWrappedSig,
+  decryptChallenge,
+  signMessage,
+  unwrapMasterKey,
+  verifyMasterKeyWrapped,
 } from "$lib/modules/crypto";
 import type {
   ClientRegisterRequest,
@@ -30,8 +28,8 @@ export const requestClientRegistration = async (
   if (!res.ok) return false;
 
   const { challenge }: ClientRegisterResponse = await res.json();
-  const answer = await decryptRSACiphertext(decodeFromBase64(challenge), decryptKey);
-  const sigAnswer = await signRSAMessage(answer, signKey);
+  const answer = await decryptChallenge(challenge, decryptKey);
+  const sigAnswer = await signMessage(answer, signKey);
 
   res = await callPostApi<ClientRegisterVerifyRequest>("/api/client/register/verify", {
     answer: encodeToBase64(answer),
@@ -47,19 +45,20 @@ export const requestMasterKeyDownload = async (decryptKey: CryptoKey, verfiyKey:
   const { meks: masterKeysWrapped }: MasterKeyListResponse = await res.json();
   const masterKeys = await Promise.all(
     masterKeysWrapped.map(
-      async ({ version, state, mek: masterKeyWrapped, mekSig: masterKeyWrappedSig }) => ({
-        version,
-        state,
-        masterKey: await makeAESKeyNonextractable(
-          await unwrapAESMasterKey(decodeFromBase64(masterKeyWrapped), decryptKey),
-        ),
-        isValid: await verifyMasterKeyWrappedSig(
+      async ({ version, state, mek: masterKeyWrapped, mekSig: masterKeyWrappedSig }) => {
+        const { masterKey } = await unwrapMasterKey(masterKeyWrapped, decryptKey);
+        return {
           version,
-          masterKeyWrapped,
-          masterKeyWrappedSig,
-          verfiyKey,
-        ),
-      }),
+          state,
+          masterKey,
+          isValid: await verifyMasterKeyWrapped(
+            version,
+            masterKeyWrapped,
+            masterKeyWrappedSig,
+            verfiyKey,
+          ),
+        };
+      },
     ),
   );
   if (!masterKeys.every(({ isValid }) => isValid)) return false;

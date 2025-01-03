@@ -2,11 +2,11 @@ import { callSignedPostApi } from "$lib/hooks";
 import {
   encodeToBase64,
   decodeFromBase64,
-  generateAESDataKey,
-  encryptAESPlaintext,
-  decryptAESCiphertext,
-  wrapAESDataKey,
-  unwrapAESDataKey,
+  generateDataKey,
+  wrapDataKey,
+  unwrapDataKey,
+  encryptData,
+  decryptData,
 } from "$lib/modules/crypto";
 import type { DirectroyInfoResponse, DirectoryCreateRequest } from "$lib/server/schemas";
 import type { MasterKey } from "$lib/stores";
@@ -15,14 +15,10 @@ export const decryptDirectroyMetadata = async (
   metadata: NonNullable<DirectroyInfoResponse["metadata"]>,
   masterKey: CryptoKey,
 ) => {
-  const dataDecryptKey = await unwrapAESDataKey(decodeFromBase64(metadata.dek), masterKey);
+  const { dataKey } = await unwrapDataKey(metadata.dek, masterKey);
   return {
     name: new TextDecoder().decode(
-      await decryptAESCiphertext(
-        decodeFromBase64(metadata.name),
-        decodeFromBase64(metadata.nameIv),
-        dataDecryptKey,
-      ),
+      await decryptData(decodeFromBase64(metadata.name), metadata.nameIv, dataKey),
     ),
   };
 };
@@ -33,16 +29,16 @@ export const requestDirectroyCreation = async (
   masterKey: MasterKey,
   signKey: CryptoKey,
 ) => {
-  const dataKey = await generateAESDataKey();
-  const nameEncrypted = await encryptAESPlaintext(new TextEncoder().encode(name), dataKey);
+  const { dataKey } = await generateDataKey();
+  const nameEncrypted = await encryptData(new TextEncoder().encode(name), dataKey);
   return await callSignedPostApi<DirectoryCreateRequest>(
     "/api/directory/create",
     {
       parentId,
       mekVersion: masterKey.version,
-      dek: encodeToBase64(await wrapAESDataKey(dataKey, masterKey.key)),
+      dek: await wrapDataKey(dataKey, masterKey.key),
       name: encodeToBase64(nameEncrypted.ciphertext),
-      nameIv: encodeToBase64(nameEncrypted.iv.buffer),
+      nameIv: nameEncrypted.iv,
     },
     signKey,
   );

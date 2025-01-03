@@ -1,10 +1,14 @@
-import { exportRSAKey, digestSHA256 } from "$lib/modules/crypto";
+import { concatenateBuffers, exportRSAKey, digestMessage } from "$lib/modules/crypto";
 
 export { requestMasterKeyDownload } from "$lib/services/key";
 
-export const generateEncryptKeyFingerprint = async (encryptKey: CryptoKey) => {
-  const { key } = await exportRSAKey(encryptKey);
-  const digest = await digestSHA256(key);
+export const generateEncryptKeyFingerprint = async (
+  encryptKey: CryptoKey,
+  verifyKey: CryptoKey,
+) => {
+  const { key: encryptKeyBuffer } = await exportRSAKey(encryptKey);
+  const { key: verifyKeyBuffer } = await exportRSAKey(verifyKey);
+  const digest = await digestMessage(concatenateBuffers(encryptKeyBuffer, verifyKeyBuffer));
   return Array.from(new Uint8Array(digest))
     .map((byte) => byte.toString(16).padStart(2, "0"))
     .join("")
