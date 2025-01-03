@@ -47,7 +47,7 @@
 
   onMount(async () => {
     if ($clientKeyStore) {
-      await goto(data.redirectPath);
+      await goto(data.redirectPath, { replaceState: true });
     }
   });
 </script>

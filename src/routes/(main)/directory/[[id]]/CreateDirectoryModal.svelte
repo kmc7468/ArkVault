@@ -18,7 +18,7 @@
   };
 </script>
 
-<Modal bind:isOpen onClose={closeModal}>
+<Modal bind:isOpen onclose={closeModal}>
   <div class="flex flex-col px-1">
     <p class="text-xl font-bold">새 폴더</p>
     <div class="my-4 flex w-full">

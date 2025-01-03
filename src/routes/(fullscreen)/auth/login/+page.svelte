@@ -46,7 +46,7 @@
   onMount(async () => {
     const res = await refreshToken();
     if (res.ok) {
-      await goto(data.redirectPath);
+      await goto(data.redirectPath, { replaceState: true });
     }
   });
 </script>

@@ -5,14 +5,14 @@
 
   interface Props {
     children: Snippet;
-    onClose?: () => void;
+    onclose?: () => void;
     isOpen: boolean;
   }
 
-  let { children, onClose, isOpen = $bindable() }: Props = $props();
+  let { children, onclose, isOpen = $bindable() }: Props = $props();
 
   const closeModal = $derived(
-    onClose ||
+    onclose ||
       (() => {
         isOpen = false;
       }),

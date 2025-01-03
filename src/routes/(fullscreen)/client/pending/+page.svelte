@@ -21,7 +21,7 @@
       ($clientKeyStore &&
         (await requestMasterKeyDownload($clientKeyStore.decryptKey, $clientKeyStore.verifyKey)))
     ) {
-      await goto(data.redirectPath);
+      await goto(data.redirectPath, { replaceState: true });
     }
   });
 </script>

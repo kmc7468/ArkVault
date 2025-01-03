@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { TopBar } from "$lib/components";
   import { FloatingButton } from "$lib/components/buttons";
   import { clientKeyStore, masterKeyStore } from "$lib/stores";
   import CreateBottomSheet from "./CreateBottomSheet.svelte";
@@ -20,25 +21,23 @@
       return decryptDirectroyMetadata(metadata, $masterKeyStore.get(metadata.mekVersion)!.key);
     }
   });
-  const subDirectoryMetadatas = $derived.by(() => {
+  const subDirectories = $derived.by(() => {
     const { subDirectories } = data;
     if ($masterKeyStore) {
       return Promise.all(
         subDirectories.map(async (subDirectory) => {
           const metadata = subDirectory.metadata!;
-          return await decryptDirectroyMetadata(
-            metadata,
-            $masterKeyStore.get(metadata.mekVersion)!.key,
-          );
+          return {
+            ...(await decryptDirectroyMetadata(
+              metadata,
+              $masterKeyStore.get(metadata.mekVersion)!.key,
+            )),
+            id: subDirectory.id,
+          };
         }),
-      );
-    }
-  });
-  const entries = $derived.by(() => {
-    if (subDirectoryMetadatas) {
-      return subDirectoryMetadatas.then((subDirectroyMetadatas) => {
-        subDirectroyMetadatas.sort((a, b) => a.name.localeCompare(b.name));
-        return subDirectroyMetadatas;
+      ).then((subDirectories) => {
+        subDirectories.sort((a, b) => a.name.localeCompare(b.name));
+        return subDirectories;
       });
     }
   });
@@ -58,12 +57,24 @@
   <title>파일</title>
 </svelte:head>
 
-<div class="relative h-full">
-  <div>
-    {#if entries}
-      {#await entries then entries}
-        {#each entries as { name }}
-          <DirectoryEntry {name} />
+<div class="relative flex h-full flex-col px-4">
+  {#if data.id !== "root"}
+    {#if !metadata}
+      <TopBar />
+    {:else}
+      {#await metadata}
+        <TopBar />
+      {:then metadata}
+        <TopBar title={metadata.name} />
+      {/await}
+    {/if}
+  {/if}
+
+  <div class="mt-4">
+    {#if subDirectories}
+      {#await subDirectories then subDirectories}
+        {#each subDirectories as { id, name }}
+          <DirectoryEntry {id} {name} />
         {/each}
       {/await}
     {/if}

@@ -21,7 +21,10 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
     directoryInfo.subDirectories.map(async (subDirectoryId) => {
       const res = await fetch(`/api/directory/${subDirectoryId}`);
       if (!res.ok) error(500, "Internal server error");
-      return (await res.json()) as DirectroyInfoResponse;
+      return {
+        ...((await res.json()) as DirectroyInfoResponse),
+        id: subDirectoryId,
+      };
     }),
   );
   const fileInfos = directoryInfo.files; // TODO
