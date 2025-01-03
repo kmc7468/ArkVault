@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { TitleDiv } from "$lib/components/divs";
   import { clientKeyStore, masterKeyStore } from "$lib/stores";
@@ -14,17 +15,13 @@
       : undefined,
   );
 
-  $effect(() => {
-    if ($masterKeyStore) {
-      goto(data.redirectPath);
-    } else if ($clientKeyStore) {
-      requestMasterKeyDownload($clientKeyStore.decryptKey, $clientKeyStore.verifyKey).then(
-        async (ok) => {
-          if (ok) {
-            return await goto(data.redirectPath);
-          }
-        },
-      );
+  onMount(async () => {
+    if (
+      $masterKeyStore ||
+      ($clientKeyStore &&
+        (await requestMasterKeyDownload($clientKeyStore.decryptKey, $clientKeyStore.verifyKey)))
+    ) {
+      await goto(data.redirectPath);
     }
   });
 </script>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { Button, TextButton } from "$lib/components/buttons";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
@@ -44,9 +45,9 @@
     });
   };
 
-  $effect(() => {
+  onMount(async () => {
     if ($clientKeyStore) {
-      goto(data.redirectPath);
+      await goto(data.redirectPath);
     }
   });
 </script>
