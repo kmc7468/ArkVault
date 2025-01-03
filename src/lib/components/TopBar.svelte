@@ -16,7 +16,7 @@
   });
 </script>
 
-<div class="relative mt-4 flex items-center justify-between">
+<div class="sticky top-0 flex items-center justify-between bg-white pt-4">
   <button onclick={back} class="rounded-full p-1 active:bg-gray-100">
     <IconArrowBack class="text-2xl" />
   </button>

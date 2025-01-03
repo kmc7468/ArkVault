@@ -57,7 +57,7 @@
   <title>파일</title>
 </svelte:head>
 
-<div class="relative flex h-full flex-col px-4">
+<div class="px-4">
   {#if data.id !== "root"}
     {#if !metadata}
       <TopBar />
@@ -69,8 +69,7 @@
       {/await}
     {/if}
   {/if}
-
-  <div class="mt-4">
+  <div class="my-4 pb-[4.5rem]">
     {#if subDirectories}
       {#await subDirectories then subDirectories}
         {#each subDirectories as { id, name }}
@@ -79,14 +78,14 @@
       {/await}
     {/if}
   </div>
-
-  <FloatingButton
-    icon={IconAdd}
-    onclick={() => {
-      isCreateBottomSheetOpen = true;
-    }}
-  />
 </div>
+
+<FloatingButton
+  icon={IconAdd}
+  onclick={() => {
+    isCreateBottomSheetOpen = true;
+  }}
+/>
 
 <CreateBottomSheet
   bind:isOpen={isCreateBottomSheetOpen}

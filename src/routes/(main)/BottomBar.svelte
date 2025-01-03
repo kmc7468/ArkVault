@@ -19,14 +19,14 @@
   // TODO: Navigation
 </script>
 
-<div class="sticky bottom-0 w-full rounded-t-2xl border-t border-gray-300 bg-white">
+<div
+  class="sticky bottom-0 h-20 w-full flex-shrink-0 rounded-t-2xl border-t border-gray-300 bg-white"
+>
   <AdaptiveDiv>
     <div class="flex w-full justify-evenly p-2">
       {#each pages as { path, label, icon: Icon }}
-        {@const isCurrent = page.url.pathname.startsWith(path)}
-        <button
-          class="w-16 active:rounded-xl active:bg-gray-100 {!isCurrent ? 'text-gray-600' : ''}"
-        >
+        {@const textColor = !page.url.pathname.startsWith(path) ? "text-gray-600" : ""}
+        <button class="w-16 active:rounded-xl active:bg-gray-100 {textColor}">
           <div class="gap-y flex flex-col items-center gap-y-1 p-1 transition active:scale-95">
             <Icon class="text-xl" fill="0" />
             <p class="text-sm">{label}</p>
