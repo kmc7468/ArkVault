@@ -15,7 +15,7 @@
 </script>
 
 <BottomSheet bind:isOpen>
-  <div class="flex w-full flex-col">
+  <div class="flex w-full flex-col py-4">
     <EntryButton onclick={onDirectoryCreate}>
       <div class="flex h-12 items-center justify-center gap-x-4">
         <IconCreateNewFolder class="text-2xl text-yellow-500" />

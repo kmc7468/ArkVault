@@ -5,11 +5,13 @@
   import CreateBottomSheet from "./CreateBottomSheet.svelte";
   import CreateDirectoryModal from "./CreateDirectoryModal.svelte";
   import DirectoryEntry from "./DirectoryEntry.svelte";
-  import { decryptDirectroyMetadata, requestDirectroyCreation } from "./service";
+  import { decryptDirectroyMetadata, requestDirectroyCreation, requestFileUpload } from "./service";
 
   import IconAdd from "~icons/material-symbols/add";
 
   let { data } = $props();
+
+  let fileInput: HTMLInputElement | undefined = $state();
 
   let isCreateBottomSheetOpen = $state(false);
   let isCreateDirectoryModalOpen = $state(false);
@@ -51,11 +53,20 @@
     );
     isCreateDirectoryModalOpen = false;
   };
+
+  const uploadFile = () => {
+    const file = fileInput?.files?.[0];
+    if (!file) return;
+
+    requestFileUpload(file, data.id, $masterKeyStore?.get(1)!, $clientKeyStore?.signKey!);
+  };
 </script>
 
 <svelte:head>
   <title>파일</title>
 </svelte:head>
+
+<input bind:this={fileInput} onchange={uploadFile} type="file" class="hidden" />
 
 <div class="px-4">
   {#if data.id !== "root"}
@@ -95,7 +106,7 @@
   }}
   onFileUpload={() => {
     isCreateBottomSheetOpen = false;
-    // TODO
+    fileInput?.click();
   }}
 />
 <CreateDirectoryModal bind:isOpen={isCreateDirectoryModalOpen} onCreateClick={createDirectory} />
