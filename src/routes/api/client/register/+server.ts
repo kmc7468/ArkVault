@@ -4,7 +4,7 @@ import {
   clientRegisterRequest,
   clientRegisterResponse,
   type ClientRegisterResponse,
-} from "$lib/server/schemas/client";
+} from "$lib/server/schemas";
 import { registerUserClient } from "$lib/server/services/client";
 import type { RequestHandler } from "./$types";
 

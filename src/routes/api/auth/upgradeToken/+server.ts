@@ -3,7 +3,7 @@ import {
   tokenUpgradeRequest,
   tokenUpgradeResponse,
   type TokenUpgradeResponse,
-} from "$lib/server/schemas/auth";
+} from "$lib/server/schemas";
 import { createTokenUpgradeChallenge } from "$lib/server/services/auth";
 import type { RequestHandler } from "./$types";
 

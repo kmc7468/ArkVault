@@ -1,7 +1,7 @@
 import { error, text } from "@sveltejs/kit";
 import ms from "ms";
 import env from "$lib/server/loadenv";
-import { tokenUpgradeVerifyRequest } from "$lib/server/schemas/auth";
+import { tokenUpgradeVerifyRequest } from "$lib/server/schemas";
 import { upgradeToken } from "$lib/server/services/auth";
 import type { RequestHandler } from "./$types";
 

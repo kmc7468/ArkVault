@@ -16,4 +16,5 @@ export default {
     userClientExp: env.USER_CLIENT_CHALLENGE_EXPIRES || "5m",
     tokenUpgradeExp: env.TOKEN_UPGRADE_CHALLENGE_EXPIRES || "5m",
   },
+  libraryPath: env.LIBRARY_PATH || "library",
 };

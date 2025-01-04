@@ -13,6 +13,17 @@ export interface NewDirectroyParams {
   encNameIv: string;
 }
 
+export interface NewFileParams {
+  path: string;
+  parentId: DirectroyId;
+  userId: number;
+  mekVersion: number;
+  encDek: string;
+  encContentIv: string;
+  encName: string;
+  encNameIv: string;
+}
+
 export const registerNewDirectory = async (params: NewDirectroyParams) => {
   return await db.transaction(async (tx) => {
     const meks = await tx
@@ -58,6 +69,31 @@ export const getDirectory = async (userId: number, directoryId: number) => {
   return res[0] ?? null;
 };
 
+export const registerNewFile = async (params: NewFileParams) => {
+  await db.transaction(async (tx) => {
+    const meks = await tx
+      .select()
+      .from(mek)
+      .where(and(eq(mek.userId, params.userId), eq(mek.state, "active")));
+    if (meks[0]?.version !== params.mekVersion) {
+      throw new Error("Invalid MEK version");
+    }
+
+    const now = new Date();
+    await tx.insert(file).values({
+      path: params.path,
+      parentId: params.parentId === "root" ? null : params.parentId,
+      createdAt: now,
+      userId: params.userId,
+      mekVersion: params.mekVersion,
+      encDek: params.encDek,
+      encryptedAt: now,
+      encContentIv: params.encContentIv,
+      encName: { ciphertext: params.encName, iv: params.encNameIv },
+    });
+  });
+};
+
 export const getAllFilesByParent = async (userId: number, parentId: DirectroyId) => {
   return await db
     .select()
@@ -69,4 +105,13 @@ export const getAllFilesByParent = async (userId: number, parentId: DirectroyId)
       ),
     )
     .execute();
+};
+
+export const getFile = async (userId: number, fileId: number) => {
+  const res = await db
+    .select()
+    .from(file)
+    .where(and(eq(file.userId, userId), eq(file.id, fileId)))
+    .execute();
+  return res[0] ?? null;
 };

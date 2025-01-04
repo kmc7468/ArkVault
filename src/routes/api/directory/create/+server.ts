@@ -1,7 +1,7 @@
 import { text } from "@sveltejs/kit";
 import { authorize } from "$lib/server/modules/auth";
 import { parseSignedRequest } from "$lib/server/modules/crypto";
-import { directoryCreateRequest } from "$lib/server/schemas/directory";
+import { directoryCreateRequest } from "$lib/server/schemas";
 import { createDirectory } from "$lib/server/services/file";
 import type { RequestHandler } from "./$types";
 

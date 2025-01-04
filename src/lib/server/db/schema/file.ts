@@ -47,6 +47,7 @@ export const file = sqliteTable(
     mekVersion: integer("master_encryption_key_version").notNull(),
     encDek: text("encrypted_data_encryption_key").notNull().unique(), // Base64
     encryptedAt: integer("encrypted_at", { mode: "timestamp_ms" }).notNull(),
+    encContentIv: text("encrypted_content_iv").notNull(), // Base64
     encName: ciphertext("encrypted_name").notNull(),
   },
   (t) => ({

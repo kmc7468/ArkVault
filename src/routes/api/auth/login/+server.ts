@@ -1,7 +1,7 @@
 import { error, text } from "@sveltejs/kit";
 import ms from "ms";
 import env from "$lib/server/loadenv";
-import { loginRequest } from "$lib/server/schemas/auth";
+import { loginRequest } from "$lib/server/schemas";
 import { login } from "$lib/server/services/auth";
 import type { RequestHandler } from "./$types";
 

@@ -1,7 +1,7 @@
 import { error, text } from "@sveltejs/kit";
 import { authenticate } from "$lib/server/modules/auth";
 import { parseSignedRequest } from "$lib/server/modules/crypto";
-import { initialMasterKeyRegisterRequest } from "$lib/server/schemas/mek";
+import { initialMasterKeyRegisterRequest } from "$lib/server/schemas";
 import { registerInitialActiveMek } from "$lib/server/services/mek";
 import type { RequestHandler } from "./$types";
 

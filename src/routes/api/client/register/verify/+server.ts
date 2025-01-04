@@ -1,6 +1,6 @@
 import { error, text } from "@sveltejs/kit";
 import { authenticate } from "$lib/server/modules/auth";
-import { clientRegisterVerifyRequest } from "$lib/server/schemas/client";
+import { clientRegisterVerifyRequest } from "$lib/server/schemas";
 import { verifyUserClient } from "$lib/server/services/client";
 import type { RequestHandler } from "./$types";
 

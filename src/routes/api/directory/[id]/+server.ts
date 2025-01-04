@@ -1,7 +1,7 @@
 import { error, json } from "@sveltejs/kit";
 import { z } from "zod";
 import { authorize } from "$lib/server/modules/auth";
-import { directroyInfoResponse, type DirectroyInfoResponse } from "$lib/server/schemas/directory";
+import { directroyInfoResponse, type DirectroyInfoResponse } from "$lib/server/schemas";
 import { getDirectroyInformation } from "$lib/server/services/file";
 import type { RequestHandler } from "./$types";
 
