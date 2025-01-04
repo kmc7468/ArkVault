@@ -1,6 +1,6 @@
 import { error } from "@sveltejs/kit";
 import { z } from "zod";
-import type { DirectroyInfoResponse } from "$lib/server/schemas";
+import type { DirectroyInfoResponse, FileInfoResponse } from "$lib/server/schemas";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
@@ -27,7 +27,16 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
       };
     }),
   );
-  const fileInfos = directoryInfo.files; // TODO
+  const fileInfos = await Promise.all(
+    directoryInfo.files.map(async (fileId) => {
+      const res = await fetch(`/api/file/${fileId}`);
+      if (!res.ok) error(500, "Internal server error");
+      return {
+        ...((await res.json()) as FileInfoResponse),
+        id: fileId,
+      };
+    }),
+  );
 
   return {
     id: directoryId,

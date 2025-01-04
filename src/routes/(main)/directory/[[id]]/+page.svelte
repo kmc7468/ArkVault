@@ -5,7 +5,12 @@
   import CreateBottomSheet from "./CreateBottomSheet.svelte";
   import CreateDirectoryModal from "./CreateDirectoryModal.svelte";
   import DirectoryEntry from "./DirectoryEntry.svelte";
-  import { decryptDirectroyMetadata, requestDirectroyCreation, requestFileUpload } from "./service";
+  import {
+    decryptDirectroyMetadata,
+    decryptFileMetadata,
+    requestDirectroyCreation,
+    requestFileUpload,
+  } from "./service";
 
   import IconAdd from "~icons/material-symbols/add";
 
@@ -40,6 +45,20 @@
       ).then((subDirectories) => {
         subDirectories.sort((a, b) => a.name.localeCompare(b.name));
         return subDirectories;
+      });
+    }
+  });
+  const files = $derived.by(() => {
+    const { files } = data;
+    if ($masterKeyStore) {
+      return Promise.all(
+        files.map(async (file) => ({
+          ...(await decryptFileMetadata(file!, $masterKeyStore.get(file.mekVersion)!.key)),
+          id: file.id,
+        })),
+      ).then((files) => {
+        files.sort((a, b) => a.name.localeCompare(b.name));
+        return files;
       });
     }
   });
@@ -84,7 +103,14 @@
     {#if subDirectories}
       {#await subDirectories then subDirectories}
         {#each subDirectories as { id, name }}
-          <DirectoryEntry {id} {name} />
+          <DirectoryEntry {id} {name} type="directory" />
+        {/each}
+      {/await}
+    {/if}
+    {#if files}
+      {#await files then files}
+        {#each files as { id, name }}
+          <DirectoryEntry {id} {name} type="file" />
         {/each}
       {/await}
     {/if}

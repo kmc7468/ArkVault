@@ -14,6 +14,7 @@ import type {
   DirectroyInfoResponse,
   DirectoryCreateRequest,
   FileUploadRequest,
+  FileInfoResponse,
 } from "$lib/server/schemas";
 import type { MasterKey } from "$lib/stores";
 
@@ -21,6 +22,15 @@ export const decryptDirectroyMetadata = async (
   metadata: NonNullable<DirectroyInfoResponse["metadata"]>,
   masterKey: CryptoKey,
 ) => {
+  const { dataKey } = await unwrapDataKey(metadata.dek, masterKey);
+  return {
+    name: new TextDecoder().decode(
+      await decryptData(decodeFromBase64(metadata.name), metadata.nameIv, dataKey),
+    ),
+  };
+};
+
+export const decryptFileMetadata = async (metadata: FileInfoResponse, masterKey: CryptoKey) => {
   const { dataKey } = await unwrapDataKey(metadata.dek, masterKey);
   return {
     name: new TextDecoder().decode(

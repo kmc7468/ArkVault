@@ -17,13 +17,15 @@
 </script>
 
 <div class="sticky top-0 flex items-center justify-between bg-white pt-4">
-  <button onclick={back} class="rounded-full p-1 active:bg-gray-100">
+  <button onclick={back} class="w-[2.3rem] flex-shrink-0 rounded-full p-1 active:bg-gray-100">
     <IconArrowBack class="text-2xl" />
   </button>
   {#if title}
-    <p class="absolute left-1/2 -translate-x-1/2 transform text-lg font-semibold">{title}</p>
+    <p class="flex-grow truncate px-2 text-center text-lg font-semibold">{title}</p>
   {/if}
-  {#if children}
-    {@render children?.()}
-  {/if}
+  <div class="min-w-[2.3rem] flex-shrink-0">
+    {#if children}
+      {@render children?.()}
+    {/if}
+  </div>
 </div>
