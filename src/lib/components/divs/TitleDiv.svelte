@@ -11,7 +11,7 @@
 </script>
 
 <div>
-  <div class="box-content flex min-h-[10vh] items-center pt-2">
+  <div class="box-content flex min-h-[10vh] items-center pt-4">
     {#if Icon}
       <Icon class="text-5xl text-gray-600" />
     {/if}

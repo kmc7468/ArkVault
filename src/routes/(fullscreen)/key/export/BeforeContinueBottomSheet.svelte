@@ -13,7 +13,7 @@
 </script>
 
 <BottomSheet bind:isOpen>
-  <div class="flex flex-col justify-between space-y-4">
+  <div class="flex flex-col justify-between space-y-4 pt-4">
     <div class="space-y-2">
       <p class="break-keep text-xl font-bold">암호 키 파일을 저장하셨나요?</p>
       <p class="break-keep">

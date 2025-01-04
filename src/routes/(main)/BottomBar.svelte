@@ -23,7 +23,7 @@
   class="sticky bottom-0 h-20 w-full flex-shrink-0 rounded-t-2xl border-t border-gray-300 bg-white"
 >
   <AdaptiveDiv>
-    <div class="flex w-full justify-evenly p-2">
+    <div class="flex w-full justify-evenly px-4 py-2">
       {#each pages as { path, label, icon: Icon }}
         {@const textColor = !page.url.pathname.startsWith(path) ? "text-gray-600" : ""}
         <button class="w-16 active:rounded-xl active:bg-gray-100 {textColor}">

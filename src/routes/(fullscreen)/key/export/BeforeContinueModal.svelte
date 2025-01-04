@@ -11,7 +11,7 @@
 </script>
 
 <Modal bind:isOpen>
-  <div class="space-y-4 px-1">
+  <div class="space-y-4">
     <div class="space-y-2">
       <p class="break-keep text-xl font-bold">내보내지 않고 계속할까요?</p>
       <p class="break-keep">암호 키 파일은 유출 방지를 위해 이 화면에서만 저장할 수 있어요.</p>

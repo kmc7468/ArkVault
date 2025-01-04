@@ -24,7 +24,7 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     onclick={closeModal}
-    class="fixed inset-0 z-10 bg-black bg-opacity-50 px-2"
+    class="fixed inset-0 z-10 bg-black bg-opacity-50 px-4"
     transition:fade={{ duration: 100 }}
   >
     <AdaptiveDiv>

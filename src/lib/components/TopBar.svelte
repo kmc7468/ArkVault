@@ -21,7 +21,7 @@
     <IconArrowBack class="text-2xl" />
   </button>
   {#if title}
-    <p class="absolute left-1/2 -translate-x-1/2 transform text-xl font-semibold">{title}</p>
+    <p class="absolute left-1/2 -translate-x-1/2 transform text-lg font-semibold">{title}</p>
   {/if}
   {#if children}
     {@render children?.()}
