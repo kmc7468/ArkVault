@@ -1,10 +1,22 @@
+<script module lang="ts">
+  export interface SelectedDiretoryEntry {
+    type: "directory" | "file";
+    id: number;
+    name: string;
+  }
+</script>
+
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { TopBar } from "$lib/components";
   import { FloatingButton } from "$lib/components/buttons";
   import { clientKeyStore, masterKeyStore } from "$lib/stores";
   import CreateBottomSheet from "./CreateBottomSheet.svelte";
   import CreateDirectoryModal from "./CreateDirectoryModal.svelte";
+  import DeleteDirectoryEntryModal from "./DeleteDirectoryEntryModal.svelte";
   import DirectoryEntry from "./DirectoryEntry.svelte";
+  import DirectoryEntryMenuBottomSheet from "./DirectoryEntryMenuBottomSheet.svelte";
+  import RenameDirectoryEntryModal from "./RenameDirectoryEntryModal.svelte";
   import {
     decryptDirectroyMetadata,
     decryptFileMetadata,
@@ -17,9 +29,14 @@
   let { data } = $props();
 
   let fileInput: HTMLInputElement | undefined = $state();
+  let selectedEntry: SelectedDiretoryEntry | undefined = $state();
 
   let isCreateBottomSheetOpen = $state(false);
   let isCreateDirectoryModalOpen = $state(false);
+
+  let isDirectoryEntryMenuBottomSheetOpen = $state(false);
+  let isRenameDirectoryEntryModalOpen = $state(false);
+  let isDeleteDirectoryEntryModalOpen = $state(false);
 
   // TODO: FIX ME
   const metadata = $derived.by(() => {
@@ -103,14 +120,30 @@
     {#if subDirectories}
       {#await subDirectories then subDirectories}
         {#each subDirectories as { id, name }}
-          <DirectoryEntry {id} {name} type="directory" />
+          <DirectoryEntry
+            {name}
+            onclick={() => goto(`/directory/${id}`)}
+            onOpenMenuClick={() => {
+              selectedEntry = { type: "directory", id, name };
+              isDirectoryEntryMenuBottomSheetOpen = true;
+            }}
+            type="directory"
+          />
         {/each}
       {/await}
     {/if}
     {#if files}
       {#await files then files}
         {#each files as { id, name }}
-          <DirectoryEntry {id} {name} type="file" />
+          <DirectoryEntry
+            {name}
+            onclick={() => goto(`/file/${id}`)}
+            onOpenMenuClick={() => {
+              selectedEntry = { type: "file", id, name };
+              isDirectoryEntryMenuBottomSheetOpen = true;
+            }}
+            type="file"
+          />
         {/each}
       {/await}
     {/if}
@@ -126,13 +159,28 @@
 
 <CreateBottomSheet
   bind:isOpen={isCreateBottomSheetOpen}
-  onDirectoryCreate={() => {
+  onDirectoryCreateClick={() => {
     isCreateBottomSheetOpen = false;
     isCreateDirectoryModalOpen = true;
   }}
-  onFileUpload={() => {
+  onFileUploadClick={() => {
     isCreateBottomSheetOpen = false;
     fileInput?.click();
   }}
 />
 <CreateDirectoryModal bind:isOpen={isCreateDirectoryModalOpen} onCreateClick={createDirectory} />
+
+<DirectoryEntryMenuBottomSheet
+  bind:isOpen={isDirectoryEntryMenuBottomSheetOpen}
+  bind:selectedEntry
+  onRenameClick={() => {
+    isDirectoryEntryMenuBottomSheetOpen = false;
+    isRenameDirectoryEntryModalOpen = true;
+  }}
+  onDeleteClick={() => {
+    isDirectoryEntryMenuBottomSheetOpen = false;
+    isDeleteDirectoryEntryModalOpen = true;
+  }}
+/>
+<RenameDirectoryEntryModal bind:isOpen={isRenameDirectoryEntryModalOpen} bind:selectedEntry />
+<DeleteDirectoryEntryModal bind:isOpen={isDeleteDirectoryEntryModalOpen} bind:selectedEntry />

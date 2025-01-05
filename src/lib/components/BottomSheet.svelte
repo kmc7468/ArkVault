@@ -5,21 +5,24 @@
 
   interface Props {
     children: Snippet;
+    onclose?: () => void;
     isOpen: boolean;
   }
 
-  let { children, isOpen = $bindable() }: Props = $props();
+  let { children, onclose, isOpen = $bindable() }: Props = $props();
+
+  const closeBottomSheet = $derived(
+    onclose ||
+      (() => {
+        isOpen = false;
+      }),
+  );
 </script>
 
 {#if isOpen}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div
-    onclick={() => {
-      isOpen = false;
-    }}
-    class="fixed inset-0 z-10 flex items-end justify-center"
-  >
+  <div onclick={closeBottomSheet} class="fixed inset-0 z-10 flex items-end justify-center">
     <div class="absolute inset-0 bg-black bg-opacity-50" transition:fade={{ duration: 100 }}></div>
     <div class="z-20 w-full">
       <AdaptiveDiv>
