@@ -2,7 +2,7 @@ import { text } from "@sveltejs/kit";
 import { authorize } from "$lib/server/modules/auth";
 import { parseSignedRequest } from "$lib/server/modules/crypto";
 import { directoryCreateRequest } from "$lib/server/schemas";
-import { createDirectory } from "$lib/server/services/file";
+import { createDirectory } from "$lib/server/services/directory";
 import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ request, cookies }) => {

@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+export const directoryRenameRequest = z.object({
+  name: z.string().base64().nonempty(),
+  nameIv: z.string().base64().nonempty(),
+});
+export type DirectoryRenameRequest = z.infer<typeof directoryRenameRequest>;
+
 export const directroyInfoResponse = z.object({
   metadata: z
     .object({

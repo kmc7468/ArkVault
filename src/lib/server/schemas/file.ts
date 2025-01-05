@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+export const fileRenameRequest = z.object({
+  name: z.string().base64().nonempty(),
+  nameIv: z.string().base64().nonempty(),
+});
+export type FileRenameRequest = z.infer<typeof fileRenameRequest>;
+
 export const fileInfoResponse = z.object({
   createdAt: z.date(),
   mekVersion: z.number().int().positive(),
