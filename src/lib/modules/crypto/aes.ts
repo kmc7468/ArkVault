@@ -1,4 +1,4 @@
-import { encodeToBase64, decodeFromBase64 } from "./util";
+import { encodeString, decodeString, encodeToBase64, decodeFromBase64 } from "./util";
 
 export const generateMasterKey = async () => {
   return {
@@ -80,4 +80,13 @@ export const decryptData = async (ciphertext: BufferSource, iv: string, dataKey:
     dataKey,
     ciphertext,
   );
+};
+
+export const encryptString = async (plaintext: string, dataKey: CryptoKey) => {
+  const { ciphertext, iv } = await encryptData(encodeString(plaintext), dataKey);
+  return { ciphertext: encodeToBase64(ciphertext), iv };
+};
+
+export const decryptString = async (ciphertext: string, iv: string, dataKey: CryptoKey) => {
+  return decodeString(await decryptData(decodeFromBase64(ciphertext), iv, dataKey));
 };

@@ -1,12 +1,12 @@
 import { callSignedPostApi } from "$lib/hooks";
 import {
   encodeToBase64,
-  decodeFromBase64,
   generateDataKey,
   wrapDataKey,
   unwrapDataKey,
   encryptData,
-  decryptData,
+  encryptString,
+  decryptString,
   digestMessage,
   signRequestBody,
 } from "$lib/modules/crypto";
@@ -14,9 +14,10 @@ import type {
   DirectroyInfoResponse,
   DirectoryCreateRequest,
   FileUploadRequest,
-  FileInfoResponse,
 } from "$lib/server/schemas";
 import type { MasterKey } from "$lib/stores";
+
+export { decryptFileMetadata } from "$lib/services/file";
 
 export const decryptDirectroyMetadata = async (
   metadata: NonNullable<DirectroyInfoResponse["metadata"]>,
@@ -24,18 +25,7 @@ export const decryptDirectroyMetadata = async (
 ) => {
   const { dataKey } = await unwrapDataKey(metadata.dek, masterKey);
   return {
-    name: new TextDecoder().decode(
-      await decryptData(decodeFromBase64(metadata.name), metadata.nameIv, dataKey),
-    ),
-  };
-};
-
-export const decryptFileMetadata = async (metadata: FileInfoResponse, masterKey: CryptoKey) => {
-  const { dataKey } = await unwrapDataKey(metadata.dek, masterKey);
-  return {
-    name: new TextDecoder().decode(
-      await decryptData(decodeFromBase64(metadata.name), metadata.nameIv, dataKey),
-    ),
+    name: await decryptString(metadata.name, metadata.nameIv, dataKey),
   };
 };
 
@@ -69,7 +59,7 @@ export const requestFileUpload = async (
   const { dataKey } = await generateDataKey();
   const fileEncrypted = await encryptData(await file.arrayBuffer(), dataKey);
   const fileEncryptedHash = await digestMessage(fileEncrypted.ciphertext);
-  const nameEncrypted = await encryptData(new TextEncoder().encode(file.name), dataKey);
+  const nameEncrypted = await encryptString(file.name, dataKey);
 
   const form = new FormData();
   form.set(
@@ -81,7 +71,7 @@ export const requestFileUpload = async (
         dek: await wrapDataKey(dataKey, masterKey.key),
         contentHash: encodeToBase64(fileEncryptedHash),
         contentIv: fileEncrypted.iv,
-        name: encodeToBase64(nameEncrypted.ciphertext),
+        name: nameEncrypted.ciphertext,
         nameIv: nameEncrypted.iv,
       },
       signKey,

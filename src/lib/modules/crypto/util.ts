@@ -1,3 +1,14 @@
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
+
+export const encodeString = (data: string) => {
+  return textEncoder.encode(data);
+};
+
+export const decodeString = (data: ArrayBuffer) => {
+  return textDecoder.decode(data);
+};
+
 export const encodeToBase64 = (data: ArrayBuffer) => {
   return btoa(String.fromCharCode(...new Uint8Array(data)));
 };
