@@ -20,7 +20,6 @@ export const fileUploadRequest = z.object({
   parentId: z.union([z.enum(["root"]), z.number().int().positive()]),
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
-  contentHash: z.string().base64().nonempty(),
   contentIv: z.string().base64().nonempty(),
   name: z.string().base64().nonempty(),
   nameIv: z.string().base64().nonempty(),

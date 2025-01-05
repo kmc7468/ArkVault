@@ -1,17 +1,15 @@
-import { text } from "@sveltejs/kit";
+import { error, text } from "@sveltejs/kit";
 import { authorize } from "$lib/server/modules/auth";
-import { parseSignedRequest } from "$lib/server/modules/crypto";
 import { directoryCreateRequest } from "$lib/server/schemas";
 import { createDirectory } from "$lib/server/services/directory";
 import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
-  const { userId, clientId } = await authorize(cookies, "activeClient");
-  const { parentId, mekVersion, dek, name, nameIv } = await parseSignedRequest(
-    clientId,
-    await request.json(),
-    directoryCreateRequest,
-  );
+  const { userId } = await authorize(cookies, "activeClient");
+
+  const zodRes = directoryCreateRequest.safeParse(await request.json());
+  if (!zodRes.success) error(400, "Invalid request body");
+  const { parentId, mekVersion, dek, name, nameIv } = zodRes.data;
 
   await createDirectory({
     userId,

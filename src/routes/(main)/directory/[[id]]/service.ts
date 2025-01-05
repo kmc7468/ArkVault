@@ -1,4 +1,4 @@
-import { callSignedPostApi } from "$lib/hooks";
+import { callPostApi } from "$lib/hooks";
 import {
   encodeToBase64,
   generateDataKey,
@@ -7,8 +7,6 @@ import {
   encryptData,
   encryptString,
   decryptString,
-  digestMessage,
-  signRequestBody,
 } from "$lib/modules/crypto";
 import type {
   DirectroyInfoResponse,
@@ -33,49 +31,38 @@ export const requestDirectroyCreation = async (
   name: string,
   parentId: "root" | number,
   masterKey: MasterKey,
-  signKey: CryptoKey,
 ) => {
   const { dataKey } = await generateDataKey();
   const nameEncrypted = await encryptData(new TextEncoder().encode(name), dataKey);
-  return await callSignedPostApi<DirectoryCreateRequest>(
-    "/api/directory/create",
-    {
-      parentId,
-      mekVersion: masterKey.version,
-      dek: await wrapDataKey(dataKey, masterKey.key),
-      name: encodeToBase64(nameEncrypted.ciphertext),
-      nameIv: nameEncrypted.iv,
-    },
-    signKey,
-  );
+  return await callPostApi<DirectoryCreateRequest>("/api/directory/create", {
+    parentId,
+    mekVersion: masterKey.version,
+    dek: await wrapDataKey(dataKey, masterKey.key),
+    name: encodeToBase64(nameEncrypted.ciphertext),
+    nameIv: nameEncrypted.iv,
+  });
 };
 
 export const requestFileUpload = async (
   file: File,
   parentId: "root" | number,
   masterKey: MasterKey,
-  signKey: CryptoKey,
 ) => {
   const { dataKey } = await generateDataKey();
   const fileEncrypted = await encryptData(await file.arrayBuffer(), dataKey);
-  const fileEncryptedHash = await digestMessage(fileEncrypted.ciphertext);
   const nameEncrypted = await encryptString(file.name, dataKey);
 
   const form = new FormData();
   form.set(
     "metadata",
-    await signRequestBody<FileUploadRequest>(
-      {
-        parentId,
-        mekVersion: masterKey.version,
-        dek: await wrapDataKey(dataKey, masterKey.key),
-        contentHash: encodeToBase64(fileEncryptedHash),
-        contentIv: fileEncrypted.iv,
-        name: nameEncrypted.ciphertext,
-        nameIv: nameEncrypted.iv,
-      },
-      signKey,
-    ),
+    JSON.stringify({
+      parentId,
+      mekVersion: masterKey.version,
+      dek: await wrapDataKey(dataKey, masterKey.key),
+      contentIv: fileEncrypted.iv,
+      name: nameEncrypted.ciphertext,
+      nameIv: nameEncrypted.iv,
+    } satisfies FileUploadRequest),
   );
   form.set("content", new Blob([fileEncrypted.ciphertext]));
 

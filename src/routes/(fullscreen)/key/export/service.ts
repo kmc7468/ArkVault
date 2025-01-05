@@ -1,4 +1,4 @@
-import { callSignedPostApi } from "$lib/hooks";
+import { callPostApi } from "$lib/hooks";
 import { storeClientKey } from "$lib/indexedDB";
 import { signMasterKeyWrapped } from "$lib/modules/crypto";
 import type { InitialMasterKeyRegisterRequest } from "$lib/server/schemas";
@@ -46,13 +46,9 @@ export const requestInitialMasterKeyRegistration = async (
   masterKeyWrapped: string,
   signKey: CryptoKey,
 ) => {
-  const res = await callSignedPostApi<InitialMasterKeyRegisterRequest>(
-    "/api/mek/register/initial",
-    {
-      mek: masterKeyWrapped,
-      mekSig: await signMasterKeyWrapped(1, masterKeyWrapped, signKey),
-    },
-    signKey,
-  );
+  const res = await callPostApi<InitialMasterKeyRegisterRequest>("/api/mek/register/initial", {
+    mek: masterKeyWrapped,
+    mekSig: await signMasterKeyWrapped(1, masterKeyWrapped, signKey),
+  });
   return res.ok || res.status === 409;
 };

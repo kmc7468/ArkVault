@@ -122,15 +122,6 @@ export const verifySignature = async (
   );
 };
 
-export const signRequestBody = async <T>(requestBody: T, signKey: CryptoKey) => {
-  const dataBuffer = new TextEncoder().encode(JSON.stringify(requestBody));
-  const signature = await signMessage(dataBuffer, signKey);
-  return JSON.stringify({
-    data: requestBody,
-    signature: encodeToBase64(signature),
-  });
-};
-
 export const signMasterKeyWrapped = async (
   masterKeyVersion: number,
   masterKeyWrapped: string,

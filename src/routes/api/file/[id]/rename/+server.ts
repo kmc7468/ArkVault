@@ -1,26 +1,24 @@
 import { error, text } from "@sveltejs/kit";
 import { z } from "zod";
 import { authorize } from "$lib/server/modules/auth";
-import { parseSignedRequest } from "$lib/server/modules/crypto";
 import { fileRenameRequest } from "$lib/server/schemas";
 import { renameFile } from "$lib/server/services/file";
 import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ request, cookies, params }) => {
-  const { userId, clientId } = await authorize(cookies, "activeClient");
+  const { userId } = await authorize(cookies, "activeClient");
 
-  const zodRes = z
+  const paramsZodRes = z
     .object({
       id: z.coerce.number().int().positive(),
     })
     .safeParse(params);
-  if (!zodRes.success) error(400, "Invalid path parameters");
-  const { id } = zodRes.data;
-  const { name, nameIv } = await parseSignedRequest(
-    clientId,
-    await request.json(),
-    fileRenameRequest,
-  );
+  if (!paramsZodRes.success) error(400, "Invalid path parameters");
+  const { id } = paramsZodRes.data;
+
+  const bodyZodRes = fileRenameRequest.safeParse(await request.json());
+  if (!bodyZodRes.success) error(400, "Invalid request body");
+  const { name, nameIv } = bodyZodRes.data;
 
   await renameFile(userId, id, name, nameIv);
   return text("File renamed", { headers: { "Content-Type": "text/plain" } });

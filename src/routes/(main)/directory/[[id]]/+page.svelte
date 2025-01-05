@@ -10,7 +10,7 @@
   import { goto } from "$app/navigation";
   import { TopBar } from "$lib/components";
   import { FloatingButton } from "$lib/components/buttons";
-  import { clientKeyStore, masterKeyStore } from "$lib/stores";
+  import { masterKeyStore } from "$lib/stores";
   import CreateBottomSheet from "./CreateBottomSheet.svelte";
   import CreateDirectoryModal from "./CreateDirectoryModal.svelte";
   import DeleteDirectoryEntryModal from "./DeleteDirectoryEntryModal.svelte";
@@ -81,12 +81,7 @@
   });
 
   const createDirectory = async (name: string) => {
-    await requestDirectroyCreation(
-      name,
-      data.id,
-      $masterKeyStore?.get(1)!,
-      $clientKeyStore?.signKey!,
-    );
+    await requestDirectroyCreation(name, data.id, $masterKeyStore?.get(1)!);
     isCreateDirectoryModalOpen = false;
   };
 
@@ -94,7 +89,7 @@
     const file = fileInput?.files?.[0];
     if (!file) return;
 
-    requestFileUpload(file, data.id, $masterKeyStore?.get(1)!, $clientKeyStore?.signKey!);
+    requestFileUpload(file, data.id, $masterKeyStore?.get(1)!);
   };
 </script>
 
