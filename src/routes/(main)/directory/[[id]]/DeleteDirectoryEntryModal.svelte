@@ -1,24 +1,27 @@
 <script lang="ts">
   import { Modal } from "$lib/components";
   import { Button } from "$lib/components/buttons";
-  import type { SelectedDirectoryEntry } from "./+page.svelte";
+  import type { SelectedDirectoryEntry } from "./service";
 
   interface Props {
+    onDeleteClick: () => Promise<boolean>;
     isOpen: boolean;
     selectedEntry: SelectedDirectoryEntry | undefined;
   }
 
-  let { isOpen = $bindable(), selectedEntry = $bindable() }: Props = $props();
+  let { onDeleteClick, isOpen = $bindable(), selectedEntry = $bindable() }: Props = $props();
 
   const closeModal = () => {
     isOpen = false;
     selectedEntry = undefined;
   };
 
-  const deleteEntry = () => {
-    // TODO
+  const deleteEntry = async () => {
+    // TODO: Validation
 
-    closeModal();
+    if (await onDeleteClick()) {
+      closeModal();
+    }
   };
 </script>
 

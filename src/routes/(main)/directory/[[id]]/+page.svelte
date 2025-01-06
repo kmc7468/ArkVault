@@ -1,11 +1,3 @@
-<script module lang="ts">
-  export interface SelectedDirectoryEntry {
-    type: "directory" | "file";
-    id: number;
-    name: string;
-  }
-</script>
-
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { TopBar } from "$lib/components";
@@ -22,6 +14,9 @@
     decryptFileMetadata,
     requestDirectoryCreation,
     requestFileUpload,
+    requestDirectoryEntryRename,
+    requestDirectoryEntryDeletion,
+    type SelectedDirectoryEntry,
   } from "./service";
 
   import IconAdd from "~icons/material-symbols/add";
@@ -114,12 +109,12 @@
   <div class="my-4 pb-[4.5rem]">
     {#if subDirectories}
       {#await subDirectories then subDirectories}
-        {#each subDirectories as { id, name }}
+        {#each subDirectories as { id, dataKey, name }}
           <DirectoryEntry
             {name}
             onclick={() => goto(`/directory/${id}`)}
             onOpenMenuClick={() => {
-              selectedEntry = { type: "directory", id, name };
+              selectedEntry = { type: "directory", id, dataKey, name };
               isDirectoryEntryMenuBottomSheetOpen = true;
             }}
             type="directory"
@@ -129,12 +124,12 @@
     {/if}
     {#if files}
       {#await files then files}
-        {#each files as { id, name }}
+        {#each files as { id, dataKey, name }}
           <DirectoryEntry
             {name}
             onclick={() => goto(`/file/${id}`)}
             onOpenMenuClick={() => {
-              selectedEntry = { type: "file", id, name };
+              selectedEntry = { type: "file", id, dataKey, name };
               isDirectoryEntryMenuBottomSheetOpen = true;
             }}
             type="file"
@@ -177,5 +172,19 @@
     isDeleteDirectoryEntryModalOpen = true;
   }}
 />
-<RenameDirectoryEntryModal bind:isOpen={isRenameDirectoryEntryModalOpen} bind:selectedEntry />
-<DeleteDirectoryEntryModal bind:isOpen={isDeleteDirectoryEntryModalOpen} bind:selectedEntry />
+<RenameDirectoryEntryModal
+  bind:isOpen={isRenameDirectoryEntryModalOpen}
+  bind:selectedEntry
+  onRenameClick={async (newName) => {
+    await requestDirectoryEntryRename(selectedEntry!, newName);
+    return true;
+  }}
+/>
+<DeleteDirectoryEntryModal
+  bind:isOpen={isDeleteDirectoryEntryModalOpen}
+  bind:selectedEntry
+  onDeleteClick={async () => {
+    await requestDirectoryEntryDeletion(selectedEntry!);
+    return true;
+  }}
+/>

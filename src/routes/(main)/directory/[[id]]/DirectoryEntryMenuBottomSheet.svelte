@@ -1,7 +1,7 @@
 <script lang="ts">
   import { BottomSheet } from "$lib/components";
   import { EntryButton } from "$lib/components/buttons";
-  import type { SelectedDirectoryEntry } from "./+page.svelte";
+  import type { SelectedDirectoryEntry } from "./service";
 
   import IconFolder from "~icons/material-symbols/folder";
   import IconDraft from "~icons/material-symbols/draft";

@@ -2,14 +2,15 @@
   import { Modal } from "$lib/components";
   import { Button } from "$lib/components/buttons";
   import { TextInput } from "$lib/components/inputs";
-  import type { SelectedDirectoryEntry } from "./+page.svelte";
+  import type { SelectedDirectoryEntry } from "./service";
 
   interface Props {
+    onRenameClick: (newName: string) => Promise<boolean>;
     isOpen: boolean;
     selectedEntry: SelectedDirectoryEntry | undefined;
   }
 
-  let { isOpen = $bindable(), selectedEntry = $bindable() }: Props = $props();
+  let { onRenameClick, isOpen = $bindable(), selectedEntry = $bindable() }: Props = $props();
 
   let name = $state("");
 
@@ -19,10 +20,12 @@
     selectedEntry = undefined;
   };
 
-  const renameEntry = () => {
-    // TODO
+  const renameEntry = async () => {
+    // TODO: Validation
 
-    closeModal();
+    if (await onRenameClick(name)) {
+      closeModal();
+    }
   };
 
   $effect(() => {

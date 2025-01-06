@@ -9,13 +9,22 @@ import {
   decryptString,
 } from "$lib/modules/crypto";
 import type {
+  DirectoryRenameRequest,
   DirectoryInfoResponse,
   DirectoryCreateRequest,
+  FileRenameRequest,
   FileUploadRequest,
 } from "$lib/server/schemas";
 import type { MasterKey } from "$lib/stores";
 
 export { decryptFileMetadata } from "$lib/services/file";
+
+export interface SelectedDirectoryEntry {
+  type: "directory" | "file";
+  id: number;
+  dataKey: CryptoKey;
+  name: string;
+}
 
 export const decryptDirectoryMetadata = async (
   metadata: NonNullable<DirectoryInfoResponse["metadata"]>,
@@ -23,6 +32,7 @@ export const decryptDirectoryMetadata = async (
 ) => {
   const { dataKey } = await unwrapDataKey(metadata.dek, masterKey);
   return {
+    dataKey,
     name: await decryptString(metadata.name, metadata.nameIv, dataKey),
   };
 };
@@ -70,4 +80,27 @@ export const requestFileUpload = async (
   const xhr = new XMLHttpRequest();
   xhr.open("POST", "/api/file/upload");
   xhr.send(form);
+};
+
+export const requestDirectoryEntryRename = async (
+  entry: SelectedDirectoryEntry,
+  newName: string,
+) => {
+  const newNameEncrypted = await encryptString(newName, entry.dataKey);
+
+  if (entry.type === "directory") {
+    await callPostApi<DirectoryRenameRequest>(`/api/directory/${entry.id}/rename`, {
+      name: newNameEncrypted.ciphertext,
+      nameIv: newNameEncrypted.iv,
+    });
+  } else {
+    await callPostApi<FileRenameRequest>(`/api/file/${entry.id}/rename`, {
+      name: newNameEncrypted.ciphertext,
+      nameIv: newNameEncrypted.iv,
+    });
+  }
+};
+
+export const requestDirectoryEntryDeletion = async (entry: SelectedDirectoryEntry) => {
+  await callPostApi(`/api/${entry.type}/${entry.id}/delete`);
 };

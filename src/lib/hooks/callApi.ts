@@ -20,7 +20,7 @@ export const callGetApi = async (input: RequestInfo, fetchInternal?: typeof fetc
 
 export const callPostApi = async <T>(
   input: RequestInfo,
-  payload: T,
+  payload?: T,
   fetchInternal?: typeof fetch,
 ) => {
   return await callApi(
@@ -28,7 +28,7 @@ export const callPostApi = async <T>(
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: payload ? JSON.stringify(payload) : undefined,
     },
     fetchInternal,
   );
