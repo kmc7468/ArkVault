@@ -39,35 +39,42 @@ export const requestDirectoryCreation = async (
   });
 };
 
-export const requestFileUpload = async (
-  file: File,
-  parentId: "root" | number,
-  masterKey: MasterKey,
-) => {
-  const { dataKey, dataKeyVersion } = await generateDataKey();
-  const fileEncrypted = await encryptData(await file.arrayBuffer(), dataKey);
-  const nameEncrypted = await encryptString(file.name, dataKey);
+export const requestFileUpload = (file: File, parentId: "root" | number, masterKey: MasterKey) => {
+  return new Promise<void>(async (resolve, reject) => {
+    const { dataKey, dataKeyVersion } = await generateDataKey();
+    const fileEncrypted = await encryptData(await file.arrayBuffer(), dataKey);
+    const nameEncrypted = await encryptString(file.name, dataKey);
 
-  const form = new FormData();
-  form.set(
-    "metadata",
-    JSON.stringify({
-      parentId,
-      mekVersion: masterKey.version,
-      dek: await wrapDataKey(dataKey, masterKey.key),
-      dekVersion: dataKeyVersion,
-      contentType: file.type,
-      contentIv: fileEncrypted.iv,
-      name: nameEncrypted.ciphertext,
-      nameIv: nameEncrypted.iv,
-    } satisfies FileUploadRequest),
-  );
-  form.set("content", new Blob([fileEncrypted.ciphertext]));
+    const form = new FormData();
+    form.set(
+      "metadata",
+      JSON.stringify({
+        parentId,
+        mekVersion: masterKey.version,
+        dek: await wrapDataKey(dataKey, masterKey.key),
+        dekVersion: dataKeyVersion,
+        contentType: file.type,
+        contentIv: fileEncrypted.iv,
+        name: nameEncrypted.ciphertext,
+        nameIv: nameEncrypted.iv,
+      } satisfies FileUploadRequest),
+    );
+    form.set("content", new Blob([fileEncrypted.ciphertext]));
 
-  // TODO: Progress, Scheduling, ...
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", "/api/file/upload");
-  xhr.send(form);
+    // TODO: Progress, Scheduling, ...
+    const xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("load", () => {
+      if (xhr.status === 200) {
+        resolve();
+      } else {
+        reject(new Error(xhr.responseText));
+      }
+    });
+
+    xhr.open("POST", "/api/file/upload");
+    xhr.send(form);
+  });
 };
 
 export const requestDirectoryEntryRename = async (

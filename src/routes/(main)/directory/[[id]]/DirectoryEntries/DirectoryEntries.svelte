@@ -52,6 +52,6 @@
   </div>
 {:else}
   <div class="my-4 flex flex-grow items-center justify-center">
-    <p class="text-gray-500">폴더가 비어있어요.</p>
+    <p class="text-gray-500">폴더가 비어 있어요.</p>
   </div>
 {/if}
