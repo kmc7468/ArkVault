@@ -109,12 +109,12 @@
   <div class="my-4 pb-[4.5rem]">
     {#if subDirectories}
       {#await subDirectories then subDirectories}
-        {#each subDirectories as { id, dataKey, name }}
+        {#each subDirectories as { id, dataKey, dataKeyVersion, name }}
           <DirectoryEntry
             {name}
             onclick={() => goto(`/directory/${id}`)}
             onOpenMenuClick={() => {
-              selectedEntry = { type: "directory", id, dataKey, name };
+              selectedEntry = { type: "directory", id, dataKey, dataKeyVersion, name };
               isDirectoryEntryMenuBottomSheetOpen = true;
             }}
             type="directory"
@@ -124,12 +124,12 @@
     {/if}
     {#if files}
       {#await files then files}
-        {#each files as { id, dataKey, name }}
+        {#each files as { id, dataKey, dataKeyVersion, name }}
           <DirectoryEntry
             {name}
             onclick={() => goto(`/file/${id}`)}
             onOpenMenuClick={() => {
-              selectedEntry = { type: "file", id, dataKey, name };
+              selectedEntry = { type: "file", id, dataKey, dataKeyVersion, name };
               isDirectoryEntryMenuBottomSheetOpen = true;
             }}
             type="file"

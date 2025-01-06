@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const fileRenameRequest = z.object({
+  dekVersion: z.coerce.date(),
   name: z.string().base64().nonempty(),
   nameIv: z.string().base64().nonempty(),
 });
@@ -10,6 +11,7 @@ export const fileInfoResponse = z.object({
   createdAt: z.date(),
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
+  dekVersion: z.date(),
   contentIv: z.string().base64().nonempty(),
   name: z.string().base64().nonempty(),
   nameIv: z.string().base64().nonempty(),
@@ -20,6 +22,7 @@ export const fileUploadRequest = z.object({
   parentId: z.union([z.enum(["root"]), z.number().int().positive()]),
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
+  dekVersion: z.coerce.date(),
   contentIv: z.string().base64().nonempty(),
   name: z.string().base64().nonempty(),
   nameIv: z.string().base64().nonempty(),

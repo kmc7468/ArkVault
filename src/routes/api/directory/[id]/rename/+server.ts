@@ -18,8 +18,8 @@ export const POST: RequestHandler = async ({ request, cookies, params }) => {
 
   const bodyZodRes = directoryRenameRequest.safeParse(await request.json());
   if (!bodyZodRes.success) error(400, "Invalid request body");
-  const { name, nameIv } = bodyZodRes.data;
+  const { dekVersion, name, nameIv } = bodyZodRes.data;
 
-  await renameDirectory(userId, id, name, nameIv);
+  await renameDirectory(userId, id, dekVersion, name, nameIv);
   return text("Directory renamed", { headers: { "Content-Type": "text/plain" } });
 };

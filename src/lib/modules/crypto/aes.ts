@@ -23,6 +23,7 @@ export const generateDataKey = async () => {
       true,
       ["encrypt", "decrypt"],
     ),
+    dataKeyVersion: new Date(),
   };
 };
 

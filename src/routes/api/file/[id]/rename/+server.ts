@@ -18,8 +18,8 @@ export const POST: RequestHandler = async ({ request, cookies, params }) => {
 
   const bodyZodRes = fileRenameRequest.safeParse(await request.json());
   if (!bodyZodRes.success) error(400, "Invalid request body");
-  const { name, nameIv } = bodyZodRes.data;
+  const { dekVersion, name, nameIv } = bodyZodRes.data;
 
-  await renameFile(userId, id, name, nameIv);
+  await renameFile(userId, id, dekVersion, name, nameIv);
   return text("File renamed", { headers: { "Content-Type": "text/plain" } });
 };

@@ -23,6 +23,7 @@ export const GET: RequestHandler = async ({ cookies, params }) => {
         createdAt: metadata.createdAt,
         mekVersion: metadata.mekVersion,
         dek: metadata.encDek,
+        dekVersion: metadata.dekVersion,
         name: metadata.encName.ciphertext,
         nameIv: metadata.encName.iv,
       },

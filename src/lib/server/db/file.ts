@@ -9,6 +9,7 @@ export interface NewDirectoryParams {
   parentId: DirectoryId;
   mekVersion: number;
   encDek: string;
+  dekVersion: Date;
   encName: string;
   encNameIv: string;
 }
@@ -19,6 +20,7 @@ export interface NewFileParams {
   userId: number;
   mekVersion: number;
   encDek: string;
+  dekVersion: Date;
   encContentIv: string;
   encName: string;
   encNameIv: string;
@@ -41,7 +43,7 @@ export const registerNewDirectory = async (params: NewDirectoryParams) => {
       userId: params.userId,
       mekVersion: params.mekVersion,
       encDek: params.encDek,
-      encryptedAt: now,
+      dekVersion: params.dekVersion,
       encName: { ciphertext: params.encName, iv: params.encNameIv },
     });
   });
@@ -72,14 +74,22 @@ export const getDirectory = async (userId: number, directoryId: number) => {
 export const setDirectoryEncName = async (
   userId: number,
   directoryId: number,
+  dekVersion: Date,
   encName: string,
   encNameIv: string,
 ) => {
-  await db
+  const res = await db
     .update(directory)
     .set({ encName: { ciphertext: encName, iv: encNameIv } })
-    .where(and(eq(directory.userId, userId), eq(directory.id, directoryId)))
+    .where(
+      and(
+        eq(directory.userId, userId),
+        eq(directory.id, directoryId),
+        eq(directory.dekVersion, dekVersion),
+      ),
+    )
     .execute();
+  return res.changes > 0;
 };
 
 export const unregisterDirectory = async (userId: number, directoryId: number) => {
@@ -128,7 +138,7 @@ export const registerNewFile = async (params: NewFileParams) => {
       userId: params.userId,
       mekVersion: params.mekVersion,
       encDek: params.encDek,
-      encryptedAt: now,
+      dekVersion: params.dekVersion,
       encContentIv: params.encContentIv,
       encName: { ciphertext: params.encName, iv: params.encNameIv },
     });
@@ -160,14 +170,16 @@ export const getFile = async (userId: number, fileId: number) => {
 export const setFileEncName = async (
   userId: number,
   fileId: number,
+  dekVersion: Date,
   encName: string,
   encNameIv: string,
 ) => {
-  await db
+  const res = await db
     .update(file)
     .set({ encName: { ciphertext: encName, iv: encNameIv } })
-    .where(and(eq(file.userId, userId), eq(file.id, fileId)))
+    .where(and(eq(file.userId, userId), eq(file.id, fileId), eq(file.dekVersion, dekVersion)))
     .execute();
+  return res.changes > 0;
 };
 
 export const unregisterFile = async (userId: number, fileId: number) => {

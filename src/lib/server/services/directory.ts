@@ -24,15 +24,20 @@ export const deleteDirectory = async (userId: number, directoryId: number) => {
 export const renameDirectory = async (
   userId: number,
   directoryId: number,
+  dekVersion: Date,
   newEncName: string,
   newEncNameIv: string,
 ) => {
   const directory = await getDirectory(userId, directoryId);
   if (!directory) {
     error(404, "Invalid directory id");
+  } else if (directory.dekVersion.getTime() !== dekVersion.getTime()) {
+    error(400, "Invalid DEK version");
   }
 
-  await setDirectoryEncName(userId, directoryId, newEncName, newEncNameIv);
+  if (!(await setDirectoryEncName(userId, directoryId, dekVersion, newEncName, newEncNameIv))) {
+    error(500, "Invalid directory id or DEK version");
+  }
 };
 
 export const getDirectoryInformation = async (userId: number, directoryId: "root" | number) => {
@@ -49,6 +54,7 @@ export const getDirectoryInformation = async (userId: number, directoryId: "root
       createdAt: directory.createdAt,
       mekVersion: directory.mekVersion,
       encDek: directory.encDek,
+      dekVersion: directory.dekVersion,
       encName: directory.encName,
     },
     directories: directories.map(({ id }) => id),
@@ -62,6 +68,12 @@ export const createDirectory = async (params: NewDirectoryParams) => {
     error(500, "Invalid MEK version");
   } else if (activeMekVersion !== params.mekVersion) {
     error(400, "Invalid MEK version");
+  }
+
+  const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+  const oneMinuteLater = new Date(Date.now() + 60 * 1000);
+  if (params.dekVersion <= oneMinuteAgo || params.dekVersion >= oneMinuteLater) {
+    error(400, "Invalid DEK version");
   }
 
   await registerNewDirectory(params);

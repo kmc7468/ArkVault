@@ -5,6 +5,7 @@ export const decryptFileMetadata = async (metadata: FileInfoResponse, masterKey:
   const { dataKey } = await unwrapDataKey(metadata.dek, masterKey);
   return {
     dataKey,
+    dataKeyVersion: metadata.dekVersion,
     name: await decryptString(metadata.name, metadata.nameIv, dataKey),
   };
 };

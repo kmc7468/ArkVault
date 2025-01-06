@@ -56,15 +56,20 @@ export const getFileStream = async (userId: number, fileId: number) => {
 export const renameFile = async (
   userId: number,
   fileId: number,
+  dekVersion: Date,
   newEncName: string,
   newEncNameIv: string,
 ) => {
   const file = await getFile(userId, fileId);
   if (!file) {
     error(404, "Invalid file id");
+  } else if (file.dekVersion.getTime() !== dekVersion.getTime()) {
+    error(400, "Invalid DEK version");
   }
 
-  await setFileEncName(userId, fileId, newEncName, newEncNameIv);
+  if (!(await setFileEncName(userId, fileId, dekVersion, newEncName, newEncNameIv))) {
+    error(500, "Invalid file id or DEK version");
+  }
 };
 
 export const getFileInformation = async (userId: number, fileId: number) => {
@@ -77,6 +82,7 @@ export const getFileInformation = async (userId: number, fileId: number) => {
     createdAt: file.createdAt,
     mekVersion: file.mekVersion,
     encDek: file.encDek,
+    dekVersion: file.dekVersion,
     encContentIv: file.encContentIv,
     encName: file.encName,
   };
@@ -111,6 +117,12 @@ export const uploadFile = async (
     error(500, "Invalid MEK version");
   } else if (activeMekVersion !== params.mekVersion) {
     error(400, "Invalid MEK version");
+  }
+
+  const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+  const oneMinuteLater = new Date(Date.now() + 60 * 1000);
+  if (params.dekVersion <= oneMinuteAgo || params.dekVersion >= oneMinuteLater) {
+    error(400, "Invalid DEK version");
   }
 
   const path = `${env.libraryPath}/${params.userId}/${uuidv4()}`;
