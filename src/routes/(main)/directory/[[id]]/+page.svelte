@@ -1,17 +1,18 @@
 <script lang="ts">
+  import type { Writable } from "svelte/store";
   import { goto } from "$app/navigation";
   import { TopBar } from "$lib/components";
   import { FloatingButton } from "$lib/components/buttons";
-  import { masterKeyStore } from "$lib/stores";
+  import { getDirectoryInfo, getFileInfo } from "$lib/modules/file";
+  import { masterKeyStore, type DirectoryInfo } from "$lib/stores";
   import CreateBottomSheet from "./CreateBottomSheet.svelte";
   import CreateDirectoryModal from "./CreateDirectoryModal.svelte";
   import DeleteDirectoryEntryModal from "./DeleteDirectoryEntryModal.svelte";
-  import DirectoryEntry from "./DirectoryEntry.svelte";
   import DirectoryEntryMenuBottomSheet from "./DirectoryEntryMenuBottomSheet.svelte";
+  import File from "./File.svelte";
   import RenameDirectoryEntryModal from "./RenameDirectoryEntryModal.svelte";
+  import SubDirectory from "./SubDirectory.svelte";
   import {
-    decryptDirectoryMetadata,
-    decryptFileMetadata,
     requestDirectoryCreation,
     requestFileUpload,
     requestDirectoryEntryRename,
@@ -23,6 +24,7 @@
 
   let { data } = $props();
 
+  let info: Writable<DirectoryInfo | null> | undefined = $state();
   let fileInput: HTMLInputElement | undefined = $state();
   let selectedEntry: SelectedDirectoryEntry | undefined = $state();
 
@@ -32,48 +34,6 @@
   let isDirectoryEntryMenuBottomSheetOpen = $state(false);
   let isRenameDirectoryEntryModalOpen = $state(false);
   let isDeleteDirectoryEntryModalOpen = $state(false);
-
-  // TODO: FIX ME
-  const metadata = $derived.by(() => {
-    const { metadata } = data;
-    if (metadata && $masterKeyStore) {
-      return decryptDirectoryMetadata(metadata, $masterKeyStore.get(metadata.mekVersion)!.key);
-    }
-  });
-  const subDirectories = $derived.by(() => {
-    const { subDirectories } = data;
-    if ($masterKeyStore) {
-      return Promise.all(
-        subDirectories.map(async (subDirectory) => {
-          const metadata = subDirectory.metadata!;
-          return {
-            ...(await decryptDirectoryMetadata(
-              metadata,
-              $masterKeyStore.get(metadata.mekVersion)!.key,
-            )),
-            id: subDirectory.id,
-          };
-        }),
-      ).then((subDirectories) => {
-        subDirectories.sort((a, b) => a.name.localeCompare(b.name));
-        return subDirectories;
-      });
-    }
-  });
-  const files = $derived.by(() => {
-    const { files } = data;
-    if ($masterKeyStore) {
-      return Promise.all(
-        files.map(async (file) => ({
-          ...(await decryptFileMetadata(file!, $masterKeyStore.get(file.mekVersion)!.key)),
-          id: file.id,
-        })),
-      ).then((files) => {
-        files.sort((a, b) => a.name.localeCompare(b.name));
-        return files;
-      });
-    }
-  });
 
   const createDirectory = async (name: string) => {
     await requestDirectoryCreation(name, data.id, $masterKeyStore?.get(1)!);
@@ -86,6 +46,10 @@
 
     requestFileUpload(file, data.id, $masterKeyStore?.get(1)!);
   };
+
+  $effect(() => {
+    info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!);
+  });
 </script>
 
 <svelte:head>
@@ -94,50 +58,42 @@
 
 <input bind:this={fileInput} onchange={uploadFile} type="file" class="hidden" />
 
-<div class="px-4">
-  {#if data.id !== "root"}
-    {#if !metadata}
-      <TopBar />
-    {:else}
-      {#await metadata}
-        <TopBar />
-      {:then metadata}
-        <TopBar title={metadata.name} />
-      {/await}
-    {/if}
-  {/if}
-  <div class="my-4 pb-[4.5rem]">
-    {#if subDirectories}
-      {#await subDirectories then subDirectories}
-        {#each subDirectories as { id, dataKey, dataKeyVersion, name }}
-          <DirectoryEntry
-            {name}
-            onclick={() => goto(`/directory/${id}`)}
-            onOpenMenuClick={() => {
-              selectedEntry = { type: "directory", id, dataKey, dataKeyVersion, name };
-              isDirectoryEntryMenuBottomSheetOpen = true;
-            }}
-            type="directory"
-          />
-        {/each}
-      {/await}
-    {/if}
-    {#if files}
-      {#await files then files}
-        {#each files as { id, dataKey, dataKeyVersion, name }}
-          <DirectoryEntry
-            {name}
-            onclick={() => goto(`/file/${id}`)}
-            onOpenMenuClick={() => {
-              selectedEntry = { type: "file", id, dataKey, dataKeyVersion, name };
-              isDirectoryEntryMenuBottomSheetOpen = true;
-            }}
-            type="file"
-          />
-        {/each}
-      {/await}
+<div class="flex min-h-full flex-col px-4">
+  <div class="flex-shrink-0">
+    {#if data.id !== "root"}
+      <TopBar title={$info?.name} />
     {/if}
   </div>
+  {#if $info && $info.subDirectoryIds.length + $info.fileIds.length > 0}
+    <div class="my-4 pb-[4.5rem]">
+      {#each $info.subDirectoryIds as subDirectoryId}
+        {@const subDirectoryInfo = getDirectoryInfo(subDirectoryId, $masterKeyStore?.get(1)?.key!)}
+        <SubDirectory
+          info={subDirectoryInfo}
+          onclick={() => goto(`/directory/${subDirectoryId}`)}
+          onOpenMenuClick={({ id, dataKey, dataKeyVersion, name }) => {
+            selectedEntry = { type: "directory", id, dataKey, dataKeyVersion, name };
+            isDirectoryEntryMenuBottomSheetOpen = true;
+          }}
+        />
+      {/each}
+      {#each $info.fileIds as fileId}
+        {@const fileInfo = getFileInfo(fileId, $masterKeyStore?.get(1)?.key!)}
+        <File
+          info={fileInfo}
+          onclick={() => goto(`/file/${fileId}`)}
+          onOpenMenuClick={({ dataKey, id, dataKeyVersion, name }) => {
+            selectedEntry = { type: "file", id, dataKey, dataKeyVersion, name };
+            isDirectoryEntryMenuBottomSheetOpen = true;
+          }}
+        />
+      {/each}
+    </div>
+  {:else}
+    <div class="my-4 flex flex-grow items-center justify-center">
+      <p class="text-gray-500">폴더가 비어있어요.</p>
+    </div>
+  {/if}
 </div>
 
 <FloatingButton

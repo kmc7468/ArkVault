@@ -3,21 +3,16 @@ import {
   encodeToBase64,
   generateDataKey,
   wrapDataKey,
-  unwrapDataKey,
   encryptData,
   encryptString,
-  decryptString,
 } from "$lib/modules/crypto";
 import type {
   DirectoryRenameRequest,
-  DirectoryInfoResponse,
   DirectoryCreateRequest,
   FileRenameRequest,
   FileUploadRequest,
 } from "$lib/server/schemas";
 import type { MasterKey } from "$lib/stores";
-
-export { decryptFileMetadata } from "$lib/services/file";
 
 export interface SelectedDirectoryEntry {
   type: "directory" | "file";
@@ -26,18 +21,6 @@ export interface SelectedDirectoryEntry {
   dataKeyVersion: Date;
   name: string;
 }
-
-export const decryptDirectoryMetadata = async (
-  metadata: NonNullable<DirectoryInfoResponse["metadata"]>,
-  masterKey: CryptoKey,
-) => {
-  const { dataKey } = await unwrapDataKey(metadata.dek, masterKey);
-  return {
-    dataKey,
-    dataKeyVersion: metadata.dekVersion,
-    name: await decryptString(metadata.name, metadata.nameIv, dataKey),
-  };
-};
 
 export const requestDirectoryCreation = async (
   name: string,

@@ -1,32 +1,27 @@
 <script lang="ts">
   import FileSaver from "file-saver";
+  import type { Writable } from "svelte/store";
   import { TopBar } from "$lib/components";
-  import { masterKeyStore } from "$lib/stores";
-  import { decryptFileMetadata, requestFileDownload } from "./service";
+  import { getFileInfo } from "$lib/modules/file";
+  import { masterKeyStore, type FileInfo } from "$lib/stores";
+  import { requestFileDownload } from "./service";
 
   let { data } = $props();
 
-  let metadata = $state<Awaited<ReturnType<typeof decryptFileMetadata>> | undefined>();
+  let info: Writable<FileInfo | null> | undefined = $state();
+  let isDownloaded = $state(false);
 
   $effect(() => {
-    if ($masterKeyStore) {
-      decryptFileMetadata(data.metadata, $masterKeyStore.get(data.metadata.mekVersion)!.key).then(
-        async (_metadata) => {
-          metadata = _metadata;
+    info = getFileInfo(data.id, $masterKeyStore?.get(1)?.key!);
+    isDownloaded = false;
+  });
 
-          const file = await requestFileDownload(
-            data.id,
-            data.metadata.contentIv,
-            _metadata.dataKey,
-          );
-
-          // TODO: Preview
-
-          const blob = new Blob([file]);
-
-          FileSaver.saveAs(blob, metadata.name);
-        },
-      );
+  $effect(() => {
+    if (info && $info && !isDownloaded) {
+      isDownloaded = true;
+      requestFileDownload(data.id, $info.contentIv, $info.dataKey).then((content) => {
+        FileSaver.saveAs(new Blob([content], { type: "application/octet-stream" }), $info.name);
+      });
     }
   });
 </script>
@@ -35,8 +30,4 @@
   <title>파일</title>
 </svelte:head>
 
-{#if metadata}
-  <TopBar title={metadata.name} />
-{:else}
-  <TopBar />
-{/if}
+<TopBar title={$info?.name} />

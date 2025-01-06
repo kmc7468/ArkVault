@@ -1,7 +1,5 @@
 import { decryptData } from "$lib/modules/crypto";
 
-export { decryptFileMetadata } from "$lib/services/file";
-
 export const requestFileDownload = (
   fileId: number,
   fileEncryptedIv: string,
