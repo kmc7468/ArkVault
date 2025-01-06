@@ -9,4 +9,7 @@ export default defineConfig({
       compiler: "svelte",
     }),
   ],
+  server: {
+    host: true,
+  },
 });

@@ -37,13 +37,16 @@
   const createDirectory = async (name: string) => {
     await requestDirectoryCreation(name, data.id, $masterKeyStore?.get(1)!);
     isCreateDirectoryModalOpen = false;
+    info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
   };
 
   const uploadFile = () => {
     const file = fileInput?.files?.[0];
     if (!file) return;
 
-    requestFileUpload(file, data.id, $masterKeyStore?.get(1)!);
+    requestFileUpload(file, data.id, $masterKeyStore?.get(1)!).then(() => {
+      info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
+    });
   };
 
   $effect(() => {
@@ -114,6 +117,7 @@
   bind:selectedEntry
   onRenameClick={async (newName) => {
     await requestDirectoryEntryRename(selectedEntry!, newName);
+    info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
     return true;
   }}
 />
@@ -122,6 +126,7 @@
   bind:selectedEntry
   onDeleteClick={async () => {
     await requestDirectoryEntryDeletion(selectedEntry!);
+    info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
     return true;
   }}
 />
