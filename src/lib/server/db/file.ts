@@ -21,6 +21,7 @@ export interface NewFileParams {
   mekVersion: number;
   encDek: string;
   dekVersion: Date;
+  contentType: string;
   encContentIv: string;
   encName: string;
   encNameIv: string;
@@ -137,6 +138,7 @@ export const registerNewFile = async (params: NewFileParams) => {
       createdAt: now,
       userId: params.userId,
       mekVersion: params.mekVersion,
+      contentType: params.contentType,
       encDek: params.encDek,
       dekVersion: params.dekVersion,
       encContentIv: params.encContentIv,

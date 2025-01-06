@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "901e84cd-f9eb-4329-a374-f71264675515",
+  "id": "929c6bca-d0c0-4899-afc6-a0a498226f28",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "client": {
@@ -262,8 +262,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "encrypted_at": {
-          "name": "encrypted_at",
+        "data_encryption_key_version": {
+          "name": "data_encryption_key_version",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -384,9 +384,23 @@
           "notNull": true,
           "autoincrement": false
         },
-        "encrypted_at": {
-          "name": "encrypted_at",
+        "data_encryption_key_version": {
+          "name": "data_encryption_key_version",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content_type": {
+          "name": "content_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encrypted_content_iv": {
+          "name": "encrypted_content_iv",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false

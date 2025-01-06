@@ -22,6 +22,7 @@ export interface FileInfo {
   id: number;
   dataKey: CryptoKey;
   dataKeyVersion: Date;
+  contentType: string;
   contentIv: string;
   name: string;
 }

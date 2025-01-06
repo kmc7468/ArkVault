@@ -56,6 +56,7 @@ export const requestFileUpload = async (
       mekVersion: masterKey.version,
       dek: await wrapDataKey(dataKey, masterKey.key),
       dekVersion: dataKeyVersion,
+      contentType: file.type,
       contentIv: fileEncrypted.iv,
       name: nameEncrypted.ciphertext,
       nameIv: nameEncrypted.iv,

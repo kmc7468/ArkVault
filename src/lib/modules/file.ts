@@ -64,6 +64,7 @@ const fetchFileInfo = async (fileId: number, masterKey: CryptoKey) => {
     id: fileId,
     dataKey,
     dataKeyVersion: metadata.dekVersion,
+    contentType: metadata.contentType,
     contentIv: metadata.contentIv,
     name: await decryptString(metadata.name, metadata.nameIv, dataKey),
   };

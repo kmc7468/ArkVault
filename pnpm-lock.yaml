@@ -88,6 +88,9 @@ devDependencies:
   globals:
     specifier: ^15.0.0
     version: 15.14.0
+  mime:
+    specifier: ^4.0.6
+    version: 4.0.6
   prettier:
     specifier: ^3.3.2
     version: 3.4.2
@@ -2687,6 +2690,12 @@ packages:
     dependencies:
       braces: 3.0.3
       picomatch: 2.3.1
+    dev: true
+
+  /mime@4.0.6:
+    resolution: {integrity: sha512-4rGt7rvQHBbaSOF9POGkk1ocRP16Md1x36Xma8sz8h8/vfCUI2OtEIeCqe4Ofes853x4xDoPiFLIT47J5fI/7A==}
+    engines: {node: '>=16'}
+    hasBin: true
     dev: true
 
   /mimic-response@3.1.0:

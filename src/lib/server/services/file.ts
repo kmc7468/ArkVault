@@ -83,6 +83,7 @@ export const getFileInformation = async (userId: number, fileId: number) => {
     mekVersion: file.mekVersion,
     encDek: file.encDek,
     dekVersion: file.dekVersion,
+    contentType: file.contentType,
     encContentIv: file.encContentIv,
     encName: file.encName,
   };
