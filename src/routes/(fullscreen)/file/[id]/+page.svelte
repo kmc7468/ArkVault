@@ -1,5 +1,6 @@
 <script lang="ts">
   import FileSaver from "file-saver";
+  import heic2any from "heic2any";
   import { untrack } from "svelte";
   import type { Writable } from "svelte/store";
   import { TopBar } from "$lib/components";
@@ -14,7 +15,8 @@
   let info: Writable<FileInfo | null> | undefined = $state();
   let isDownloaded = $state(false);
 
-  let content: ArrayBuffer | undefined = $state();
+  let content: Blob | undefined = $state();
+  let contentUrl: string | undefined = $state();
   let contentType: ContentType | undefined = $state();
 
   $effect(() => {
@@ -30,14 +32,21 @@
       untrack(() => {
         isDownloaded = true;
 
-        if ($info.contentType.startsWith("image/")) {
-          contentType = "image";
-        } else if ($info.contentType.startsWith("video/")) {
-          contentType = "video";
-        }
+        requestFileDownload(data.id, $info.contentIv, $info.dataKey).then(async (res) => {
+          content = new Blob([res], { type: $info.contentType });
+          if (content.type === "image/heic" || content.type === "image/heif") {
+            contentUrl = URL.createObjectURL(
+              (await heic2any({ blob: content, toType: "image/jpeg" })) as Blob,
+            );
+          } else {
+            contentUrl = URL.createObjectURL(content);
+          }
 
-        requestFileDownload(data.id, $info.contentIv, $info.dataKey).then((res) => {
-          content = res;
+          if (content.type.startsWith("image")) {
+            contentType = "image";
+          } else if (content.type.startsWith("video")) {
+            contentType = "video";
+          }
 
           if (!contentType) {
             FileSaver.saveAs(new Blob([res], { type: $info.contentType }), $info.name);
@@ -45,6 +54,14 @@
         });
       });
     }
+  });
+
+  $effect(() => {
+    return () => {
+      if (contentUrl) {
+        URL.revokeObjectURL(contentUrl);
+      }
+    };
   });
 </script>
 
