@@ -5,13 +5,14 @@ services:
     volumes:
       - ./data:/app/data
     environment:
-      # ArkValut
+      # ArkVault
       - DATABASE_URL=/app/data/database.sqlite
       - JWT_SECRET=${JWT_SECRET:?} # Required
       - JWT_ACCESS_TOKEN_EXPIRES
       - JWT_REFRESH_TOKEN_EXPIRES
       - USER_CLIENT_CHALLENGE_EXPIRES
       - TOKEN_UPGRADE_CHALLENGE_EXPIRES
+      - LIBRARY_PATH=/app/data/library
       # SvelteKit
       - ADDRESS_HEADER=${TRUST_PROXY:+X-Forwarded-For}
       - XFF_DEPTH=${TRUST_PROXY:-}
