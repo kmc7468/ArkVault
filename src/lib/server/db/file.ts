@@ -2,11 +2,11 @@ import { and, eq, isNull } from "drizzle-orm";
 import db from "./drizzle";
 import { directory, file, mek } from "./schema";
 
-type DirectroyId = "root" | number;
+type DirectoryId = "root" | number;
 
-export interface NewDirectroyParams {
+export interface NewDirectoryParams {
   userId: number;
-  parentId: DirectroyId;
+  parentId: DirectoryId;
   mekVersion: number;
   encDek: string;
   encName: string;
@@ -15,7 +15,7 @@ export interface NewDirectroyParams {
 
 export interface NewFileParams {
   path: string;
-  parentId: DirectroyId;
+  parentId: DirectoryId;
   userId: number;
   mekVersion: number;
   encDek: string;
@@ -24,7 +24,7 @@ export interface NewFileParams {
   encNameIv: string;
 }
 
-export const registerNewDirectory = async (params: NewDirectroyParams) => {
+export const registerNewDirectory = async (params: NewDirectoryParams) => {
   return await db.transaction(async (tx) => {
     const meks = await tx
       .select()
@@ -47,7 +47,7 @@ export const registerNewDirectory = async (params: NewDirectroyParams) => {
   });
 };
 
-export const getAllDirectoriesByParent = async (userId: number, directoryId: DirectroyId) => {
+export const getAllDirectoriesByParent = async (userId: number, directoryId: DirectoryId) => {
   return await db
     .select()
     .from(directory)
@@ -135,7 +135,7 @@ export const registerNewFile = async (params: NewFileParams) => {
   });
 };
 
-export const getAllFilesByParent = async (userId: number, parentId: DirectroyId) => {
+export const getAllFilesByParent = async (userId: number, parentId: DirectoryId) => {
   return await db
     .select()
     .from(file)

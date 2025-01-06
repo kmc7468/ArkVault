@@ -1,5 +1,5 @@
 <script module lang="ts">
-  export interface SelectedDiretoryEntry {
+  export interface SelectedDirectoryEntry {
     type: "directory" | "file";
     id: number;
     name: string;
@@ -18,9 +18,9 @@
   import DirectoryEntryMenuBottomSheet from "./DirectoryEntryMenuBottomSheet.svelte";
   import RenameDirectoryEntryModal from "./RenameDirectoryEntryModal.svelte";
   import {
-    decryptDirectroyMetadata,
+    decryptDirectoryMetadata,
     decryptFileMetadata,
-    requestDirectroyCreation,
+    requestDirectoryCreation,
     requestFileUpload,
   } from "./service";
 
@@ -29,7 +29,7 @@
   let { data } = $props();
 
   let fileInput: HTMLInputElement | undefined = $state();
-  let selectedEntry: SelectedDiretoryEntry | undefined = $state();
+  let selectedEntry: SelectedDirectoryEntry | undefined = $state();
 
   let isCreateBottomSheetOpen = $state(false);
   let isCreateDirectoryModalOpen = $state(false);
@@ -42,7 +42,7 @@
   const metadata = $derived.by(() => {
     const { metadata } = data;
     if (metadata && $masterKeyStore) {
-      return decryptDirectroyMetadata(metadata, $masterKeyStore.get(metadata.mekVersion)!.key);
+      return decryptDirectoryMetadata(metadata, $masterKeyStore.get(metadata.mekVersion)!.key);
     }
   });
   const subDirectories = $derived.by(() => {
@@ -52,7 +52,7 @@
         subDirectories.map(async (subDirectory) => {
           const metadata = subDirectory.metadata!;
           return {
-            ...(await decryptDirectroyMetadata(
+            ...(await decryptDirectoryMetadata(
               metadata,
               $masterKeyStore.get(metadata.mekVersion)!.key,
             )),
@@ -81,7 +81,7 @@
   });
 
   const createDirectory = async (name: string) => {
-    await requestDirectroyCreation(name, data.id, $masterKeyStore?.get(1)!);
+    await requestDirectoryCreation(name, data.id, $masterKeyStore?.get(1)!);
     isCreateDirectoryModalOpen = false;
   };
 

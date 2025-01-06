@@ -38,7 +38,7 @@ export const requestClientRegistration = async (
   return res.ok;
 };
 
-export const requestMasterKeyDownload = async (decryptKey: CryptoKey, verfiyKey: CryptoKey) => {
+export const requestMasterKeyDownload = async (decryptKey: CryptoKey, verifyKey: CryptoKey) => {
   const res = await callGetApi("/api/mek/list");
   if (!res.ok) return false;
 
@@ -55,7 +55,7 @@ export const requestMasterKeyDownload = async (decryptKey: CryptoKey, verfiyKey:
             version,
             masterKeyWrapped,
             masterKeyWrappedSig,
-            verfiyKey,
+            verifyKey,
           ),
         };
       },

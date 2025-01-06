@@ -31,7 +31,7 @@
     const clientKeysBlob = new Blob([JSON.stringify(clientKeysExported)], {
       type: "application/json",
     });
-    saveAs(clientKeysBlob, "arkvalut-clientkey.json");
+    saveAs(clientKeysBlob, "arkvault-clientkey.json");
 
     if (!isBeforeContinueBottomSheetOpen) {
       setTimeout(() => {

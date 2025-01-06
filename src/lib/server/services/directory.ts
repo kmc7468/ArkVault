@@ -7,7 +7,7 @@ import {
   setDirectoryEncName,
   unregisterDirectory,
   getAllFilesByParent,
-  type NewDirectroyParams,
+  type NewDirectoryParams,
 } from "$lib/server/db/file";
 import { getActiveMekVersion } from "$lib/server/db/mek";
 
@@ -35,14 +35,14 @@ export const renameDirectory = async (
   await setDirectoryEncName(userId, directoryId, newEncName, newEncNameIv);
 };
 
-export const getDirectroyInformation = async (userId: number, directroyId: "root" | number) => {
-  const directory = directroyId !== "root" ? await getDirectory(userId, directroyId) : undefined;
+export const getDirectoryInformation = async (userId: number, directoryId: "root" | number) => {
+  const directory = directoryId !== "root" ? await getDirectory(userId, directoryId) : undefined;
   if (directory === null) {
     error(404, "Invalid directory id");
   }
 
-  const directories = await getAllDirectoriesByParent(userId, directroyId);
-  const files = await getAllFilesByParent(userId, directroyId);
+  const directories = await getAllDirectoriesByParent(userId, directoryId);
+  const files = await getAllFilesByParent(userId, directoryId);
 
   return {
     metadata: directory && {
@@ -56,7 +56,7 @@ export const getDirectroyInformation = async (userId: number, directroyId: "root
   };
 };
 
-export const createDirectory = async (params: NewDirectroyParams) => {
+export const createDirectory = async (params: NewDirectoryParams) => {
   const activeMekVersion = await getActiveMekVersion(params.userId);
   if (activeMekVersion === null) {
     error(500, "Invalid MEK version");

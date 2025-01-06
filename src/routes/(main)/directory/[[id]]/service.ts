@@ -9,7 +9,7 @@ import {
   decryptString,
 } from "$lib/modules/crypto";
 import type {
-  DirectroyInfoResponse,
+  DirectoryInfoResponse,
   DirectoryCreateRequest,
   FileUploadRequest,
 } from "$lib/server/schemas";
@@ -17,8 +17,8 @@ import type { MasterKey } from "$lib/stores";
 
 export { decryptFileMetadata } from "$lib/services/file";
 
-export const decryptDirectroyMetadata = async (
-  metadata: NonNullable<DirectroyInfoResponse["metadata"]>,
+export const decryptDirectoryMetadata = async (
+  metadata: NonNullable<DirectoryInfoResponse["metadata"]>,
   masterKey: CryptoKey,
 ) => {
   const { dataKey } = await unwrapDataKey(metadata.dek, masterKey);
@@ -27,7 +27,7 @@ export const decryptDirectroyMetadata = async (
   };
 };
 
-export const requestDirectroyCreation = async (
+export const requestDirectoryCreation = async (
   name: string,
   parentId: "root" | number,
   masterKey: MasterKey,

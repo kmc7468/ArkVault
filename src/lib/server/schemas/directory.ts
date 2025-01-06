@@ -6,7 +6,7 @@ export const directoryRenameRequest = z.object({
 });
 export type DirectoryRenameRequest = z.infer<typeof directoryRenameRequest>;
 
-export const directroyInfoResponse = z.object({
+export const directoryInfoResponse = z.object({
   metadata: z
     .object({
       createdAt: z.date(),
@@ -19,7 +19,7 @@ export const directroyInfoResponse = z.object({
   subDirectories: z.number().int().positive().array(),
   files: z.number().int().positive().array(),
 });
-export type DirectroyInfoResponse = z.infer<typeof directroyInfoResponse>;
+export type DirectoryInfoResponse = z.infer<typeof directoryInfoResponse>;
 
 export const directoryCreateRequest = z.object({
   parentId: z.union([z.enum(["root"]), z.number().int().positive()]),

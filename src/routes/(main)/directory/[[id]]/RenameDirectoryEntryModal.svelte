@@ -2,11 +2,11 @@
   import { Modal } from "$lib/components";
   import { Button } from "$lib/components/buttons";
   import { TextInput } from "$lib/components/inputs";
-  import type { SelectedDiretoryEntry } from "./+page.svelte";
+  import type { SelectedDirectoryEntry } from "./+page.svelte";
 
   interface Props {
     isOpen: boolean;
-    selectedEntry: SelectedDiretoryEntry | undefined;
+    selectedEntry: SelectedDirectoryEntry | undefined;
   }
 
   let { isOpen = $bindable(), selectedEntry = $bindable() }: Props = $props();
