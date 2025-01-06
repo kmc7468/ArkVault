@@ -64,14 +64,16 @@
     {/if}
   </div>
   {#if $info}
-    <DirectoryEntries
-      info={$info}
-      onEntryClick={({ type, id }) => goto(`/${type}/${id}`)}
-      onEntryMenuClick={(entry) => {
-        selectedEntry = entry;
-        isDirectoryEntryMenuBottomSheetOpen = true;
-      }}
-    />
+    {#key $info}
+      <DirectoryEntries
+        info={$info}
+        onEntryClick={({ type, id }) => goto(`/${type}/${id}`)}
+        onEntryMenuClick={(entry) => {
+          selectedEntry = entry;
+          isDirectoryEntryMenuBottomSheetOpen = true;
+        }}
+      />
+    {/key}
   {/if}
 </div>
 
