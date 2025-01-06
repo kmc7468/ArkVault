@@ -3,15 +3,14 @@
   import { goto } from "$app/navigation";
   import { TopBar } from "$lib/components";
   import { FloatingButton } from "$lib/components/buttons";
-  import { getDirectoryInfo, getFileInfo } from "$lib/modules/file";
+  import { getDirectoryInfo } from "$lib/modules/file";
   import { masterKeyStore, type DirectoryInfo } from "$lib/stores";
   import CreateBottomSheet from "./CreateBottomSheet.svelte";
   import CreateDirectoryModal from "./CreateDirectoryModal.svelte";
   import DeleteDirectoryEntryModal from "./DeleteDirectoryEntryModal.svelte";
+  import DirectoryEntries from "./DirectoryEntries";
   import DirectoryEntryMenuBottomSheet from "./DirectoryEntryMenuBottomSheet.svelte";
-  import File from "./File.svelte";
   import RenameDirectoryEntryModal from "./RenameDirectoryEntryModal.svelte";
-  import SubDirectory from "./SubDirectory.svelte";
   import {
     requestDirectoryCreation,
     requestFileUpload,
@@ -64,35 +63,15 @@
       <TopBar title={$info?.name} />
     {/if}
   </div>
-  {#if $info && $info.subDirectoryIds.length + $info.fileIds.length > 0}
-    <div class="my-4 pb-[4.5rem]">
-      {#each $info.subDirectoryIds as subDirectoryId}
-        {@const subDirectoryInfo = getDirectoryInfo(subDirectoryId, $masterKeyStore?.get(1)?.key!)}
-        <SubDirectory
-          info={subDirectoryInfo}
-          onclick={() => goto(`/directory/${subDirectoryId}`)}
-          onOpenMenuClick={({ id, dataKey, dataKeyVersion, name }) => {
-            selectedEntry = { type: "directory", id, dataKey, dataKeyVersion, name };
-            isDirectoryEntryMenuBottomSheetOpen = true;
-          }}
-        />
-      {/each}
-      {#each $info.fileIds as fileId}
-        {@const fileInfo = getFileInfo(fileId, $masterKeyStore?.get(1)?.key!)}
-        <File
-          info={fileInfo}
-          onclick={() => goto(`/file/${fileId}`)}
-          onOpenMenuClick={({ dataKey, id, dataKeyVersion, name }) => {
-            selectedEntry = { type: "file", id, dataKey, dataKeyVersion, name };
-            isDirectoryEntryMenuBottomSheetOpen = true;
-          }}
-        />
-      {/each}
-    </div>
-  {:else}
-    <div class="my-4 flex flex-grow items-center justify-center">
-      <p class="text-gray-500">폴더가 비어있어요.</p>
-    </div>
+  {#if $info}
+    <DirectoryEntries
+      info={$info}
+      onEntryClick={({ type, id }) => goto(`/${type}/${id}`)}
+      onEntryMenuClick={(entry) => {
+        selectedEntry = entry;
+        isDirectoryEntryMenuBottomSheetOpen = true;
+      }}
+    />
   {/if}
 </div>
 
