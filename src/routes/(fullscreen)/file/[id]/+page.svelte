@@ -32,24 +32,22 @@
       untrack(() => {
         isDownloaded = true;
 
+        if ($info.contentType.startsWith("image")) {
+          contentType = "image";
+        } else if ($info.contentType.startsWith("video")) {
+          contentType = "video";
+        }
+
         requestFileDownload(data.id, $info.contentIv, $info.dataKey).then(async (res) => {
           content = new Blob([res], { type: $info.contentType });
           if (content.type === "image/heic" || content.type === "image/heif") {
             contentUrl = URL.createObjectURL(
               (await heic2any({ blob: content, toType: "image/jpeg" })) as Blob,
             );
-          } else {
+          } else if (contentType) {
             contentUrl = URL.createObjectURL(content);
-          }
-
-          if (content.type.startsWith("image")) {
-            contentType = "image";
-          } else if (content.type.startsWith("video")) {
-            contentType = "video";
-          }
-
-          if (!contentType) {
-            FileSaver.saveAs(new Blob([res], { type: $info.contentType }), $info.name);
+          } else {
+            FileSaver.saveAs(content, $info.name);
           }
         });
       });
@@ -80,18 +78,16 @@
       </div>
     {/snippet}
 
-    {#if contentType === "image"}
-      {#if $info && content}
-        {@const src = URL.createObjectURL(new Blob([content], { type: $info.contentType }))}
-        <img {src} alt={$info.name} />
+    {#if $info && contentType === "image"}
+      {#if contentUrl}
+        <img src={contentUrl} alt={$info.name} />
       {:else}
         {@render viewerLoading("이미지를 불러오고 있어요.")}
       {/if}
     {:else if contentType === "video"}
-      {#if $info && content}
-        {@const src = URL.createObjectURL(new Blob([content], { type: $info.contentType }))}
+      {#if contentUrl}
         <!-- svelte-ignore a11y_media_has_caption -->
-        <video {src} controls></video>
+        <video src={contentUrl} controls></video>
       {:else}
         {@render viewerLoading("비디오를 불러오고 있어요.")}
       {/if}
