@@ -1,4 +1,4 @@
-import { encodeToBase64, decodeFromBase64 } from "./util";
+import { encodeString, encodeToBase64, decodeFromBase64 } from "./util";
 
 export const generateEncryptionKeyPair = async () => {
   const keyPair = await window.crypto.subtle.generateKey(
@@ -123,21 +123,20 @@ export const verifySignature = async (
 };
 
 export const signMasterKeyWrapped = async (
-  masterKeyVersion: number,
   masterKeyWrapped: string,
+  masterKeyVersion: number,
   signKey: CryptoKey,
 ) => {
   const serialized = JSON.stringify({
     version: masterKeyVersion,
     key: masterKeyWrapped,
   });
-  const serializedBuffer = new TextEncoder().encode(serialized);
-  return encodeToBase64(await signMessage(serializedBuffer, signKey));
+  return encodeToBase64(await signMessage(encodeString(serialized), signKey));
 };
 
 export const verifyMasterKeyWrapped = async (
-  masterKeyVersion: number,
   masterKeyWrapped: string,
+  masterKeyVersion: number,
   masterKeyWrappedSig: string,
   verifyKey: CryptoKey,
 ) => {
@@ -145,6 +144,9 @@ export const verifyMasterKeyWrapped = async (
     version: masterKeyVersion,
     key: masterKeyWrapped,
   });
-  const serializedBuffer = new TextEncoder().encode(serialized);
-  return await verifySignature(serializedBuffer, decodeFromBase64(masterKeyWrappedSig), verifyKey);
+  return await verifySignature(
+    encodeString(serialized),
+    decodeFromBase64(masterKeyWrappedSig),
+    verifyKey,
+  );
 };

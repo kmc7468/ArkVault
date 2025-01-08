@@ -52,8 +52,8 @@ export const requestMasterKeyDownload = async (decryptKey: CryptoKey, verifyKey:
           state,
           masterKey,
           isValid: await verifyMasterKeyWrapped(
-            version,
             masterKeyWrapped,
+            version,
             masterKeyWrappedSig,
             verifyKey,
           ),

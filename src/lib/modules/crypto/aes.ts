@@ -27,14 +27,10 @@ export const generateDataKey = async () => {
   };
 };
 
-const exportAESKey = async (key: CryptoKey) => {
-  return await window.crypto.subtle.exportKey("raw", key);
-};
-
 export const makeAESKeyNonextractable = async (key: CryptoKey) => {
   return await window.crypto.subtle.importKey(
     "raw",
-    await exportAESKey(key),
+    await window.crypto.subtle.exportKey("raw", key),
     key.algorithm,
     false,
     key.usages,
@@ -53,7 +49,7 @@ export const unwrapDataKey = async (dataKeyWrapped: string, masterKey: CryptoKey
       masterKey,
       "AES-KW",
       "AES-GCM",
-      false, // Non-extractable
+      false, // Nonextractable
       ["encrypt", "decrypt"],
     ),
   };

@@ -45,7 +45,7 @@ export const storeClientKey = async (key: CryptoKey, usage: ClientKeyUsage) => {
       if (key.type !== "private") {
         throw new Error("Private key required");
       } else if (key.extractable) {
-        throw new Error("Private key must be non-extractable");
+        throw new Error("Private key must be nonextractable");
       }
       break;
   }
@@ -58,7 +58,7 @@ export const getMasterKeys = async () => {
 
 export const storeMasterKeys = async (keys: MasterKey[]) => {
   if (keys.some(({ key }) => key.extractable)) {
-    throw new Error("Master keys must be non-extractable");
+    throw new Error("Master keys must be nonextractable");
   }
   await keyStore.masterKey.bulkPut(keys);
 };

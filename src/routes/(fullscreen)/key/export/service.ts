@@ -48,7 +48,7 @@ export const requestInitialMasterKeyRegistration = async (
 ) => {
   const res = await callPostApi<InitialMasterKeyRegisterRequest>("/api/mek/register/initial", {
     mek: masterKeyWrapped,
-    mekSig: await signMasterKeyWrapped(1, masterKeyWrapped, signKey),
+    mekSig: await signMasterKeyWrapped(masterKeyWrapped, 1, signKey),
   });
   return res.ok || res.status === 409;
 };
