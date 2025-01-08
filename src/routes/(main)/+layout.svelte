@@ -5,7 +5,7 @@
   let { children } = $props();
 </script>
 
-<div class="flex h-screen w-full flex-col justify-between">
+<div class="flex h-screen flex-col justify-between">
   <div class="flex-grow">
     <AdaptiveDiv>
       {@render children()}

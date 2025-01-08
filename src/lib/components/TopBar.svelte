@@ -23,7 +23,7 @@
   {#if title}
     <p class="flex-grow truncate px-2 text-center text-lg font-semibold">{title}</p>
   {/if}
-  <div class="min-w-[2.3rem] flex-shrink-0">
+  <div class="w-[2.3rem] flex-shrink-0">
     {#if children}
       {@render children?.()}
     {/if}

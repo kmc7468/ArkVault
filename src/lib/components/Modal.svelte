@@ -29,7 +29,7 @@
   >
     <AdaptiveDiv>
       <div class="flex h-full items-center justify-center">
-        <div onclick={(e) => e.stopPropagation()} class="max-w-full rounded-2xl bg-white p-4">
+        <div onclick={(e) => e.stopPropagation()} class="rounded-2xl bg-white p-4">
           {@render children?.()}
         </div>
       </div>

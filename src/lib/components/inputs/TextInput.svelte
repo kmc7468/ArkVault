@@ -12,8 +12,8 @@
   <input
     bind:value
     {type}
-    placeholder=" "
-    class="w-full border-b-2 border-gray-300 py-1 text-xl outline-none transition-all duration-300 ease-in-out"
+    placeholder=""
+    class="w-full border-b-2 border-gray-300 py-1 text-xl outline-none transition duration-300 ease-in-out"
   />
   <!-- svelte-ignore a11y_label_has_associated_control -->
   <label

@@ -5,7 +5,7 @@
 </script>
 
 <AdaptiveDiv>
-  <div class="flex h-screen w-full flex-col justify-between px-4">
+  <div class="flex h-screen flex-col justify-between px-4">
     {@render children()}
   </div>
 </AdaptiveDiv>

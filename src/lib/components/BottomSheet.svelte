@@ -28,7 +28,7 @@
       <AdaptiveDiv>
         <div
           onclick={(e) => e.stopPropagation()}
-          class="flex max-h-[70vh] min-h-[30vh] w-full items-stretch rounded-t-2xl bg-white px-4"
+          class="flex max-h-[70vh] min-h-[30vh] rounded-t-2xl bg-white px-4"
           transition:fly={{ y: 100, duration: 200 }}
         >
           {@render children?.()}
