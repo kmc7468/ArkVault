@@ -7,7 +7,7 @@
   import BeforeContinueBottomSheet from "./BeforeContinueBottomSheet.svelte";
   import BeforeContinueModal from "./BeforeContinueModal.svelte";
   import {
-    exportClientKeys,
+    serializeClientKeys,
     requestClientRegistration,
     storeClientKeys,
     requestTokenUpgrade,
@@ -21,14 +21,14 @@
   let isBeforeContinueModalOpen = $state(false);
   let isBeforeContinueBottomSheetOpen = $state(false);
 
-  const exportKeyPair = () => {
-    const clientKeysExported = exportClientKeys(
+  const exportClientKeys = () => {
+    const clientKeysSerialized = serializeClientKeys(
       data.encryptKeyBase64,
       data.decryptKeyBase64,
       data.signKeyBase64,
       data.verifyKeyBase64,
     );
-    const clientKeysBlob = new Blob([JSON.stringify(clientKeysExported)], {
+    const clientKeysBlob = new Blob([JSON.stringify(clientKeysSerialized)], {
       type: "application/json",
     });
     saveAs(clientKeysBlob, "arkvault-clientkey.json");
@@ -40,7 +40,7 @@
     }
   };
 
-  const registerPubKey = async () => {
+  const registerPubKeys = async () => {
     if (!$clientKeyStore) {
       throw new Error("Failed to find key pair");
     }
@@ -100,7 +100,7 @@
   </div>
 </TitleDiv>
 <BottomDiv>
-  <Button onclick={exportKeyPair}>암호 키 내보내기</Button>
+  <Button onclick={exportClientKeys}>암호 키 내보내기</Button>
   <TextButton
     onclick={() => {
       isBeforeContinueModalOpen = true;
@@ -110,9 +110,9 @@
   </TextButton>
 </BottomDiv>
 
-<BeforeContinueModal bind:isOpen={isBeforeContinueModalOpen} onContinueClick={registerPubKey} />
+<BeforeContinueModal bind:isOpen={isBeforeContinueModalOpen} onContinueClick={registerPubKeys} />
 <BeforeContinueBottomSheet
   bind:isOpen={isBeforeContinueBottomSheetOpen}
-  onRetryClick={exportKeyPair}
-  onContinueClick={registerPubKey}
+  onRetryClick={exportClientKeys}
+  onContinueClick={registerPubKeys}
 />

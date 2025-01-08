@@ -7,7 +7,7 @@ import type { ClientKeys } from "$lib/stores";
 export { requestTokenUpgrade } from "$lib/services/auth";
 export { requestClientRegistration } from "$lib/services/key";
 
-type ExportedKeyPairs = {
+type SerializedKeyPairs = {
   generator: "ArkVault";
   exportedAt: Date;
 } & {
@@ -18,7 +18,7 @@ type ExportedKeyPairs = {
   verifyKey: string;
 };
 
-export const exportClientKeys = (
+export const serializeClientKeys = (
   encryptKeyBase64: string,
   decryptKeyBase64: string,
   signKeyBase64: string,
@@ -32,7 +32,7 @@ export const exportClientKeys = (
     decryptKey: decryptKeyBase64,
     signKey: signKeyBase64,
     verifyKey: verifyKeyBase64,
-  } satisfies ExportedKeyPairs;
+  } satisfies SerializedKeyPairs;
 };
 
 export const storeClientKeys = async (clientKeys: ClientKeys) => {

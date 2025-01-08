@@ -32,7 +32,7 @@
     },
   ];
 
-  const generate = async () => {
+  const generateKeys = async () => {
     // TODO: Loading indicator
 
     const { encryptKey, ...clientKeys } = await generateClientKeys();
@@ -74,6 +74,6 @@
   </div>
 </TitleDiv>
 <BottomDiv>
-  <Button onclick={generate}>새 암호 키 생성하기</Button>
+  <Button onclick={generateKeys}>새 암호 키 생성하기</Button>
   <TextButton>키를 갖고 있어요</TextButton>
 </BottomDiv>
