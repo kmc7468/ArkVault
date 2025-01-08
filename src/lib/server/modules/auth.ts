@@ -23,7 +23,7 @@ type Permission = "pendingClient" | "activeClient";
 
 export const issueToken = (payload: TokenPayload) => {
   return jwt.sign(payload, env.jwt.secret, {
-    expiresIn: payload.type === "access" ? env.jwt.accessExp : env.jwt.refreshExp,
+    expiresIn: (payload.type === "access" ? env.jwt.accessExp : env.jwt.refreshExp) / 1000,
   });
 };
 

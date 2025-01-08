@@ -1,5 +1,4 @@
 import { error } from "@sveltejs/kit";
-import ms from "ms";
 import {
   createClient,
   getClient,
@@ -27,8 +26,7 @@ export const getUserClientList = async (userId: number) => {
   };
 };
 
-const expiresIn = ms(env.challenge.userClientExp);
-const expiresAt = () => new Date(Date.now() + expiresIn);
+const expiresAt = () => new Date(Date.now() + env.challenge.userClientExp);
 
 const createUserClientChallenge = async (
   userId: number,

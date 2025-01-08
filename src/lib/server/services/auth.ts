@@ -1,6 +1,5 @@
 import { error } from "@sveltejs/kit";
 import argon2 from "argon2";
-import ms from "ms";
 import { v4 as uuidv4 } from "uuid";
 import { getClient, getClientByPubKeys, getUserClient } from "$lib/server/db/client";
 import { getUserByEmail } from "$lib/server/db/user";
@@ -86,8 +85,7 @@ export const refreshToken = async (refreshToken: string) => {
   };
 };
 
-const expiresIn = ms(env.challenge.tokenUpgradeExp);
-const expiresAt = () => new Date(Date.now() + expiresIn);
+const expiresAt = () => new Date(Date.now() + env.challenge.tokenUpgradeExp);
 
 const createChallenge = async (
   ip: string,

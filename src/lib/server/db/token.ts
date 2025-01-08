@@ -1,12 +1,10 @@
 import { SqliteError } from "better-sqlite3";
 import { and, eq, gt, lte } from "drizzle-orm";
-import ms from "ms";
 import env from "$lib/server/loadenv";
 import db from "./drizzle";
 import { refreshToken, tokenUpgradeChallenge } from "./schema";
 
-const expiresIn = ms(env.jwt.refreshExp);
-const expiresAt = () => new Date(Date.now() + expiresIn);
+const expiresAt = () => new Date(Date.now() + env.jwt.refreshExp);
 
 export const registerRefreshToken = async (
   userId: number,
