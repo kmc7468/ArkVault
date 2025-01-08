@@ -36,10 +36,12 @@ export const serializeClientKeys = (
 };
 
 export const storeClientKeys = async (clientKeys: ClientKeys) => {
-  await storeClientKey(clientKeys.encryptKey, "encrypt");
-  await storeClientKey(clientKeys.decryptKey, "decrypt");
-  await storeClientKey(clientKeys.signKey, "sign");
-  await storeClientKey(clientKeys.verifyKey, "verify");
+  await Promise.all([
+    storeClientKey(clientKeys.encryptKey, "encrypt"),
+    storeClientKey(clientKeys.decryptKey, "decrypt"),
+    storeClientKey(clientKeys.signKey, "sign"),
+    storeClientKey(clientKeys.verifyKey, "verify"),
+  ]);
 };
 
 export const requestInitialMasterKeyRegistration = async (

@@ -42,11 +42,8 @@
 
   const registerPubKeys = async () => {
     if (!$clientKeyStore) {
-      throw new Error("Failed to find key pair");
+      throw new Error("Failed to find client keys");
     }
-
-    isBeforeContinueModalOpen = false;
-    isBeforeContinueBottomSheetOpen = false;
 
     try {
       if (

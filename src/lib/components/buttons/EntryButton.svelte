@@ -19,7 +19,7 @@
   }}
   class="w-full rounded-xl active:bg-gray-100"
 >
-  <div class="flex w-full items-stretch justify-between p-2 transition active:scale-95">
+  <div class="flex w-full justify-between p-2 transition active:scale-95">
     <div>
       {@render children?.()}
     </div>

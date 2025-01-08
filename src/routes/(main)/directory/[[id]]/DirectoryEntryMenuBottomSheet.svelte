@@ -29,14 +29,14 @@
 </script>
 
 <BottomSheet bind:isOpen onclose={closeBottomSheet}>
-  <div class="flex w-full flex-col py-4">
+  <div class="w-full py-4">
     {#if selectedEntry}
       {@const { type, name } = selectedEntry}
       <div class="flex h-12 items-center gap-x-4 p-2">
         <div class="flex-shrink-0 text-lg">
           {#if type === "directory"}
             <IconFolder />
-          {:else if type === "file"}
+          {:else}
             <IconDraft class="text-blue-400" />
           {/if}
         </div>
@@ -47,13 +47,13 @@
       <div class="my-2 h-px w-full bg-gray-200"></div>
     {/if}
     <EntryButton onclick={onRenameClick}>
-      <div class="flex h-8 items-center justify-center gap-x-4">
+      <div class="flex h-8 items-center gap-x-4">
         <IconEdit class="text-lg" />
         <p class="font-medium">이름 바꾸기</p>
       </div>
     </EntryButton>
     <EntryButton onclick={onDeleteClick}>
-      <div class="flex h-8 items-center justify-center gap-x-4 text-red-500">
+      <div class="flex h-8 items-center gap-x-4 text-red-500">
         <IconDelete class="text-lg" />
         <p class="font-medium">삭제하기</p>
       </div>

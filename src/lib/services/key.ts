@@ -50,7 +50,7 @@ export const requestMasterKeyDownload = async (decryptKey: CryptoKey, verifyKey:
         return {
           version,
           state,
-          masterKey,
+          key: masterKey,
           isValid: await verifyMasterKeyWrapped(
             masterKeyWrapped,
             version,
@@ -63,17 +63,8 @@ export const requestMasterKeyDownload = async (decryptKey: CryptoKey, verifyKey:
   );
   if (!masterKeys.every(({ isValid }) => isValid)) return false;
 
-  await storeMasterKeys(
-    masterKeys.map(({ version, state, masterKey }) => ({ version, state, key: masterKey })),
-  );
-  masterKeyStore.set(
-    new Map(
-      masterKeys.map(({ version, state, masterKey }) => [
-        version,
-        { version, state, key: masterKey },
-      ]),
-    ),
-  );
+  await storeMasterKeys(masterKeys);
+  masterKeyStore.set(new Map(masterKeys.map((masterKey) => [masterKey.version, masterKey])));
 
   return true;
 };

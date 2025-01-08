@@ -19,14 +19,12 @@
 </script>
 
 <Modal bind:isOpen onclose={closeModal}>
-  <div class="flex flex-col px-1">
-    <p class="text-xl font-bold">새 폴더</p>
-    <div class="my-4 flex w-full">
-      <TextInput bind:value={name} placeholder="폴더 이름" />
-    </div>
-    <div class="mt-5 flex gap-2">
-      <Button color="gray" onclick={closeModal}>닫기</Button>
-      <Button onclick={() => onCreateClick(name)}>만들기</Button>
-    </div>
+  <p class="text-xl font-bold">새 폴더</p>
+  <div class="mt-2 flex w-full">
+    <TextInput bind:value={name} placeholder="폴더 이름" />
+  </div>
+  <div class="mt-7 flex gap-2">
+    <Button color="gray" onclick={closeModal}>닫기</Button>
+    <Button onclick={() => onCreateClick(name)}>만들기</Button>
   </div>
 </Modal>

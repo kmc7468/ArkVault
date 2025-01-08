@@ -13,9 +13,7 @@ export const requestTokenUpgrade = async (
 ) => {
   let res = await fetch("/api/auth/upgradeToken", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       encPubKey: encryptKeyBase64,
       sigPubKey: verifyKeyBase64,
@@ -29,9 +27,7 @@ export const requestTokenUpgrade = async (
 
   res = await fetch("/api/auth/upgradeToken/verify", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       answer: encodeToBase64(answer),
       answerSig: encodeToBase64(answerSig),
