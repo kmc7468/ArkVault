@@ -26,7 +26,7 @@ const fetchDirectoryInfo = async (directoryId: "root" | number, masterKey: Crypt
     newInfo = {
       id: directoryId,
       dataKey,
-      dataKeyVersion: metadata!.dekVersion,
+      dataKeyVersion: new Date(metadata!.dekVersion),
       name: await decryptString(metadata!.name, metadata!.nameIv, dataKey),
       subDirectoryIds: subDirectories,
       fileIds: files,
@@ -63,7 +63,7 @@ const fetchFileInfo = async (fileId: number, masterKey: CryptoKey) => {
   const newInfo: FileInfo = {
     id: fileId,
     dataKey,
-    dataKeyVersion: metadata.dekVersion,
+    dataKeyVersion: new Date(metadata.dekVersion),
     contentType: metadata.contentType,
     contentIv: metadata.contentIv,
     name: await decryptString(metadata.name, metadata.nameIv, dataKey),

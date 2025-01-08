@@ -1,18 +1,11 @@
 import mime from "mime";
 import { z } from "zod";
 
-export const fileRenameRequest = z.object({
-  dekVersion: z.coerce.date(),
-  name: z.string().base64().nonempty(),
-  nameIv: z.string().base64().nonempty(),
-});
-export type FileRenameRequest = z.infer<typeof fileRenameRequest>;
-
 export const fileInfoResponse = z.object({
-  createdAt: z.date(),
+  createdAt: z.string().datetime(),
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
-  dekVersion: z.date(),
+  dekVersion: z.string().datetime(),
   contentType: z
     .string()
     .nonempty()
@@ -23,11 +16,18 @@ export const fileInfoResponse = z.object({
 });
 export type FileInfoResponse = z.infer<typeof fileInfoResponse>;
 
+export const fileRenameRequest = z.object({
+  dekVersion: z.string().datetime(),
+  name: z.string().base64().nonempty(),
+  nameIv: z.string().base64().nonempty(),
+});
+export type FileRenameRequest = z.infer<typeof fileRenameRequest>;
+
 export const fileUploadRequest = z.object({
   parentId: z.union([z.enum(["root"]), z.number().int().positive()]),
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
-  dekVersion: z.coerce.date(),
+  dekVersion: z.string().datetime(),
   contentType: z
     .string()
     .nonempty()

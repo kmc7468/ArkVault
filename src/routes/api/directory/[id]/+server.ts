@@ -20,10 +20,10 @@ export const GET: RequestHandler = async ({ cookies, params }) => {
   return json(
     directoryInfoResponse.parse({
       metadata: metadata && {
-        createdAt: metadata.createdAt,
+        createdAt: metadata.createdAt.toISOString(),
         mekVersion: metadata.mekVersion,
         dek: metadata.encDek,
-        dekVersion: metadata.dekVersion,
+        dekVersion: metadata.dekVersion.toISOString(),
         name: metadata.encName.ciphertext,
         nameIv: metadata.encName.iv,
       },

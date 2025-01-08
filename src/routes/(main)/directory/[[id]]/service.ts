@@ -33,7 +33,7 @@ export const requestDirectoryCreation = async (
     parentId,
     mekVersion: masterKey.version,
     dek: await wrapDataKey(dataKey, masterKey.key),
-    dekVersion: dataKeyVersion,
+    dekVersion: dataKeyVersion.toISOString(),
     name: encodeToBase64(nameEncrypted.ciphertext),
     nameIv: nameEncrypted.iv,
   });
@@ -52,7 +52,7 @@ export const requestFileUpload = (file: File, parentId: "root" | number, masterK
         parentId,
         mekVersion: masterKey.version,
         dek: await wrapDataKey(dataKey, masterKey.key),
-        dekVersion: dataKeyVersion,
+        dekVersion: dataKeyVersion.toISOString(),
         contentType: file.type,
         contentIv: fileEncrypted.iv,
         name: nameEncrypted.ciphertext,
@@ -85,13 +85,13 @@ export const requestDirectoryEntryRename = async (
 
   if (entry.type === "directory") {
     await callPostApi<DirectoryRenameRequest>(`/api/directory/${entry.id}/rename`, {
-      dekVersion: entry.dataKeyVersion,
+      dekVersion: entry.dataKeyVersion.toISOString(),
       name: newNameEncrypted.ciphertext,
       nameIv: newNameEncrypted.iv,
     });
   } else {
     await callPostApi<FileRenameRequest>(`/api/file/${entry.id}/rename`, {
-      dekVersion: entry.dataKeyVersion,
+      dekVersion: entry.dataKeyVersion.toISOString(),
       name: newNameEncrypted.ciphertext,
       nameIv: newNameEncrypted.iv,
     });

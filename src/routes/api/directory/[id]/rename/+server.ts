@@ -20,6 +20,6 @@ export const POST: RequestHandler = async ({ request, cookies, params }) => {
   if (!bodyZodRes.success) error(400, "Invalid request body");
   const { dekVersion, name, nameIv } = bodyZodRes.data;
 
-  await renameDirectory(userId, id, dekVersion, name, nameIv);
+  await renameDirectory(userId, id, new Date(dekVersion), name, nameIv);
   return text("Directory renamed", { headers: { "Content-Type": "text/plain" } });
 };

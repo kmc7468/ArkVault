@@ -20,10 +20,10 @@ export const GET: RequestHandler = async ({ cookies, params }) => {
     await getFileInformation(userId, id);
   return json(
     fileInfoResponse.parse({
-      createdAt,
+      createdAt: createdAt.toISOString(),
       mekVersion,
       dek: encDek,
-      dekVersion,
+      dekVersion: dekVersion.toISOString(),
       contentType: contentType,
       contentIv: encContentIv,
       name: encName.ciphertext,

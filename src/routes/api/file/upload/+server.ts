@@ -25,7 +25,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
       parentId,
       mekVersion,
       encDek: dek,
-      dekVersion,
+      dekVersion: new Date(dekVersion),
       contentType,
       encContentIv: contentIv,
       encName: name,
