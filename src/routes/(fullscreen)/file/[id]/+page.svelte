@@ -67,11 +67,9 @@
   <title>파일</title>
 </svelte:head>
 
-<div class="flex h-full flex-col">
-  <div class="flex-shrink-0">
-    <TopBar title={$info?.name} />
-  </div>
-  <div class="flex w-full flex-grow flex-col items-center py-4">
+<div class="flex flex-col">
+  <TopBar title={$info?.name} />
+  <div class="mb-4 flex w-full flex-grow flex-col items-center">
     {#snippet viewerLoading(message: string)}
       <div class="flex flex-grow items-center justify-center">
         <p class="text-gray-500">{message}</p>

@@ -61,22 +61,23 @@
 <input bind:this={fileInput} onchange={uploadFile} type="file" class="hidden" />
 
 <div class="flex min-h-full flex-col px-4">
-  <div class="flex-shrink-0">
-    {#if data.id !== "root"}
-      <TopBar title={$info?.name} />
-    {/if}
-  </div>
+  {#if data.id !== "root"}
+    <TopBar title={$info?.name} />
+  {/if}
   {#if $info}
-    {#key $info}
-      <DirectoryEntries
-        info={$info}
-        onEntryClick={({ type, id }) => goto(`/${type}/${id}`)}
-        onEntryMenuClick={(entry) => {
-          selectedEntry = entry;
-          isDirectoryEntryMenuBottomSheetOpen = true;
-        }}
-      />
-    {/key}
+    {@const topMargin = data.id === "root" ? "mt-4" : ""}
+    <div class="mb-4 flex flex-grow flex-col {topMargin}">
+      {#key $info}
+        <DirectoryEntries
+          info={$info}
+          onEntryClick={({ type, id }) => goto(`/${type}/${id}`)}
+          onEntryMenuClick={(entry) => {
+            selectedEntry = entry;
+            isDirectoryEntryMenuBottomSheetOpen = true;
+          }}
+        />
+      {/key}
+    </div>
   {/if}
 </div>
 

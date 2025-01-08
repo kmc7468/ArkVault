@@ -1,4 +1,4 @@
-import { writable } from "svelte/store";
+import { writable, type Writable } from "svelte/store";
 import { callGetApi } from "$lib/hooks";
 import { unwrapDataKey, decryptString } from "$lib/modules/crypto";
 import type { DirectoryInfoResponse, FileInfoResponse } from "$lib/server/schemas";
@@ -9,7 +9,11 @@ import {
   type FileInfo,
 } from "$lib/stores/file";
 
-const fetchDirectoryInfo = async (directoryId: "root" | number, masterKey: CryptoKey) => {
+const fetchDirectoryInfo = async (
+  directoryId: "root" | number,
+  masterKey: CryptoKey,
+  infoStore: Writable<DirectoryInfo | null>,
+) => {
   const res = await callGetApi(`/api/directory/${directoryId}`);
   if (!res.ok) throw new Error("Failed to fetch directory information");
   const { metadata, subDirectories, files }: DirectoryInfoResponse = await res.json();
@@ -33,12 +37,7 @@ const fetchDirectoryInfo = async (directoryId: "root" | number, masterKey: Crypt
     };
   }
 
-  const info = directoryInfoStore.get(directoryId);
-  if (info) {
-    info.update(() => newInfo);
-  } else {
-    directoryInfoStore.set(directoryId, writable(newInfo));
-  }
+  infoStore.update(() => newInfo);
 };
 
 export const getDirectoryInfo = (directoryId: "root" | number, masterKey: CryptoKey) => {
@@ -50,11 +49,15 @@ export const getDirectoryInfo = (directoryId: "root" | number, masterKey: Crypto
     directoryInfoStore.set(directoryId, info);
   }
 
-  fetchDirectoryInfo(directoryId, masterKey);
+  fetchDirectoryInfo(directoryId, masterKey, info);
   return info;
 };
 
-const fetchFileInfo = async (fileId: number, masterKey: CryptoKey) => {
+const fetchFileInfo = async (
+  fileId: number,
+  masterKey: CryptoKey,
+  infoStore: Writable<FileInfo | null>,
+) => {
   const res = await callGetApi(`/api/file/${fileId}`);
   if (!res.ok) throw new Error("Failed to fetch file information");
   const metadata: FileInfoResponse = await res.json();
@@ -69,12 +72,7 @@ const fetchFileInfo = async (fileId: number, masterKey: CryptoKey) => {
     name: await decryptString(metadata.name, metadata.nameIv, dataKey),
   };
 
-  const info = fileInfoStore.get(fileId);
-  if (info) {
-    info.update(() => newInfo);
-  } else {
-    fileInfoStore.set(fileId, writable(newInfo));
-  }
+  infoStore.update(() => newInfo);
 };
 
 export const getFileInfo = (fileId: number, masterKey: CryptoKey) => {
@@ -86,6 +84,6 @@ export const getFileInfo = (fileId: number, masterKey: CryptoKey) => {
     fileInfoStore.set(fileId, info);
   }
 
-  fetchFileInfo(fileId, masterKey);
+  fetchFileInfo(fileId, masterKey, info);
   return info;
 };

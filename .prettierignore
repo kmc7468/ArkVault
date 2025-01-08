@@ -5,3 +5,6 @@ yarn.lock
 
 # Output
 /drizzle
+
+# Documents
+*.md

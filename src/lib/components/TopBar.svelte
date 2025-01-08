@@ -16,7 +16,7 @@
   });
 </script>
 
-<div class="sticky top-0 flex items-center justify-between bg-white pt-4">
+<div class="sticky top-0 z-10 flex flex-shrink-0 items-center justify-between bg-white py-4">
   <button onclick={back} class="w-[2.3rem] flex-shrink-0 rounded-full p-1 active:bg-gray-100">
     <IconArrowBack class="text-2xl" />
   </button>

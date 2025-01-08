@@ -42,7 +42,7 @@
 </script>
 
 {#if info.subDirectoryIds.length + info.fileIds.length > 0}
-  <div class="my-4 pb-[4.5rem]">
+  <div class="pb-[4.5rem]">
     {#each subDirectoryInfos as subDirectory}
       <SubDirectory info={subDirectory} onclick={onEntryClick} onOpenMenuClick={onEntryMenuClick} />
     {/each}
@@ -51,7 +51,7 @@
     {/each}
   </div>
 {:else}
-  <div class="my-4 flex flex-grow items-center justify-center">
+  <div class="flex flex-grow items-center justify-center">
     <p class="text-gray-500">폴더가 비어 있어요.</p>
   </div>
 {/if}
