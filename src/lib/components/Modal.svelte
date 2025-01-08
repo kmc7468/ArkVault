@@ -24,11 +24,11 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     onclick={closeModal}
-    class="fixed inset-0 z-10 bg-black bg-opacity-50 px-4"
+    class="fixed inset-0 z-10 bg-black bg-opacity-50"
     transition:fade={{ duration: 100 }}
   >
     <AdaptiveDiv>
-      <div class="flex h-full items-center justify-center">
+      <div class="flex h-full items-center justify-center px-4">
         <div onclick={(e) => e.stopPropagation()} class="rounded-2xl bg-white p-4">
           {@render children?.()}
         </div>
