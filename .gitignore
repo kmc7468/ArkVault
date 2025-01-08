@@ -7,10 +7,15 @@ node_modules
 .wrangler
 /.svelte-kit
 /build
+/data
+/library
 
 # OS
 .DS_Store
 Thumbs.db
+
+# VSCode
+/.vscode
 
 # Env
 .env

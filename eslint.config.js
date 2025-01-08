@@ -2,6 +2,7 @@ import prettier from "eslint-config-prettier";
 import js from "@eslint/js";
 import { includeIgnoreFile } from "@eslint/compat";
 import svelte from "eslint-plugin-svelte";
+import tailwind from "eslint-plugin-tailwindcss";
 import globals from "globals";
 import { fileURLToPath } from "node:url";
 import ts from "typescript-eslint";
@@ -12,6 +13,7 @@ export default ts.config(
   js.configs.recommended,
   ...ts.configs.recommended,
   ...svelte.configs["flat/recommended"],
+  ...tailwind.configs["flat/recommended"],
   prettier,
   ...svelte.configs["flat/prettier"],
   {
