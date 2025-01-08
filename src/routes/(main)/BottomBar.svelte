@@ -16,8 +16,6 @@
     { path: "/category", label: "카테고리", icon: IconCategory },
     { path: "/menu", label: "전체", icon: IconMenu },
   ];
-
-  // TODO: Navigation
 </script>
 
 <div class="sticky bottom-0 h-20 flex-shrink-0 rounded-t-2xl border-t border-gray-300 bg-white">
@@ -30,7 +28,7 @@
           class="w-16 active:rounded-xl active:bg-gray-100 {textColor}"
         >
           <div class="flex flex-col items-center gap-y-1 p-1 transition active:scale-95">
-            <Icon class="text-xl" fill="0" />
+            <Icon class="text-xl" />
             <p class="text-sm">{label}</p>
           </div>
         </button>

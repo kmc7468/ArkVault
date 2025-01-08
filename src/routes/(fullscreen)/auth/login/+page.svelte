@@ -4,7 +4,7 @@
   import { Button, TextButton } from "$lib/components/buttons";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
   import { TextInput } from "$lib/components/inputs";
-  import { refreshToken } from "$lib/hooks/callApi";
+  import { refreshToken } from "$lib/hooks";
   import { clientKeyStore, masterKeyStore } from "$lib/stores";
   import { requestLogin, requestTokenUpgrade, requestMasterKeyDownload } from "./service";
 
@@ -56,8 +56,8 @@
 </svelte:head>
 
 <TitleDiv>
-  <div class="flex flex-col gap-y-2">
-    <h1 class="text-3xl font-bold">환영합니다!</h1>
+  <div class="space-y-2 break-keep">
+    <p class="text-3xl font-bold">환영합니다!</p>
     <p>서비스를 이용하려면 로그인을 해야해요.</p>
   </div>
   <div class="my-4 flex flex-col gap-y-2">
@@ -66,10 +66,6 @@
   </div>
 </TitleDiv>
 <BottomDiv>
-  <div class="w-full">
-    <Button onclick={login}>로그인</Button>
-  </div>
-  <div class="w-fit">
-    <TextButton>계정이 없어요</TextButton>
-  </div>
+  <Button onclick={login}>로그인</Button>
+  <TextButton>계정이 없어요</TextButton>
 </BottomDiv>

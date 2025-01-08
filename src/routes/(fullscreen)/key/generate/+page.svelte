@@ -57,16 +57,16 @@
 </svelte:head>
 
 <TitleDiv>
-  <div class="flex flex-col gap-y-2">
-    <h1 class="text-3xl font-bold">암호 키 생성하기</h1>
+  <div class="space-y-2 break-keep">
+    <p class="text-3xl font-bold">암호 키 생성하기</p>
     <p>회원님의 디바이스 간의 안전한 데이터 동기화를 위해 암호 키를 생성해야 해요.</p>
   </div>
-  <div class="my-4 flex flex-col gap-y-2">
-    <div class="mb-4">
+  <div class="my-4 space-y-4">
+    <div>
       <IconKey class="mx-auto text-7xl" />
       <p class="text-center text-xl font-bold text-primary-500">왜 암호 키가 필요한가요?</p>
     </div>
-    <div>
+    <div class="space-y-2">
       {#each orders as { title, description }, i}
         <Order order={i + 1} isLast={i === orders.length - 1} {title} {description} />
       {/each}
@@ -74,10 +74,6 @@
   </div>
 </TitleDiv>
 <BottomDiv>
-  <div class="w-full">
-    <Button onclick={generate}>새 암호 키 생성하기</Button>
-  </div>
-  <div class="w-fit">
-    <TextButton>키를 갖고 있어요</TextButton>
-  </div>
+  <Button onclick={generate}>새 암호 키 생성하기</Button>
+  <TextButton>키를 갖고 있어요</TextButton>
 </BottomDiv>
