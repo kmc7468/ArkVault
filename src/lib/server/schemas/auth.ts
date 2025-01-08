@@ -19,6 +19,6 @@ export type TokenUpgradeResponse = z.infer<typeof tokenUpgradeResponse>;
 
 export const tokenUpgradeVerifyRequest = z.object({
   answer: z.string().base64().nonempty(),
-  sigAnswer: z.string().base64().nonempty(),
+  answerSig: z.string().base64().nonempty(),
 });
 export type TokenUpgradeVerifyRequest = z.infer<typeof tokenUpgradeVerifyRequest>;

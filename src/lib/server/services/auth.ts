@@ -132,7 +132,7 @@ export const upgradeToken = async (
   refreshToken: string,
   ip: string,
   answer: string,
-  sigAnswer: string,
+  answerSig: string,
 ) => {
   const { jti: oldJti, userId, clientId } = await verifyRefreshToken(refreshToken);
   if (clientId) {
@@ -149,7 +149,7 @@ export const upgradeToken = async (
   const client = await getClient(challenge.clientId);
   if (!client) {
     error(500, "Invalid challenge answer");
-  } else if (!verifySignature(Buffer.from(answer, "base64"), sigAnswer, client.sigPubKey)) {
+  } else if (!verifySignature(Buffer.from(answer, "base64"), answerSig, client.sigPubKey)) {
     error(401, "Invalid challenge answer signature");
   }
 

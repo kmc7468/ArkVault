@@ -12,8 +12,8 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
 
   const zodRes = clientRegisterVerifyRequest.safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");
-  const { answer, sigAnswer } = zodRes.data;
+  const { answer, answerSig } = zodRes.data;
 
-  await verifyUserClient(userId, getClientAddress(), answer, sigAnswer);
+  await verifyUserClient(userId, getClientAddress(), answer, answerSig);
   return text("Client verified", { headers: { "Content-Type": "text/plain" } });
 };

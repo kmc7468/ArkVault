@@ -25,7 +25,7 @@ export const requestTokenUpgrade = async (
 
   const { challenge }: TokenUpgradeResponse = await res.json();
   const answer = await decryptChallenge(challenge, decryptKey);
-  const sigAnswer = await signMessage(answer, signKey);
+  const answerSig = await signMessage(answer, signKey);
 
   res = await fetch("/api/auth/upgradeToken/verify", {
     method: "POST",
@@ -34,7 +34,7 @@ export const requestTokenUpgrade = async (
     },
     body: JSON.stringify({
       answer: encodeToBase64(answer),
-      sigAnswer: encodeToBase64(sigAnswer),
+      answerSig: encodeToBase64(answerSig),
     } satisfies TokenUpgradeVerifyRequest),
   });
   return res.ok;

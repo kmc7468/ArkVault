@@ -11,13 +11,13 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
 
   const zodRes = tokenUpgradeVerifyRequest.safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");
-  const { answer, sigAnswer } = zodRes.data;
+  const { answer, answerSig } = zodRes.data;
 
   const { accessToken, refreshToken } = await upgradeToken(
     token,
     getClientAddress(),
     answer,
-    sigAnswer,
+    answerSig,
   );
   cookies.set("accessToken", accessToken, {
     path: "/",

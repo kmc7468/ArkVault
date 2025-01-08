@@ -23,7 +23,7 @@ export type ClientRegisterResponse = z.infer<typeof clientRegisterResponse>;
 
 export const clientRegisterVerifyRequest = z.object({
   answer: z.string().base64().nonempty(),
-  sigAnswer: z.string().base64().nonempty(),
+  answerSig: z.string().base64().nonempty(),
 });
 export type ClientRegisterVerifyRequest = z.infer<typeof clientRegisterVerifyRequest>;
 
