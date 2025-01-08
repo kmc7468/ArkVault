@@ -87,7 +87,6 @@
     isCreateBottomSheetOpen = true;
   }}
 />
-
 <CreateBottomSheet
   bind:isOpen={isCreateBottomSheetOpen}
   onDirectoryCreateClick={() => {

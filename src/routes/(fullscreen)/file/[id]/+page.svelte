@@ -67,7 +67,7 @@
   <title>파일</title>
 </svelte:head>
 
-<div class="flex flex-col">
+<div class="flex h-full flex-col">
   <TopBar title={$info?.name} />
   <div class="mb-4 flex w-full flex-grow flex-col items-center">
     {#snippet viewerLoading(message: string)}
