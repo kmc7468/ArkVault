@@ -3,7 +3,6 @@ import {
   createClient,
   getClient,
   getClientByPubKeys,
-  countClientByPubKey,
   createUserClient,
   getAllUserClients,
   getUserClient,
@@ -12,6 +11,7 @@ import {
   getUserClientChallenge,
   markUserClientChallengeAsUsed,
 } from "$lib/server/db/client";
+import { IntegrityError } from "$lib/server/db/error";
 import { verifyPubKey, verifySignature, generateChallenge } from "$lib/server/modules/crypto";
 import { isInitialMekNeeded } from "$lib/server/modules/mek";
 import env from "$lib/server/loadenv";
@@ -29,8 +29,8 @@ export const getUserClientList = async (userId: number) => {
 const expiresAt = () => new Date(Date.now() + env.challenge.userClientExp);
 
 const createUserClientChallenge = async (
-  userId: number,
   ip: string,
+  userId: number,
   clientId: number,
   encPubKey: string,
 ) => {
@@ -45,33 +45,59 @@ export const registerUserClient = async (
   encPubKey: string,
   sigPubKey: string,
 ) => {
-  let clientId;
-
   const client = await getClientByPubKeys(encPubKey, sigPubKey);
   if (client) {
-    const userClient = await getUserClient(userId, client.id);
-    if (userClient) {
-      error(409, "Client already registered");
+    try {
+      await createUserClient(userId, client.id);
+      return { challenge: await createUserClientChallenge(ip, userId, client.id, encPubKey) };
+    } catch (e) {
+      if (e instanceof IntegrityError && e.message === "User client already exists") {
+        error(409, "Client already registered");
+      }
+      throw e;
     }
-
-    await createUserClient(userId, client.id);
-    clientId = client.id;
   } else {
-    if (!verifyPubKey(encPubKey) || !verifyPubKey(sigPubKey)) {
+    if (encPubKey === sigPubKey) {
+      error(400, "Same public keys");
+    } else if (!verifyPubKey(encPubKey) || !verifyPubKey(sigPubKey)) {
       error(400, "Invalid public key(s)");
-    } else if (encPubKey === sigPubKey) {
-      error(400, "Public keys must be different");
-    } else if (
-      (await countClientByPubKey(encPubKey)) > 0 ||
-      (await countClientByPubKey(sigPubKey)) > 0
-    ) {
-      error(409, "Public key(s) already registered");
     }
 
-    clientId = await createClient(encPubKey, sigPubKey, userId);
+    try {
+      const clientId = await createClient(encPubKey, sigPubKey, userId);
+      return { challenge: await createUserClientChallenge(ip, userId, clientId, encPubKey) };
+    } catch (e) {
+      if (e instanceof IntegrityError && e.message === "Public key(s) already registered") {
+        error(409, "Public key(s) already used");
+      }
+      throw e;
+    }
+  }
+};
+
+export const verifyUserClient = async (
+  userId: number,
+  ip: string,
+  answer: string,
+  answerSig: string,
+) => {
+  const challenge = await getUserClientChallenge(answer, ip);
+  if (!challenge) {
+    error(403, "Invalid challenge answer");
+  } else if (challenge.userId !== userId) {
+    error(403, "Forbidden");
   }
 
-  return { challenge: await createUserClientChallenge(userId, ip, clientId, encPubKey) };
+  await markUserClientChallengeAsUsed(challenge.id);
+
+  const client = await getClient(challenge.clientId);
+  if (!client) {
+    error(500, "Invalid challenge answer");
+  } else if (!verifySignature(Buffer.from(answer, "base64"), answerSig, client.sigPubKey)) {
+    error(403, "Invalid challenge answer signature");
+  }
+
+  await setUserClientStateToPending(userId, challenge.clientId);
 };
 
 export const getUserClientStatus = async (userId: number, clientId: number) => {
@@ -84,28 +110,4 @@ export const getUserClientStatus = async (userId: number, clientId: number) => {
     state: userClient.state as "pending" | "active",
     isInitialMekNeeded: await isInitialMekNeeded(userId),
   };
-};
-
-export const verifyUserClient = async (
-  userId: number,
-  ip: string,
-  answer: string,
-  answerSig: string,
-) => {
-  const challenge = await getUserClientChallenge(answer, ip);
-  if (!challenge) {
-    error(401, "Invalid challenge answer");
-  } else if (challenge.userId !== userId) {
-    error(403, "Forbidden");
-  }
-
-  const client = await getClient(challenge.clientId);
-  if (!client) {
-    error(500, "Invalid challenge answer");
-  } else if (!verifySignature(Buffer.from(answer, "base64"), answerSig, client.sigPubKey)) {
-    error(401, "Invalid challenge answer signature");
-  }
-
-  await markUserClientChallengeAsUsed(challenge.id);
-  await setUserClientStateToPending(userId, challenge.clientId);
 };

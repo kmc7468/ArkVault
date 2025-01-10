@@ -1,7 +1,8 @@
 import { error } from "@sveltejs/kit";
 import { setUserClientStateToActive } from "$lib/server/db/client";
+import { IntegrityError } from "$lib/server/db/error";
 import { registerInitialMek, getAllValidClientMeks } from "$lib/server/db/mek";
-import { isInitialMekNeeded, verifyClientEncMekSig } from "$lib/server/modules/mek";
+import { verifyClientEncMekSig } from "$lib/server/modules/mek";
 
 export const getClientMekList = async (userId: number, clientId: number) => {
   const clientMeks = await getAllValidClientMeks(userId, clientId);
@@ -21,12 +22,17 @@ export const registerInitialActiveMek = async (
   encMek: string,
   encMekSig: string,
 ) => {
-  if (!(await isInitialMekNeeded(userId))) {
-    error(409, "Initial MEK already registered");
-  } else if (!(await verifyClientEncMekSig(userId, createdBy, 1, encMek, encMekSig))) {
+  if (!(await verifyClientEncMekSig(userId, createdBy, 1, encMek, encMekSig))) {
     error(400, "Invalid signature");
   }
 
-  await registerInitialMek(userId, createdBy, encMek, encMekSig);
-  await setUserClientStateToActive(userId, createdBy);
+  try {
+    await registerInitialMek(userId, createdBy, encMek, encMekSig);
+    await setUserClientStateToActive(userId, createdBy);
+  } catch (e) {
+    if (e instanceof IntegrityError && e.message === "MEK already registered") {
+      error(409, "Initial MEK already registered");
+    }
+    throw e;
+  }
 };

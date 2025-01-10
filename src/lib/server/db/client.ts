@@ -1,30 +1,36 @@
-import { and, or, eq, gt, lte, count } from "drizzle-orm";
+import { SqliteError } from "better-sqlite3";
+import { and, or, eq, gt, lte } from "drizzle-orm";
 import db from "./drizzle";
+import { IntegrityError } from "./error";
 import { client, userClient, userClientChallenge } from "./schema";
 
 export const createClient = async (encPubKey: string, sigPubKey: string, userId: number) => {
-  return await db.transaction(async (tx) => {
-    const clients = await tx
-      .select()
-      .from(client)
-      .where(or(eq(client.encPubKey, sigPubKey), eq(client.sigPubKey, encPubKey)));
-    if (clients.length > 0) {
-      throw new Error("Already used public key(s)");
-    }
+  return await db.transaction(
+    async (tx) => {
+      const clients = await tx
+        .select({ id: client.id })
+        .from(client)
+        .where(or(eq(client.encPubKey, sigPubKey), eq(client.sigPubKey, encPubKey)))
+        .limit(1);
+      if (clients.length !== 0) {
+        throw new IntegrityError("Public key(s) already registered");
+      }
 
-    const insertRes = await tx
-      .insert(client)
-      .values({ encPubKey, sigPubKey })
-      .returning({ id: client.id });
-    const { id: clientId } = insertRes[0]!;
-    await tx.insert(userClient).values({ userId, clientId });
+      const newClients = await tx
+        .insert(client)
+        .values({ encPubKey, sigPubKey })
+        .returning({ id: client.id });
+      const { id: clientId } = newClients[0]!;
+      await tx.insert(userClient).values({ userId, clientId });
 
-    return clientId;
-  });
+      return clientId;
+    },
+    { behavior: "exclusive" },
+  );
 };
 
 export const getClient = async (clientId: number) => {
-  const clients = await db.select().from(client).where(eq(client.id, clientId)).execute();
+  const clients = await db.select().from(client).where(eq(client.id, clientId)).limit(1);
   return clients[0] ?? null;
 };
 
@@ -33,24 +39,23 @@ export const getClientByPubKeys = async (encPubKey: string, sigPubKey: string) =
     .select()
     .from(client)
     .where(and(eq(client.encPubKey, encPubKey), eq(client.sigPubKey, sigPubKey)))
-    .execute();
+    .limit(1);
   return clients[0] ?? null;
 };
 
-export const countClientByPubKey = async (pubKey: string) => {
-  const clients = await db
-    .select({ count: count() })
-    .from(client)
-    .where(or(eq(client.encPubKey, pubKey), eq(client.encPubKey, pubKey)));
-  return clients[0]?.count ?? 0;
-};
-
 export const createUserClient = async (userId: number, clientId: number) => {
-  await db.insert(userClient).values({ userId, clientId }).execute();
+  try {
+    await db.insert(userClient).values({ userId, clientId });
+  } catch (e) {
+    if (e instanceof SqliteError && e.code === "SQLITE_CONSTRAINT_PRIMARYKEY") {
+      throw new IntegrityError("User client already exists");
+    }
+    throw e;
+  }
 };
 
 export const getAllUserClients = async (userId: number) => {
-  return await db.select().from(userClient).where(eq(userClient.userId, userId)).execute();
+  return await db.select().from(userClient).where(eq(userClient.userId, userId));
 };
 
 export const getUserClient = async (userId: number, clientId: number) => {
@@ -58,7 +63,7 @@ export const getUserClient = async (userId: number, clientId: number) => {
     .select()
     .from(userClient)
     .where(and(eq(userClient.userId, userId), eq(userClient.clientId, clientId)))
-    .execute();
+    .limit(1);
   return userClients[0] ?? null;
 };
 
@@ -68,7 +73,7 @@ export const getUserClientWithDetails = async (userId: number, clientId: number)
     .from(userClient)
     .innerJoin(client, eq(userClient.clientId, client.id))
     .where(and(eq(userClient.userId, userId), eq(userClient.clientId, clientId)))
-    .execute();
+    .limit(1);
   return userClients[0] ?? null;
 };
 
@@ -82,8 +87,7 @@ export const setUserClientStateToPending = async (userId: number, clientId: numb
         eq(userClient.clientId, clientId),
         eq(userClient.state, "challenging"),
       ),
-    )
-    .execute();
+    );
 };
 
 export const setUserClientStateToActive = async (userId: number, clientId: number) => {
@@ -96,8 +100,7 @@ export const setUserClientStateToActive = async (userId: number, clientId: numbe
         eq(userClient.clientId, clientId),
         eq(userClient.state, "pending"),
       ),
-    )
-    .execute();
+    );
 };
 
 export const registerUserClientChallenge = async (
@@ -107,16 +110,13 @@ export const registerUserClientChallenge = async (
   allowedIp: string,
   expiresAt: Date,
 ) => {
-  await db
-    .insert(userClientChallenge)
-    .values({
-      userId,
-      clientId,
-      answer,
-      allowedIp,
-      expiresAt,
-    })
-    .execute();
+  await db.insert(userClientChallenge).values({
+    userId,
+    clientId,
+    answer,
+    allowedIp,
+    expiresAt,
+  });
 };
 
 export const getUserClientChallenge = async (answer: string, ip: string) => {
@@ -131,21 +131,14 @@ export const getUserClientChallenge = async (answer: string, ip: string) => {
         eq(userClientChallenge.isUsed, false),
       ),
     )
-    .execute();
+    .limit(1);
   return challenges[0] ?? null;
 };
 
 export const markUserClientChallengeAsUsed = async (id: number) => {
-  await db
-    .update(userClientChallenge)
-    .set({ isUsed: true })
-    .where(eq(userClientChallenge.id, id))
-    .execute();
+  await db.update(userClientChallenge).set({ isUsed: true }).where(eq(userClientChallenge.id, id));
 };
 
 export const cleanupExpiredUserClientChallenges = async () => {
-  await db
-    .delete(userClientChallenge)
-    .where(lte(userClientChallenge.expiresAt, new Date()))
-    .execute();
+  await db.delete(userClientChallenge).where(lte(userClientChallenge.expiresAt, new Date()));
 };

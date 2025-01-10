@@ -16,7 +16,7 @@ export const GET: RequestHandler = async ({ cookies, params }) => {
   const { id } = zodRes.data;
 
   const { encContentStream, encContentSize } = await getFileStream(userId, id);
-  return new Response(encContentStream, {
+  return new Response(encContentStream as ReadableStream, {
     headers: {
       "Content-Type": "application/octet-stream",
       "Content-Length": encContentSize.toString(),

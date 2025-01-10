@@ -4,9 +4,10 @@ import { v4 as uuidv4 } from "uuid";
 import { getClient, getClientByPubKeys, getUserClient } from "$lib/server/db/client";
 import { getUserByEmail } from "$lib/server/db/user";
 import env from "$lib/server/loadenv";
+import { IntegrityError } from "$lib/server/db/error";
 import {
-  getRefreshToken,
   registerRefreshToken,
+  getRefreshToken,
   rotateRefreshToken,
   upgradeRefreshToken,
   revokeRefreshToken,
@@ -29,10 +30,15 @@ const issueRefreshToken = async (userId: number, clientId?: number) => {
   const jti = uuidv4();
   const token = issueToken({ type: "refresh", jti });
 
-  if (!(await registerRefreshToken(userId, clientId ?? null, jti))) {
-    error(403, "Already logged in");
+  try {
+    await registerRefreshToken(userId, clientId ?? null, jti);
+    return token;
+  } catch (e) {
+    if (e instanceof IntegrityError && e.message === "Refresh token already registered") {
+      error(409, "Already logged in");
+    }
+    throw e;
   }
-  return token;
 };
 
 export const login = async (email: string, password: string) => {
@@ -57,7 +63,7 @@ const verifyRefreshToken = async (refreshToken: string) => {
 
   const tokenData = await getRefreshToken(tokenPayload.jti);
   if (!tokenData) {
-    error(500, "Refresh token not found");
+    error(500, "Invalid refresh token");
   }
 
   return {
@@ -76,13 +82,18 @@ export const refreshToken = async (refreshToken: string) => {
   const { jti: oldJti, userId, clientId } = await verifyRefreshToken(refreshToken);
   const newJti = uuidv4();
 
-  if (!(await rotateRefreshToken(oldJti, newJti))) {
-    error(500, "Refresh token not found");
+  try {
+    await rotateRefreshToken(oldJti, newJti);
+    return {
+      accessToken: issueAccessToken(userId, clientId),
+      refreshToken: issueToken({ type: "refresh", jti: newJti }),
+    };
+  } catch (e) {
+    if (e instanceof IntegrityError && e.message === "Refresh token not found") {
+      error(500, "Invalid refresh token");
+    }
+    throw e;
   }
-  return {
-    accessToken: issueAccessToken(userId, clientId),
-    refreshToken: issueToken({ type: "refresh", jti: newJti }),
-  };
 };
 
 const expiresAt = () => new Date(Date.now() + env.challenge.tokenUpgradeExp);
@@ -120,7 +131,7 @@ export const createTokenUpgradeChallenge = async (
   if (!client) {
     error(401, "Invalid public key(s)");
   } else if (!userClient || userClient.state === "challenging") {
-    error(401, "Unregistered client");
+    error(403, "Unregistered client");
   }
 
   return { challenge: await createChallenge(ip, jti, client.id, encPubKey) };
@@ -139,26 +150,31 @@ export const upgradeToken = async (
 
   const challenge = await getTokenUpgradeChallenge(answer, ip);
   if (!challenge) {
-    error(401, "Invalid challenge answer");
+    error(403, "Invalid challenge answer");
   } else if (challenge.refreshTokenId !== oldJti) {
     error(403, "Forbidden");
   }
+
+  await markTokenUpgradeChallengeAsUsed(challenge.id);
 
   const client = await getClient(challenge.clientId);
   if (!client) {
     error(500, "Invalid challenge answer");
   } else if (!verifySignature(Buffer.from(answer, "base64"), answerSig, client.sigPubKey)) {
-    error(401, "Invalid challenge answer signature");
+    error(403, "Invalid challenge answer signature");
   }
 
-  await markTokenUpgradeChallengeAsUsed(challenge.id);
-
-  const newJti = uuidv4();
-  if (!(await upgradeRefreshToken(oldJti, newJti, client.id))) {
-    error(500, "Refresh token not found");
+  try {
+    const newJti = uuidv4();
+    await upgradeRefreshToken(oldJti, newJti, client.id);
+    return {
+      accessToken: issueAccessToken(userId, client.id),
+      refreshToken: issueToken({ type: "refresh", jti: newJti }),
+    };
+  } catch (e) {
+    if (e instanceof IntegrityError && e.message === "Refresh token not found") {
+      error(500, "Invalid refresh token");
+    }
+    throw e;
   }
-  return {
-    accessToken: issueAccessToken(userId, client.id),
-    refreshToken: issueToken({ type: "refresh", jti: newJti }),
-  };
 };
