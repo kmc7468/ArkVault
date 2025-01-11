@@ -98,7 +98,7 @@ export const verifyUserClient = async (
 export const getUserClientStatus = async (userId: number, clientId: number) => {
   const userClient = await getUserClient(userId, clientId);
   if (!userClient) {
-    error(500, "Invalid access token");
+    error(500, "Invalid session id");
   }
 
   return {

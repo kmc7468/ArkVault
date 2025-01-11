@@ -17,12 +17,12 @@ CREATE TABLE `user_client_challenge` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`user_id` integer NOT NULL,
 	`client_id` integer NOT NULL,
-	`challenge` text NOT NULL,
+	`answer` text NOT NULL,
 	`allowed_ip` text NOT NULL,
 	`expires_at` integer NOT NULL,
-	`is_used` integer DEFAULT false NOT NULL,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`client_id`) REFERENCES `client`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`client_id`) REFERENCES `client`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`user_id`,`client_id`) REFERENCES `user_client`(`user_id`,`client_id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `directory` (
@@ -80,24 +80,26 @@ CREATE TABLE `master_encryption_key` (
 	FOREIGN KEY (`created_by`) REFERENCES `client`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `refresh_token` (
+CREATE TABLE `session` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` integer NOT NULL,
 	`client_id` integer,
-	`expires_at` integer NOT NULL,
+	`created_at` integer NOT NULL,
+	`last_used_at` integer NOT NULL,
+	`last_used_by_ip` text,
+	`last_used_by_user_agent` text,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`client_id`) REFERENCES `client`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `token_upgrade_challenge` (
+CREATE TABLE `session_upgrade_challenge` (
 	`id` integer PRIMARY KEY NOT NULL,
-	`refresh_token_id` text NOT NULL,
+	`session_id` text NOT NULL,
 	`client_id` integer NOT NULL,
-	`challenge` text NOT NULL,
+	`answer` text NOT NULL,
 	`allowed_ip` text NOT NULL,
 	`expires_at` integer NOT NULL,
-	`is_used` integer DEFAULT false NOT NULL,
-	FOREIGN KEY (`refresh_token_id`) REFERENCES `refresh_token`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`session_id`) REFERENCES `session`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`client_id`) REFERENCES `client`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
@@ -110,10 +112,11 @@ CREATE TABLE `user` (
 CREATE UNIQUE INDEX `client_encryption_public_key_unique` ON `client` (`encryption_public_key`);--> statement-breakpoint
 CREATE UNIQUE INDEX `client_signature_public_key_unique` ON `client` (`signature_public_key`);--> statement-breakpoint
 CREATE UNIQUE INDEX `client_encryption_public_key_signature_public_key_unique` ON `client` (`encryption_public_key`,`signature_public_key`);--> statement-breakpoint
-CREATE UNIQUE INDEX `user_client_challenge_challenge_unique` ON `user_client_challenge` (`challenge`);--> statement-breakpoint
+CREATE UNIQUE INDEX `user_client_challenge_answer_unique` ON `user_client_challenge` (`answer`);--> statement-breakpoint
 CREATE UNIQUE INDEX `directory_encrypted_data_encryption_key_unique` ON `directory` (`encrypted_data_encryption_key`);--> statement-breakpoint
 CREATE UNIQUE INDEX `file_path_unique` ON `file` (`path`);--> statement-breakpoint
 CREATE UNIQUE INDEX `file_encrypted_data_encryption_key_unique` ON `file` (`encrypted_data_encryption_key`);--> statement-breakpoint
-CREATE UNIQUE INDEX `refresh_token_user_id_client_id_unique` ON `refresh_token` (`user_id`,`client_id`);--> statement-breakpoint
-CREATE UNIQUE INDEX `token_upgrade_challenge_challenge_unique` ON `token_upgrade_challenge` (`challenge`);--> statement-breakpoint
+CREATE UNIQUE INDEX `session_user_id_client_id_unique` ON `session` (`user_id`,`client_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `session_upgrade_challenge_session_id_unique` ON `session_upgrade_challenge` (`session_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `session_upgrade_challenge_answer_unique` ON `session_upgrade_challenge` (`answer`);--> statement-breakpoint
 CREATE UNIQUE INDEX `user_email_unique` ON `user` (`email`);

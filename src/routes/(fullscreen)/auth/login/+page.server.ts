@@ -1,11 +1,10 @@
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ url, cookies }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
   const redirectPath = url.searchParams.get("redirect") || "/home";
 
-  const accessToken = cookies.get("accessToken");
-  if (accessToken) {
+  if (locals.session) {
     redirect(302, redirectPath);
   }
 

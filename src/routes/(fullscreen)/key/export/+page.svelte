@@ -10,7 +10,7 @@
     serializeClientKeys,
     requestClientRegistration,
     storeClientKeys,
-    requestTokenUpgrade,
+    requestSessionUpgrade,
     requestInitialMasterKeyRegistration,
   } from "./service";
 
@@ -59,14 +59,14 @@
       await storeClientKeys($clientKeyStore);
 
       if (
-        !(await requestTokenUpgrade(
+        !(await requestSessionUpgrade(
           data.encryptKeyBase64,
           $clientKeyStore.decryptKey,
           data.verifyKeyBase64,
           $clientKeyStore.signKey,
         ))
       )
-        throw new Error("Failed to upgrade token");
+        throw new Error("Failed to upgrade session");
 
       if (
         !(await requestInitialMasterKeyRegistration(data.masterKeyWrapped, $clientKeyStore.signKey))

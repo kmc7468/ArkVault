@@ -1,11 +1,9 @@
 import { error, redirect, type Handle } from "@sveltejs/kit";
 import { authenticate, AuthenticationError } from "$lib/server/modules/auth";
 
-const whitelist = ["/auth/login", "/api/auth/login"];
-
 export const authenticateMiddleware: Handle = async ({ event, resolve }) => {
   const { pathname, search } = event.url;
-  if (whitelist.some((path) => pathname.startsWith(path))) {
+  if (pathname === "/api/auth/login") {
     return await resolve(event);
   }
 
@@ -19,7 +17,9 @@ export const authenticateMiddleware: Handle = async ({ event, resolve }) => {
     event.locals.session = await authenticate(sessionIdSigned, ip, userAgent);
   } catch (e) {
     if (e instanceof AuthenticationError) {
-      if (pathname.startsWith("/api")) {
+      if (pathname === "/auth/login") {
+        return await resolve(event);
+      } else if (pathname.startsWith("/api")) {
         error(e.status, e.message);
       } else {
         redirect(302, "/auth/login?redirect=" + encodeURIComponent(pathname + search));

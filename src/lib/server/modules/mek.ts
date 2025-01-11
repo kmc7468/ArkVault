@@ -17,7 +17,7 @@ export const verifyClientEncMekSig = async (
 ) => {
   const userClient = await getUserClientWithDetails(userId, clientId);
   if (!userClient) {
-    error(500, "Invalid access token");
+    error(500, "Invalid session id");
   }
 
   const data = JSON.stringify({ version, key: encMek });

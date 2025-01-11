@@ -1,12 +1,10 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { Button, TextButton } from "$lib/components/buttons";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
   import { TextInput } from "$lib/components/inputs";
-  import { refreshToken } from "$lib/hooks";
   import { clientKeyStore, masterKeyStore } from "$lib/stores";
-  import { requestLogin, requestTokenUpgrade, requestMasterKeyDownload } from "./service";
+  import { requestLogin, requestSessionUpgrade, requestMasterKeyDownload } from "./service";
 
   let { data } = $props();
 
@@ -25,7 +23,8 @@
 
       if (!$clientKeyStore) return await redirect("/key/generate");
 
-      if (!(await requestTokenUpgrade($clientKeyStore))) throw new Error("Failed to upgrade token");
+      if (!(await requestSessionUpgrade($clientKeyStore)))
+        throw new Error("Failed to upgrade session");
 
       // TODO: Multi-user support
 
@@ -42,13 +41,6 @@
       throw e;
     }
   };
-
-  onMount(async () => {
-    const res = await refreshToken();
-    if (res.ok) {
-      await goto(data.redirectPath, { replaceState: true });
-    }
-  });
 </script>
 
 <svelte:head>
