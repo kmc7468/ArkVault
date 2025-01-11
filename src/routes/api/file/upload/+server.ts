@@ -4,8 +4,8 @@ import { fileUploadRequest } from "$lib/server/schemas";
 import { uploadFile } from "$lib/server/services/file";
 import type { RequestHandler } from "./$types";
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
-  const { userId } = await authorize(cookies, "activeClient");
+export const POST: RequestHandler = async ({ locals, request }) => {
+  const { userId } = await authorize(locals, "activeClient");
 
   const form = await request.formData();
   const metadata = form.get("metadata");

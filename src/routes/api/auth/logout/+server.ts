@@ -1,14 +1,13 @@
-import { error, text } from "@sveltejs/kit";
+import { text } from "@sveltejs/kit";
+import { authorize } from "$lib/server/modules/auth";
 import { logout } from "$lib/server/services/auth";
 import type { RequestHandler } from "./$types";
 
-export const POST: RequestHandler = async ({ cookies }) => {
-  const token = cookies.get("refreshToken");
-  if (!token) error(401, "Refresh token not found");
+export const POST: RequestHandler = async ({ locals, cookies }) => {
+  const { sessionId } = await authorize(locals, "any");
 
-  await logout(token);
-  cookies.delete("accessToken", { path: "/" });
-  cookies.delete("refreshToken", { path: "/api/auth" });
+  await logout(sessionId);
+  cookies.delete("sessionId", { path: "/" });
 
   return text("Logged out", { headers: { "Content-Type": "text/plain" } });
 };

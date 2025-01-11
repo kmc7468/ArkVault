@@ -39,7 +39,7 @@ export const userClientChallenge = sqliteTable("user_client_challenge", {
   clientId: integer("client_id")
     .notNull()
     .references(() => client.id),
-  answer: text("challenge").notNull().unique(), // Base64
+  answer: text("answer").notNull().unique(), // Base64
   allowedIp: text("allowed_ip").notNull(),
   expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
   isUsed: integer("is_used", { mode: "boolean" }).notNull().default(false),

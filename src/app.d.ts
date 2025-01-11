@@ -5,11 +5,15 @@ import "unplugin-icons/types/svelte";
 
 declare global {
   namespace App {
-    // interface Error {}
-    // interface Locals {}
-    // interface PageData {}
-    // interface PageState {}
-    // interface Platform {}
+    interface Locals {
+      ip: string;
+      userAgent: string;
+      session?: {
+        id: string;
+        userId: number;
+        clientId?: number;
+      };
+    }
   }
 }
 

@@ -5,8 +5,8 @@ import { fileRenameRequest } from "$lib/server/schemas";
 import { renameFile } from "$lib/server/services/file";
 import type { RequestHandler } from "./$types";
 
-export const POST: RequestHandler = async ({ request, cookies, params }) => {
-  const { userId } = await authorize(cookies, "activeClient");
+export const POST: RequestHandler = async ({ locals, params, request }) => {
+  const { userId } = await authorize(locals, "activeClient");
 
   const paramsZodRes = z
     .object({

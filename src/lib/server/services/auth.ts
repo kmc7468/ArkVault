@@ -1,131 +1,49 @@
 import { error } from "@sveltejs/kit";
 import argon2 from "argon2";
-import { v4 as uuidv4 } from "uuid";
 import { getClient, getClientByPubKeys, getUserClient } from "$lib/server/db/client";
-import { getUserByEmail } from "$lib/server/db/user";
-import env from "$lib/server/loadenv";
 import { IntegrityError } from "$lib/server/db/error";
 import {
-  registerRefreshToken,
-  getRefreshToken,
-  rotateRefreshToken,
-  upgradeRefreshToken,
-  revokeRefreshToken,
-  registerTokenUpgradeChallenge,
-  getTokenUpgradeChallenge,
-  markTokenUpgradeChallengeAsUsed,
-} from "$lib/server/db/token";
-import { issueToken, verifyToken, TokenError } from "$lib/server/modules/auth";
+  upgradeSession,
+  deleteSession,
+  registerSessionUpgradeChallenge,
+  consumeSessionUpgradeChallenge,
+} from "$lib/server/db/session";
+import { getUserByEmail } from "$lib/server/db/user";
+import env from "$lib/server/loadenv";
+import { startSession } from "$lib/server/modules/auth";
 import { verifySignature, generateChallenge } from "$lib/server/modules/crypto";
 
 const verifyPassword = async (hash: string, password: string) => {
   return await argon2.verify(hash, password);
 };
 
-const issueAccessToken = (userId: number, clientId?: number) => {
-  return issueToken({ type: "access", userId, clientId });
-};
-
-const issueRefreshToken = async (userId: number, clientId?: number) => {
-  const jti = uuidv4();
-  const token = issueToken({ type: "refresh", jti });
-
-  try {
-    await registerRefreshToken(userId, clientId ?? null, jti);
-    return token;
-  } catch (e) {
-    if (e instanceof IntegrityError && e.message === "Refresh token already registered") {
-      error(409, "Already logged in");
-    }
-    throw e;
-  }
-};
-
-export const login = async (email: string, password: string) => {
+export const login = async (email: string, password: string, ip: string, userAgent: string) => {
   const user = await getUserByEmail(email);
   if (!user || !(await verifyPassword(user.password, password))) {
     error(401, "Invalid email or password");
   }
 
-  return {
-    accessToken: issueAccessToken(user.id),
-    refreshToken: await issueRefreshToken(user.id),
-  };
-};
-
-const verifyRefreshToken = async (refreshToken: string) => {
-  const tokenPayload = verifyToken(refreshToken);
-  if (tokenPayload === TokenError.EXPIRED) {
-    error(401, "Refresh token expired");
-  } else if (tokenPayload === TokenError.INVALID || tokenPayload.type !== "refresh") {
-    error(401, "Invalid refresh token");
-  }
-
-  const tokenData = await getRefreshToken(tokenPayload.jti);
-  if (!tokenData) {
-    error(500, "Invalid refresh token");
-  }
-
-  return {
-    jti: tokenPayload.jti,
-    userId: tokenData.userId,
-    clientId: tokenData.clientId ?? undefined,
-  };
-};
-
-export const logout = async (refreshToken: string) => {
-  const { jti } = await verifyRefreshToken(refreshToken);
-  await revokeRefreshToken(jti);
-};
-
-export const refreshToken = async (refreshToken: string) => {
-  const { jti: oldJti, userId, clientId } = await verifyRefreshToken(refreshToken);
-  const newJti = uuidv4();
-
   try {
-    await rotateRefreshToken(oldJti, newJti);
-    return {
-      accessToken: issueAccessToken(userId, clientId),
-      refreshToken: issueToken({ type: "refresh", jti: newJti }),
-    };
+    return { sessionIdSigned: await startSession(user.id, ip, userAgent) };
   } catch (e) {
-    if (e instanceof IntegrityError && e.message === "Refresh token not found") {
-      error(500, "Invalid refresh token");
+    if (e instanceof IntegrityError && e.message === "Session already exists") {
+      error(403, "Already logged in");
     }
     throw e;
   }
 };
 
-const expiresAt = () => new Date(Date.now() + env.challenge.tokenUpgradeExp);
-
-const createChallenge = async (
-  ip: string,
-  tokenId: string,
-  clientId: number,
-  encPubKey: string,
-) => {
-  const { answer, challenge } = await generateChallenge(32, encPubKey);
-  await registerTokenUpgradeChallenge(
-    tokenId,
-    clientId,
-    answer.toString("base64"),
-    ip,
-    expiresAt(),
-  );
-  return challenge.toString("base64");
+export const logout = async (sessionId: string) => {
+  await deleteSession(sessionId);
 };
 
-export const createTokenUpgradeChallenge = async (
-  refreshToken: string,
+export const createSessionUpgradeChallenge = async (
+  sessionId: string,
+  userId: number,
   ip: string,
   encPubKey: string,
   sigPubKey: string,
 ) => {
-  const { jti, userId, clientId } = await verifyRefreshToken(refreshToken);
-  if (clientId) {
-    error(403, "Forbidden");
-  }
-
   const client = await getClientByPubKeys(encPubKey, sigPubKey);
   const userClient = client ? await getUserClient(userId, client.id) : undefined;
   if (!client) {
@@ -134,28 +52,28 @@ export const createTokenUpgradeChallenge = async (
     error(403, "Unregistered client");
   }
 
-  return { challenge: await createChallenge(ip, jti, client.id, encPubKey) };
+  const { answer, challenge } = await generateChallenge(32, encPubKey);
+  await registerSessionUpgradeChallenge(
+    sessionId,
+    client.id,
+    answer.toString("base64"),
+    ip,
+    new Date(Date.now() + env.challenge.sessionUpgradeExp),
+  );
+
+  return { challenge: challenge.toString("base64") };
 };
 
-export const upgradeToken = async (
-  refreshToken: string,
+export const verifySessionUpgradeChallenge = async (
+  sessionId: string,
   ip: string,
   answer: string,
   answerSig: string,
 ) => {
-  const { jti: oldJti, userId, clientId } = await verifyRefreshToken(refreshToken);
-  if (clientId) {
-    error(403, "Forbidden");
-  }
-
-  const challenge = await getTokenUpgradeChallenge(answer, ip);
+  const challenge = await consumeSessionUpgradeChallenge(sessionId, answer, ip);
   if (!challenge) {
     error(403, "Invalid challenge answer");
-  } else if (challenge.refreshTokenId !== oldJti) {
-    error(403, "Forbidden");
   }
-
-  await markTokenUpgradeChallengeAsUsed(challenge.id);
 
   const client = await getClient(challenge.clientId);
   if (!client) {
@@ -165,15 +83,10 @@ export const upgradeToken = async (
   }
 
   try {
-    const newJti = uuidv4();
-    await upgradeRefreshToken(oldJti, newJti, client.id);
-    return {
-      accessToken: issueAccessToken(userId, client.id),
-      refreshToken: issueToken({ type: "refresh", jti: newJti }),
-    };
+    await upgradeSession(sessionId, client.id);
   } catch (e) {
-    if (e instanceof IntegrityError && e.message === "Refresh token not found") {
-      error(500, "Invalid refresh token");
+    if (e instanceof IntegrityError && e.message === "Session not found") {
+      error(500, "Invalid challenge answer");
     }
     throw e;
   }
