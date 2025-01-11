@@ -119,24 +119,19 @@ export const registerUserClientChallenge = async (
   });
 };
 
-export const getUserClientChallenge = async (answer: string, ip: string) => {
+export const consumeUserClientChallenge = async (userId: number, answer: string, ip: string) => {
   const challenges = await db
-    .select()
-    .from(userClientChallenge)
+    .delete(userClientChallenge)
     .where(
       and(
+        eq(userClientChallenge.userId, userId),
         eq(userClientChallenge.answer, answer),
         eq(userClientChallenge.allowedIp, ip),
         gt(userClientChallenge.expiresAt, new Date()),
-        eq(userClientChallenge.isUsed, false),
       ),
     )
-    .limit(1);
+    .returning({ clientId: userClientChallenge.clientId });
   return challenges[0] ?? null;
-};
-
-export const markUserClientChallengeAsUsed = async (id: number) => {
-  await db.update(userClientChallenge).set({ isUsed: true }).where(eq(userClientChallenge.id, id));
 };
 
 export const cleanupExpiredUserClientChallenges = async () => {

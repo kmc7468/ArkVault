@@ -8,8 +8,7 @@ import {
   getUserClient,
   setUserClientStateToPending,
   registerUserClientChallenge,
-  getUserClientChallenge,
-  markUserClientChallengeAsUsed,
+  consumeUserClientChallenge,
 } from "$lib/server/db/client";
 import { IntegrityError } from "$lib/server/db/error";
 import { verifyPubKey, verifySignature, generateChallenge } from "$lib/server/modules/crypto";
@@ -81,14 +80,10 @@ export const verifyUserClient = async (
   answer: string,
   answerSig: string,
 ) => {
-  const challenge = await getUserClientChallenge(answer, ip);
+  const challenge = await consumeUserClientChallenge(userId, answer, ip);
   if (!challenge) {
     error(403, "Invalid challenge answer");
-  } else if (challenge.userId !== userId) {
-    error(403, "Forbidden");
   }
-
-  await markUserClientChallengeAsUsed(challenge.id);
 
   const client = await getClient(challenge.clientId);
   if (!client) {
@@ -97,7 +92,7 @@ export const verifyUserClient = async (
     error(403, "Invalid challenge answer signature");
   }
 
-  await setUserClientStateToPending(userId, challenge.clientId);
+  await setUserClientStateToPending(userId, client.id);
 };
 
 export const getUserClientStatus = async (userId: number, clientId: number) => {
