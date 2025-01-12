@@ -12,7 +12,6 @@ export const directory = sqliteTable(
   "directory",
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
     parentId: integer("parent_id"),
     userId: integer("user_id")
       .notNull()
@@ -34,16 +33,25 @@ export const directory = sqliteTable(
   }),
 );
 
+export const directoryLog = sqliteTable("directory_log", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  directoryId: integer("directory_id")
+    .notNull()
+    .references(() => directory.id, { onDelete: "cascade" }),
+  timestamp: integer("timestamp", { mode: "timestamp_ms" }).notNull(),
+  action: text("action", { enum: ["create", "rename"] }).notNull(),
+  newName: ciphertext("new_name"),
+});
+
 export const file = sqliteTable(
   "file",
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
-    path: text("path").notNull().unique(),
     parentId: integer("parent_id").references(() => directory.id),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
     userId: integer("user_id")
       .notNull()
       .references(() => user.id),
+    path: text("path").notNull().unique(),
     mekVersion: integer("master_encryption_key_version").notNull(),
     encDek: text("encrypted_data_encryption_key").notNull().unique(), // Base64
     dekVersion: integer("data_encryption_key_version", { mode: "timestamp_ms" }).notNull(),
@@ -58,3 +66,13 @@ export const file = sqliteTable(
     }),
   }),
 );
+
+export const fileLog = sqliteTable("file_log", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  fileId: integer("file_id")
+    .notNull()
+    .references(() => file.id, { onDelete: "cascade" }),
+  timestamp: integer("timestamp", { mode: "timestamp_ms" }).notNull(),
+  action: text("action", { enum: ["create", "rename"] }).notNull(),
+  newName: ciphertext("new_name"),
+});

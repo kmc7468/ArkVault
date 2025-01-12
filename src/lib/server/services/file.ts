@@ -21,7 +21,6 @@ export const getFileInformation = async (userId: number, fileId: number) => {
   }
 
   return {
-    createdAt: file.createdAt,
     mekVersion: file.mekVersion,
     encDek: file.encDek,
     dekVersion: file.dekVersion,

@@ -2,7 +2,6 @@ import mime from "mime";
 import { z } from "zod";
 
 export const fileInfoResponse = z.object({
-  createdAt: z.string().datetime(),
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
   dekVersion: z.string().datetime(),

@@ -16,11 +16,10 @@ export const GET: RequestHandler = async ({ locals, params }) => {
   if (!zodRes.success) error(400, "Invalid path parameters");
   const { id } = zodRes.data;
 
-  const { createdAt, mekVersion, encDek, dekVersion, contentType, encContentIv, encName } =
+  const { mekVersion, encDek, dekVersion, contentType, encContentIv, encName } =
     await getFileInformation(userId, id);
   return json(
     fileInfoResponse.parse({
-      createdAt: createdAt.toISOString(),
       mekVersion,
       dek: encDek,
       dekVersion: dekVersion.toISOString(),

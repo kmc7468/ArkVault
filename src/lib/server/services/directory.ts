@@ -22,7 +22,6 @@ export const getDirectoryInformation = async (userId: number, directoryId: "root
 
   return {
     metadata: directory && {
-      createdAt: directory.createdAt,
       mekVersion: directory.mekVersion,
       encDek: directory.encDek,
       dekVersion: directory.dekVersion,

@@ -3,7 +3,6 @@ import { z } from "zod";
 export const directoryInfoResponse = z.object({
   metadata: z
     .object({
-      createdAt: z.string().datetime(),
       mekVersion: z.number().int().positive(),
       dek: z.string().base64().nonempty(),
       dekVersion: z.string().datetime(),

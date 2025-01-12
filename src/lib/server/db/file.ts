@@ -1,13 +1,13 @@
 import { and, eq, isNull } from "drizzle-orm";
 import db from "./drizzle";
 import { IntegrityError } from "./error";
-import { directory, file, mek } from "./schema";
+import { directory, directoryLog, file, fileLog, mek } from "./schema";
 
 type DirectoryId = "root" | number;
 
 export interface NewDirectoryParams {
-  userId: number;
   parentId: DirectoryId;
+  userId: number;
   mekVersion: number;
   encDek: string;
   dekVersion: Date;
@@ -16,9 +16,9 @@ export interface NewDirectoryParams {
 }
 
 export interface NewFileParams {
-  path: string;
   parentId: DirectoryId;
   userId: number;
+  path: string;
   mekVersion: number;
   encDek: string;
   dekVersion: Date;
@@ -40,14 +40,23 @@ export const registerDirectory = async (params: NewDirectoryParams) => {
         throw new IntegrityError("Inactive MEK version");
       }
 
-      await tx.insert(directory).values({
-        createdAt: new Date(),
-        parentId: params.parentId === "root" ? null : params.parentId,
-        userId: params.userId,
-        mekVersion: params.mekVersion,
-        encDek: params.encDek,
-        dekVersion: params.dekVersion,
-        encName: { ciphertext: params.encName, iv: params.encNameIv },
+      const newDirectories = await tx
+        .insert(directory)
+        .values({
+          parentId: params.parentId === "root" ? null : params.parentId,
+          userId: params.userId,
+          mekVersion: params.mekVersion,
+          encDek: params.encDek,
+          dekVersion: params.dekVersion,
+          encName: { ciphertext: params.encName, iv: params.encNameIv },
+        })
+        .returning({ id: directory.id });
+      const { id: directoryId } = newDirectories[0]!;
+      await tx.insert(directoryLog).values({
+        directoryId,
+        timestamp: new Date(),
+        action: "create",
+        newName: { ciphertext: params.encName, iv: params.encNameIv },
       });
     },
     { behavior: "exclusive" },
@@ -99,6 +108,12 @@ export const setDirectoryEncName = async (
         .update(directory)
         .set({ encName: { ciphertext: encName, iv: encNameIv } })
         .where(and(eq(directory.userId, userId), eq(directory.id, directoryId)));
+      await tx.insert(directoryLog).values({
+        directoryId,
+        timestamp: new Date(),
+        action: "rename",
+        newName: { ciphertext: encName, iv: encNameIv },
+      });
     },
     { behavior: "exclusive" },
   );
@@ -148,17 +163,26 @@ export const registerFile = async (params: NewFileParams) => {
         throw new IntegrityError("Inactive MEK version");
       }
 
-      await tx.insert(file).values({
-        path: params.path,
-        parentId: params.parentId === "root" ? null : params.parentId,
-        createdAt: new Date(),
-        userId: params.userId,
-        mekVersion: params.mekVersion,
-        contentType: params.contentType,
-        encDek: params.encDek,
-        dekVersion: params.dekVersion,
-        encContentIv: params.encContentIv,
-        encName: { ciphertext: params.encName, iv: params.encNameIv },
+      const newFiles = await tx
+        .insert(file)
+        .values({
+          path: params.path,
+          parentId: params.parentId === "root" ? null : params.parentId,
+          userId: params.userId,
+          mekVersion: params.mekVersion,
+          contentType: params.contentType,
+          encDek: params.encDek,
+          dekVersion: params.dekVersion,
+          encContentIv: params.encContentIv,
+          encName: { ciphertext: params.encName, iv: params.encNameIv },
+        })
+        .returning({ id: file.id });
+      const { id: fileId } = newFiles[0]!;
+      await tx.insert(fileLog).values({
+        fileId,
+        timestamp: new Date(),
+        action: "create",
+        newName: { ciphertext: params.encName, iv: params.encNameIv },
       });
     },
     { behavior: "exclusive" },
@@ -210,6 +234,12 @@ export const setFileEncName = async (
         .update(file)
         .set({ encName: { ciphertext: encName, iv: encNameIv } })
         .where(and(eq(file.userId, userId), eq(file.id, fileId)));
+      await tx.insert(fileLog).values({
+        fileId,
+        timestamp: new Date(),
+        action: "rename",
+        newName: { ciphertext: encName, iv: encNameIv },
+      });
     },
     { behavior: "exclusive" },
   );
