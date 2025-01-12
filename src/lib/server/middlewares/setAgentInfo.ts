@@ -5,12 +5,12 @@ export const setAgentInfoMiddleware: Handle = async ({ event, resolve }) => {
   const userAgent = event.request.headers.get("User-Agent");
   if (!ip) {
     error(500, "IP address not found");
-  } else if (!userAgent) {
+  } else if (!userAgent && !event.isSubRequest) {
     error(400, "User agent not found");
   }
 
   event.locals.ip = ip;
-  event.locals.userAgent = userAgent;
+  event.locals.userAgent = userAgent ?? "";
 
   return await resolve(event);
 };

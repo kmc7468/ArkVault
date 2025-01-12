@@ -8,7 +8,7 @@
 
   onMount(async () => {
     const goto = async (url: string) => {
-      const whitelist = ["/auth", "/key", "/client/pending"];
+      const whitelist = ["/auth/login", "/key", "/client/pending"];
       if (!whitelist.some((path) => location.pathname.startsWith(path))) {
         await svelteGoto(
           `${url}?redirect=${encodeURIComponent(location.pathname + location.search)}`,

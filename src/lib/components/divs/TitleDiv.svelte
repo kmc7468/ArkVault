@@ -3,15 +3,16 @@
   import type { SvelteHTMLElements } from "svelte/elements";
 
   interface Props {
-    icon?: Component<SvelteHTMLElements["svg"]>;
     children: Snippet;
+    icon?: Component<SvelteHTMLElements["svg"]>;
+    topPadding?: boolean;
   }
 
-  let { icon: Icon, children }: Props = $props();
+  let { topPadding = true, children, icon: Icon }: Props = $props();
 </script>
 
 <div>
-  <div class="box-content flex min-h-[10vh] items-center pt-4">
+  <div class="box-content flex min-h-[10vh] items-center {topPadding ? 'pt-4' : ''}">
     {#if Icon}
       <Icon class="text-5xl text-gray-600" />
     {/if}

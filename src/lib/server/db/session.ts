@@ -41,8 +41,8 @@ export const refreshSession = async (
     .update(session)
     .set({
       lastUsedAt: now,
-      lastUsedByIp: ip,
-      lastUsedByUserAgent: userAgent,
+      lastUsedByIp: ip ?? undefined,
+      lastUsedByUserAgent: userAgent ?? undefined,
     })
     .where(
       and(
