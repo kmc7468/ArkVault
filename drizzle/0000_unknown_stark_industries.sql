@@ -157,7 +157,8 @@ CREATE TABLE `session_upgrade_challenge` (
 CREATE TABLE `user` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`email` text NOT NULL,
-	`password` text NOT NULL
+	`password` text NOT NULL,
+	`nickname` text NOT NULL
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `client_encryption_public_key_unique` ON `client` (`encryption_public_key`);--> statement-breakpoint
