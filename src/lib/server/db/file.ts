@@ -1,7 +1,7 @@
 import { and, eq, isNull } from "drizzle-orm";
 import db from "./drizzle";
 import { IntegrityError } from "./error";
-import { directory, directoryLog, file, fileLog, mek } from "./schema";
+import { directory, directoryLog, file, fileLog, hsk, mek } from "./schema";
 
 type DirectoryId = "root" | number;
 
@@ -22,6 +22,8 @@ export interface NewFileParams {
   mekVersion: number;
   encDek: string;
   dekVersion: Date;
+  hskVersion: number | null;
+  contentHmac: string | null;
   contentType: string;
   encContentIv: string;
   encName: string;
@@ -152,6 +154,10 @@ export const unregisterDirectory = async (userId: number, directoryId: number) =
 };
 
 export const registerFile = async (params: NewFileParams) => {
+  if ((params.hskVersion && !params.contentHmac) || (!params.hskVersion && params.contentHmac)) {
+    throw new Error("Invalid arguments");
+  }
+
   await db.transaction(
     async (tx) => {
       const meks = await tx
@@ -163,6 +169,17 @@ export const registerFile = async (params: NewFileParams) => {
         throw new IntegrityError("Inactive MEK version");
       }
 
+      if (params.hskVersion) {
+        const hsks = await tx
+          .select({ version: hsk.version })
+          .from(hsk)
+          .where(and(eq(hsk.userId, params.userId), eq(hsk.state, "active")))
+          .limit(1);
+        if (hsks[0]?.version !== params.hskVersion) {
+          throw new IntegrityError("Inactive HSK version");
+        }
+      }
+
       const newFiles = await tx
         .insert(file)
         .values({
@@ -170,6 +187,8 @@ export const registerFile = async (params: NewFileParams) => {
           parentId: params.parentId === "root" ? null : params.parentId,
           userId: params.userId,
           mekVersion: params.mekVersion,
+          hskVersion: params.hskVersion,
+          contentHmac: params.contentHmac,
           contentType: params.contentType,
           encDek: params.encDek,
           dekVersion: params.dekVersion,

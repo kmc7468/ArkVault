@@ -1,4 +1,5 @@
 import { sqliteTable, text, integer, foreignKey } from "drizzle-orm/sqlite-core";
+import { hsk } from "./hsk";
 import { mek } from "./mek";
 import { user } from "./user";
 
@@ -55,14 +56,20 @@ export const file = sqliteTable(
     mekVersion: integer("master_encryption_key_version").notNull(),
     encDek: text("encrypted_data_encryption_key").notNull().unique(), // Base64
     dekVersion: integer("data_encryption_key_version", { mode: "timestamp_ms" }).notNull(),
+    hskVersion: integer("hmac_secret_key_version"),
+    contentHmac: text("content_hmac"), // Base64
     contentType: text("content_type").notNull(),
     encContentIv: text("encrypted_content_iv").notNull(), // Base64
     encName: ciphertext("encrypted_name").notNull(),
   },
   (t) => ({
-    ref: foreignKey({
+    ref1: foreignKey({
       columns: [t.userId, t.mekVersion],
       foreignColumns: [mek.userId, mek.version],
+    }),
+    ref2: foreignKey({
+      columns: [t.userId, t.hskVersion],
+      foreignColumns: [hsk.userId, hsk.version],
     }),
   }),
 );

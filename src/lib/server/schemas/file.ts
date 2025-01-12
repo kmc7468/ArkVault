@@ -27,6 +27,8 @@ export const fileUploadRequest = z.object({
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
   dekVersion: z.string().datetime(),
+  hskVersion: z.number().int().positive(),
+  contentHmac: z.string().base64().nonempty(),
   contentType: z
     .string()
     .nonempty()

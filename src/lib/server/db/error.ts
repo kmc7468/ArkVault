@@ -8,6 +8,9 @@ type IntegrityErrorMessages =
   | "Directory not found"
   | "File not found"
   | "Invalid DEK version"
+  // HSK
+  | "HSK already registered"
+  | "Inactive HSK version"
   // MEK
   | "MEK already registered"
   | "Inactive MEK version"
