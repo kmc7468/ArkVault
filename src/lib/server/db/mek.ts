@@ -2,7 +2,7 @@ import { SqliteError } from "better-sqlite3";
 import { and, or, eq } from "drizzle-orm";
 import db from "./drizzle";
 import { IntegrityError } from "./error";
-import { mek, clientMek } from "./schema";
+import { mek, mekLog, clientMek } from "./schema";
 
 export const registerInitialMek = async (
   userId: number,
@@ -16,8 +16,6 @@ export const registerInitialMek = async (
         await tx.insert(mek).values({
           userId,
           version: 1,
-          createdBy,
-          createdAt: new Date(),
           state: "active",
         });
         await tx.insert(clientMek).values({
@@ -26,6 +24,13 @@ export const registerInitialMek = async (
           mekVersion: 1,
           encMek,
           encMekSig,
+        });
+        await tx.insert(mekLog).values({
+          userId,
+          mekVersion: 1,
+          timestamp: new Date(),
+          action: "create",
+          actionBy: createdBy,
         });
       } catch (e) {
         if (e instanceof SqliteError && e.code === "SQLITE_CONSTRAINT_PRIMARYKEY") {
