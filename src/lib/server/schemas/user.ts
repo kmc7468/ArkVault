@@ -6,7 +6,7 @@ export const userInfoResponse = z.object({
 });
 export type UserInfoResponse = z.infer<typeof userInfoResponse>;
 
-export const changeNicknameRequest = z.object({
+export const nicknameChangeRequest = z.object({
   newNickname: z.string().min(2).max(8),
 });
-export type ChangeNicknameRequest = z.infer<typeof changeNicknameRequest>;
+export type NicknameChangeRequest = z.infer<typeof nicknameChangeRequest>;

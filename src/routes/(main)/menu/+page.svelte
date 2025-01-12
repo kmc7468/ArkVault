@@ -7,6 +7,10 @@
   let { data } = $props();
 </script>
 
+<svelte:head>
+  <title>메뉴</title>
+</svelte:head>
+
 <div class="sticky top-0 bg-white px-6 py-4">
   <p class="font-semibold">{data.nickname}</p>
 </div>
