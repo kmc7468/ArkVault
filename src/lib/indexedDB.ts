@@ -7,22 +7,28 @@ interface ClientKey {
   key: CryptoKey;
 }
 
-type MasterKeyState = "active" | "retired";
-
 interface MasterKey {
   version: number;
-  state: MasterKeyState;
+  state: "active" | "retired";
   key: CryptoKey;
+}
+
+interface HmacSecret {
+  version: number;
+  state: "active";
+  secret: CryptoKey;
 }
 
 const keyStore = new Dexie("keyStore") as Dexie & {
   clientKey: EntityTable<ClientKey, "usage">;
   masterKey: EntityTable<MasterKey, "version">;
+  hmacSecret: EntityTable<HmacSecret, "version">;
 };
 
 keyStore.version(1).stores({
   clientKey: "usage",
   masterKey: "version",
+  hmacSecret: "version",
 });
 
 export const getClientKey = async (usage: ClientKeyUsage) => {
@@ -61,4 +67,15 @@ export const storeMasterKeys = async (keys: MasterKey[]) => {
     throw new Error("Master keys must be nonextractable");
   }
   await keyStore.masterKey.bulkPut(keys);
+};
+
+export const getHmacSecrets = async () => {
+  return await keyStore.hmacSecret.toArray();
+};
+
+export const storeHmacSecrets = async (secrets: HmacSecret[]) => {
+  if (secrets.some(({ secret }) => secret.extractable)) {
+    throw new Error("Hmac secrets must be nonextractable");
+  }
+  await keyStore.hmacSecret.bulkPut(secrets);
 };

@@ -1,4 +1,12 @@
-import { constants, randomBytes, createPublicKey, publicEncrypt, verify } from "crypto";
+import {
+  constants,
+  randomBytes,
+  createPublicKey,
+  publicEncrypt,
+  verify,
+  createHmac,
+  timingSafeEqual,
+} from "crypto";
 import { promisify } from "util";
 
 const makePubKeyToPem = (pubKey: string) =>
@@ -33,4 +41,27 @@ export const generateChallenge = async (length: number, encPubKey: string) => {
   const answer = await promisify(randomBytes)(length);
   const challenge = encryptAsymmetric(answer, encPubKey);
   return { answer, challenge };
+};
+
+export const issueSessionId = async (length: number, secret: string) => {
+  const sessionId = await promisify(randomBytes)(length);
+  const sessionIdHex = sessionId.toString("hex");
+  const sessionIdHmac = createHmac("sha256", secret).update(sessionId).digest("hex");
+  return {
+    sessionId: sessionIdHex,
+    sessionIdSigned: `${sessionIdHex}.${sessionIdHmac}`,
+  };
+};
+
+export const verifySessionId = (sessionIdSigned: string, secret: string) => {
+  const [sessionIdHex, sessionIdHmac] = sessionIdSigned.split(".");
+  if (!sessionIdHex || !sessionIdHmac) return;
+  if (
+    timingSafeEqual(
+      Buffer.from(sessionIdHmac, "hex"),
+      createHmac("sha256", secret).update(Buffer.from(sessionIdHex, "hex")).digest(),
+    )
+  ) {
+    return sessionIdHex;
+  }
 };

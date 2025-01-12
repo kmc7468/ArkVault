@@ -1,14 +1,11 @@
 import { error, text } from "@sveltejs/kit";
-import { authenticate } from "$lib/server/modules/auth";
+import { authorize } from "$lib/server/modules/auth";
 import { initialMasterKeyRegisterRequest } from "$lib/server/schemas";
 import { registerInitialActiveMek } from "$lib/server/services/mek";
 import type { RequestHandler } from "./$types";
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
-  const { userId, clientId } = authenticate(cookies);
-  if (!clientId) {
-    error(403, "Forbidden");
-  }
+export const POST: RequestHandler = async ({ locals, request }) => {
+  const { userId, clientId } = await authorize(locals, "pendingClient");
 
   const zodRes = initialMasterKeyRegisterRequest.safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");

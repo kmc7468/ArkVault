@@ -4,8 +4,8 @@ import { authorize } from "$lib/server/modules/auth";
 import { deleteFile } from "$lib/server/services/file";
 import type { RequestHandler } from "./$types";
 
-export const POST: RequestHandler = async ({ cookies, params }) => {
-  const { userId } = await authorize(cookies, "activeClient");
+export const POST: RequestHandler = async ({ locals, params }) => {
+  const { userId } = await authorize(locals, "activeClient");
 
   const zodRes = z
     .object({

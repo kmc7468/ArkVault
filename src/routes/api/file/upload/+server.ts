@@ -4,8 +4,8 @@ import { fileUploadRequest } from "$lib/server/schemas";
 import { uploadFile } from "$lib/server/services/file";
 import type { RequestHandler } from "./$types";
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
-  const { userId } = await authorize(cookies, "activeClient");
+export const POST: RequestHandler = async ({ locals, request }) => {
+  const { userId } = await authorize(locals, "activeClient");
 
   const form = await request.formData();
   const metadata = form.get("metadata");
@@ -16,8 +16,18 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
   const zodRes = fileUploadRequest.safeParse(JSON.parse(metadata));
   if (!zodRes.success) error(400, "Invalid request body");
-  const { parentId, mekVersion, dek, dekVersion, contentType, contentIv, name, nameIv } =
-    zodRes.data;
+  const {
+    parentId,
+    mekVersion,
+    dek,
+    dekVersion,
+    hskVersion,
+    contentHmac,
+    contentType,
+    contentIv,
+    name,
+    nameIv,
+  } = zodRes.data;
 
   await uploadFile(
     {
@@ -26,6 +36,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
       mekVersion,
       encDek: dek,
       dekVersion: new Date(dekVersion),
+      hskVersion,
+      contentHmac,
       contentType,
       encContentIv: contentIv,
       encName: name,

@@ -1,5 +1,5 @@
 import { error, json } from "@sveltejs/kit";
-import { authenticate } from "$lib/server/modules/auth";
+import { authorize } from "$lib/server/modules/auth";
 import {
   clientRegisterRequest,
   clientRegisterResponse,
@@ -8,16 +8,13 @@ import {
 import { registerUserClient } from "$lib/server/services/client";
 import type { RequestHandler } from "./$types";
 
-export const POST: RequestHandler = async ({ request, cookies, getClientAddress }) => {
-  const { userId, clientId } = authenticate(cookies);
-  if (clientId) {
-    error(403, "Forbidden");
-  }
+export const POST: RequestHandler = async ({ locals, request }) => {
+  const { userId } = await authorize(locals, "notClient");
 
   const zodRes = clientRegisterRequest.safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");
   const { encPubKey, sigPubKey } = zodRes.data;
 
-  const { challenge } = await registerUserClient(userId, getClientAddress(), encPubKey, sigPubKey);
+  const { challenge } = await registerUserClient(userId, locals.ip, encPubKey, sigPubKey);
   return json(clientRegisterResponse.parse({ challenge } satisfies ClientRegisterResponse));
 };

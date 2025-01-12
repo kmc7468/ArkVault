@@ -2,7 +2,6 @@ import mime from "mime";
 import { z } from "zod";
 
 export const fileInfoResponse = z.object({
-  createdAt: z.string().datetime(),
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
   dekVersion: z.string().datetime(),
@@ -23,11 +22,24 @@ export const fileRenameRequest = z.object({
 });
 export type FileRenameRequest = z.infer<typeof fileRenameRequest>;
 
+export const duplicateFileScanRequest = z.object({
+  hskVersion: z.number().int().positive(),
+  contentHmac: z.string().base64().nonempty(),
+});
+export type DuplicateFileScanRequest = z.infer<typeof duplicateFileScanRequest>;
+
+export const duplicateFileScanResponse = z.object({
+  files: z.number().int().positive().array(),
+});
+export type DuplicateFileScanResponse = z.infer<typeof duplicateFileScanResponse>;
+
 export const fileUploadRequest = z.object({
   parentId: z.union([z.enum(["root"]), z.number().int().positive()]),
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
   dekVersion: z.string().datetime(),
+  hskVersion: z.number().int().positive(),
+  contentHmac: z.string().base64().nonempty(),
   contentType: z
     .string()
     .nonempty()

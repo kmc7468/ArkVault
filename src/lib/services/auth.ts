@@ -1,37 +1,30 @@
-import { encodeToBase64, decryptChallenge, signMessage } from "$lib/modules/crypto";
+import { callPostApi } from "$lib/hooks";
+import { encodeToBase64, decryptChallenge, signMessageRSA } from "$lib/modules/crypto";
 import type {
-  TokenUpgradeRequest,
-  TokenUpgradeResponse,
-  TokenUpgradeVerifyRequest,
+  SessionUpgradeRequest,
+  SessionUpgradeResponse,
+  SessionUpgradeVerifyRequest,
 } from "$lib/server/schemas";
 
-export const requestTokenUpgrade = async (
+export const requestSessionUpgrade = async (
   encryptKeyBase64: string,
   decryptKey: CryptoKey,
   verifyKeyBase64: string,
   signKey: CryptoKey,
 ) => {
-  let res = await fetch("/api/auth/upgradeToken", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      encPubKey: encryptKeyBase64,
-      sigPubKey: verifyKeyBase64,
-    } satisfies TokenUpgradeRequest),
+  let res = await callPostApi<SessionUpgradeRequest>("/api/auth/upgradeSession", {
+    encPubKey: encryptKeyBase64,
+    sigPubKey: verifyKeyBase64,
   });
   if (!res.ok) return false;
 
-  const { challenge }: TokenUpgradeResponse = await res.json();
+  const { challenge }: SessionUpgradeResponse = await res.json();
   const answer = await decryptChallenge(challenge, decryptKey);
-  const answerSig = await signMessage(answer, signKey);
+  const answerSig = await signMessageRSA(answer, signKey);
 
-  res = await fetch("/api/auth/upgradeToken/verify", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      answer: encodeToBase64(answer),
-      answerSig: encodeToBase64(answerSig),
-    } satisfies TokenUpgradeVerifyRequest),
+  res = await callPostApi<SessionUpgradeVerifyRequest>("/api/auth/upgradeSession/verify", {
+    answer: encodeToBase64(answer),
+    answerSig: encodeToBase64(answerSig),
   });
   return res.ok;
 };

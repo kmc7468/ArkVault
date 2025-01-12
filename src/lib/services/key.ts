@@ -3,7 +3,7 @@ import { storeMasterKeys } from "$lib/indexedDB";
 import {
   encodeToBase64,
   decryptChallenge,
-  signMessage,
+  signMessageRSA,
   unwrapMasterKey,
   verifyMasterKeyWrapped,
 } from "$lib/modules/crypto";
@@ -29,7 +29,7 @@ export const requestClientRegistration = async (
 
   const { challenge }: ClientRegisterResponse = await res.json();
   const answer = await decryptChallenge(challenge, decryptKey);
-  const answerSig = await signMessage(answer, signKey);
+  const answerSig = await signMessageRSA(answer, signKey);
 
   res = await callPostApi<ClientRegisterVerifyRequest>("/api/client/register/verify", {
     answer: encodeToBase64(answer),

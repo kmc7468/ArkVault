@@ -4,8 +4,8 @@ import { authorize } from "$lib/server/modules/auth";
 import { getFileStream } from "$lib/server/services/file";
 import type { RequestHandler } from "./$types";
 
-export const GET: RequestHandler = async ({ cookies, params }) => {
-  const { userId } = await authorize(cookies, "activeClient");
+export const GET: RequestHandler = async ({ locals, params }) => {
+  const { userId } = await authorize(locals, "activeClient");
 
   const zodRes = z
     .object({
@@ -16,7 +16,7 @@ export const GET: RequestHandler = async ({ cookies, params }) => {
   const { id } = zodRes.data;
 
   const { encContentStream, encContentSize } = await getFileStream(userId, id);
-  return new Response(encContentStream, {
+  return new Response(encContentStream as ReadableStream, {
     headers: {
       "Content-Type": "application/octet-stream",
       "Content-Length": encContentSize.toString(),

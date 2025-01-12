@@ -95,7 +95,7 @@ export const unwrapMasterKey = async (
   };
 };
 
-export const signMessage = async (message: BufferSource, signKey: CryptoKey) => {
+export const signMessageRSA = async (message: BufferSource, signKey: CryptoKey) => {
   return await window.crypto.subtle.sign(
     {
       name: "RSA-PSS",
@@ -106,7 +106,7 @@ export const signMessage = async (message: BufferSource, signKey: CryptoKey) => 
   );
 };
 
-export const verifySignature = async (
+export const verifySignatureRSA = async (
   message: BufferSource,
   signature: BufferSource,
   verifyKey: CryptoKey,
@@ -131,7 +131,7 @@ export const signMasterKeyWrapped = async (
     version: masterKeyVersion,
     key: masterKeyWrapped,
   });
-  return encodeToBase64(await signMessage(encodeString(serialized), signKey));
+  return encodeToBase64(await signMessageRSA(encodeString(serialized), signKey));
 };
 
 export const verifyMasterKeyWrapped = async (
@@ -144,7 +144,7 @@ export const verifyMasterKeyWrapped = async (
     version: masterKeyVersion,
     key: masterKeyWrapped,
   });
-  return await verifySignature(
+  return await verifySignatureRSA(
     encodeString(serialized),
     decodeFromBase64(masterKeyWrappedSig),
     verifyKey,

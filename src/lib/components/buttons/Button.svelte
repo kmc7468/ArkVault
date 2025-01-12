@@ -29,7 +29,7 @@
       onclick?.();
     }, 100);
   }}
-  class="{bgColorStyle} {fontColorStyle} h-12 w-full rounded-xl font-medium"
+  class="{bgColorStyle} {fontColorStyle} h-12 w-full min-w-fit rounded-xl font-medium"
 >
   <div class="h-full w-full p-3 transition active:scale-95">
     {@render children?.()}

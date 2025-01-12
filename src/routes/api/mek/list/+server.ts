@@ -4,8 +4,8 @@ import { masterKeyListResponse, type MasterKeyListResponse } from "$lib/server/s
 import { getClientMekList } from "$lib/server/services/mek";
 import type { RequestHandler } from "./$types";
 
-export const GET: RequestHandler = async ({ cookies }) => {
-  const { userId, clientId } = await authorize(cookies, "activeClient");
+export const GET: RequestHandler = async ({ locals }) => {
+  const { userId, clientId } = await authorize(locals, "activeClient");
   const { encMeks } = await getClientMekList(userId, clientId);
   return json(
     masterKeyListResponse.parse({

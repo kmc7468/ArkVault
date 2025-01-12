@@ -9,15 +9,31 @@ export const mek = sqliteTable(
       .notNull()
       .references(() => user.id),
     version: integer("version").notNull(),
-    createdBy: integer("created_by")
-      .notNull()
-      .references(() => client.id),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
     state: text("state", { enum: ["active", "retired", "dead"] }).notNull(),
     retiredAt: integer("retired_at", { mode: "timestamp_ms" }),
   },
   (t) => ({
     pk: primaryKey({ columns: [t.userId, t.version] }),
+  }),
+);
+
+export const mekLog = sqliteTable(
+  "master_encryption_key_log",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => user.id),
+    mekVersion: integer("master_encryption_key_version").notNull(),
+    timestamp: integer("timestamp", { mode: "timestamp_ms" }).notNull(),
+    action: text("action", { enum: ["create"] }).notNull(),
+    actionBy: integer("action_by").references(() => client.id),
+  },
+  (t) => ({
+    ref: foreignKey({
+      columns: [t.userId, t.mekVersion],
+      foreignColumns: [mek.userId, mek.version],
+    }),
   }),
 );
 
