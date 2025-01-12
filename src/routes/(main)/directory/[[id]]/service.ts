@@ -15,6 +15,8 @@ import type {
   FileRenameRequest,
   FileUploadRequest,
   HmacSecretListResponse,
+  DuplicateFileScanRequest,
+  DuplicateFileScanResponse,
 } from "$lib/server/schemas";
 import { hmacSecretStore, type MasterKey, type HmacSecret } from "$lib/stores";
 
@@ -63,17 +65,33 @@ export const requestDirectoryCreation = async (
   });
 };
 
+export const requestDuplicateFileScan = async (file: File, hmacSecret: HmacSecret) => {
+  const fileBuffer = await file.arrayBuffer();
+  const fileSigned = encodeToBase64(await signMessageHmac(fileBuffer, hmacSecret.secret));
+  const res = await callPostApi<DuplicateFileScanRequest>("/api/file/scanDuplicates", {
+    hskVersion: hmacSecret.version,
+    contentHmac: fileSigned,
+  });
+  if (!res.ok) return null;
+
+  const { files }: DuplicateFileScanResponse = await res.json();
+  return {
+    fileBuffer,
+    fileSigned,
+    isDuplicate: files.length > 0,
+  };
+};
+
 export const requestFileUpload = async (
   file: File,
+  fileBuffer: ArrayBuffer,
+  fileSigned: string,
   parentId: "root" | number,
   masterKey: MasterKey,
   hmacSecret: HmacSecret,
 ) => {
   const { dataKey, dataKeyVersion } = await generateDataKey();
   const nameEncrypted = await encryptString(file.name, dataKey);
-
-  const fileBuffer = await file.arrayBuffer();
-  const fileSigned = await signMessageHmac(fileBuffer, hmacSecret.secret);
   const fileEncrypted = await encryptData(fileBuffer, dataKey);
 
   const form = new FormData();
@@ -85,7 +103,7 @@ export const requestFileUpload = async (
       dek: await wrapDataKey(dataKey, masterKey.key),
       dekVersion: dataKeyVersion.toISOString(),
       hskVersion: hmacSecret.version,
-      contentHmac: encodeToBase64(fileSigned),
+      contentHmac: fileSigned,
       contentType: file.type,
       contentIv: fileEncrypted.iv,
       name: nameEncrypted.ciphertext,

@@ -11,10 +11,12 @@
   import DeleteDirectoryEntryModal from "./DeleteDirectoryEntryModal.svelte";
   import DirectoryEntries from "./DirectoryEntries";
   import DirectoryEntryMenuBottomSheet from "./DirectoryEntryMenuBottomSheet.svelte";
+  import DuplicateFileModal from "./DuplicateFileModal.svelte";
   import RenameDirectoryEntryModal from "./RenameDirectoryEntryModal.svelte";
   import {
     requestHmacSecretDownload,
     requestDirectoryCreation,
+    requestDuplicateFileScan,
     requestFileUpload,
     requestDirectoryEntryRename,
     requestDirectoryEntryDeletion,
@@ -23,14 +25,22 @@
 
   import IconAdd from "~icons/material-symbols/add";
 
+  interface LoadedFile {
+    file: File;
+    fileBuffer: ArrayBuffer;
+    fileSigned: string;
+  }
+
   let { data } = $props();
 
   let info: Writable<DirectoryInfo | null> | undefined = $state();
   let fileInput: HTMLInputElement | undefined = $state();
+  let loadedFile: LoadedFile | undefined = $state();
   let selectedEntry: SelectedDirectoryEntry | undefined = $state();
 
   let isCreateBottomSheetOpen = $state(false);
   let isCreateDirectoryModalOpen = $state(false);
+  let isDuplicateFileModalOpen = $state(false);
 
   let isDirectoryEntryMenuBottomSheetOpen = $state(false);
   let isRenameDirectoryEntryModalOpen = $state(false);
@@ -42,15 +52,34 @@
     info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
   };
 
-  const uploadFile = () => {
+  const uploadFile = (loadedFile: LoadedFile) => {
+    requestFileUpload(
+      loadedFile.file,
+      loadedFile.fileBuffer,
+      loadedFile.fileSigned,
+      data.id,
+      $masterKeyStore?.get(1)!,
+      $hmacSecretStore?.get(1)!,
+    ).then(() => {
+      info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
+    });
+  };
+
+  const loadAndUploadFile = async () => {
     const file = fileInput?.files?.[0];
     if (!file) return;
 
-    requestFileUpload(file, data.id, $masterKeyStore?.get(1)!, $hmacSecretStore?.get(1)!).then(
-      () => {
-        info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
-      },
-    );
+    fileInput!.value = "";
+
+    const scanRes = await requestDuplicateFileScan(file, $hmacSecretStore?.get(1)!);
+    if (scanRes === null) {
+      throw new Error("Failed to scan duplicate files");
+    } else if (scanRes.isDuplicate) {
+      loadedFile = { ...scanRes, file };
+      isDuplicateFileModalOpen = true;
+    } else {
+      uploadFile({ ...scanRes, file });
+    }
   };
 
   onMount(async () => {
@@ -68,7 +97,7 @@
   <title>파일</title>
 </svelte:head>
 
-<input bind:this={fileInput} onchange={uploadFile} type="file" class="hidden" />
+<input bind:this={fileInput} onchange={loadAndUploadFile} type="file" class="hidden" />
 
 <div class="flex min-h-full flex-col px-4">
   {#if data.id !== "root"}
@@ -109,6 +138,18 @@
   }}
 />
 <CreateDirectoryModal bind:isOpen={isCreateDirectoryModalOpen} onCreateClick={createDirectory} />
+<DuplicateFileModal
+  bind:isOpen={isDuplicateFileModalOpen}
+  onclose={() => {
+    isDuplicateFileModalOpen = false;
+    loadedFile = undefined;
+  }}
+  onDuplicateClick={() => {
+    uploadFile(loadedFile!);
+    isDuplicateFileModalOpen = false;
+    loadedFile = undefined;
+  }}
+/>
 
 <DirectoryEntryMenuBottomSheet
   bind:isOpen={isDirectoryEntryMenuBottomSheetOpen}

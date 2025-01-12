@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import { IntegrityError } from "$lib/server/db/error";
 import {
   registerFile,
+  getAllFileIdsByContentHmac,
   getFile,
   setFileEncName,
   unregisterFile,
@@ -74,6 +75,15 @@ export const renameFile = async (
     }
     throw e;
   }
+};
+
+export const scanDuplicateFiles = async (
+  userId: number,
+  hskVersion: number,
+  contentHmac: string,
+) => {
+  const fileIds = await getAllFileIdsByContentHmac(userId, hskVersion, contentHmac);
+  return { files: fileIds.map(({ id }) => id) };
 };
 
 const safeUnlink = async (path: string) => {

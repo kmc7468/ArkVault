@@ -220,6 +220,23 @@ export const getAllFilesByParent = async (userId: number, parentId: DirectoryId)
     );
 };
 
+export const getAllFileIdsByContentHmac = async (
+  userId: number,
+  hskVersion: number,
+  contentHmac: string,
+) => {
+  return await db
+    .select({ id: file.id })
+    .from(file)
+    .where(
+      and(
+        eq(file.userId, userId),
+        eq(file.hskVersion, hskVersion),
+        eq(file.contentHmac, contentHmac),
+      ),
+    );
+};
+
 export const getFile = async (userId: number, fileId: number) => {
   const res = await db
     .select()
