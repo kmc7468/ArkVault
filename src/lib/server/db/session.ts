@@ -20,8 +20,8 @@ export const createSession = async (
       clientId,
       createdAt: now,
       lastUsedAt: now,
-      lastUsedByIp: ip,
-      lastUsedByUserAgent: userAgent,
+      lastUsedByIp: ip || null,
+      lastUsedByUserAgent: userAgent || null,
     });
   } catch (e) {
     if (e instanceof SqliteError && e.code === "SQLITE_CONSTRAINT_UNIQUE") {
@@ -41,8 +41,8 @@ export const refreshSession = async (
     .update(session)
     .set({
       lastUsedAt: now,
-      lastUsedByIp: ip ?? undefined,
-      lastUsedByUserAgent: userAgent ?? undefined,
+      lastUsedByIp: ip || undefined,
+      lastUsedByUserAgent: userAgent || undefined,
     })
     .where(
       and(
