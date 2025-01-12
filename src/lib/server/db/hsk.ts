@@ -31,6 +31,7 @@ export const registerInitialHsk = async (
         if (e instanceof SqliteError && e.code === "SQLITE_CONSTRAINT_PRIMARYKEY") {
           throw new IntegrityError("HSK already registered");
         }
+        throw e;
       }
     },
     { behavior: "exclusive" },
