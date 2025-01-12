@@ -16,8 +16,18 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 
   const zodRes = fileUploadRequest.safeParse(JSON.parse(metadata));
   if (!zodRes.success) error(400, "Invalid request body");
-  const { parentId, mekVersion, dek, dekVersion, contentType, contentIv, name, nameIv } =
-    zodRes.data;
+  const {
+    parentId,
+    mekVersion,
+    dek,
+    dekVersion,
+    hskVersion,
+    contentHmac,
+    contentType,
+    contentIv,
+    name,
+    nameIv,
+  } = zodRes.data;
 
   await uploadFile(
     {
@@ -26,6 +36,8 @@ export const POST: RequestHandler = async ({ locals, request }) => {
       mekVersion,
       encDek: dek,
       dekVersion: new Date(dekVersion),
+      hskVersion,
+      contentHmac,
       contentType,
       encContentIv: contentIv,
       encName: name,

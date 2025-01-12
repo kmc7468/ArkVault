@@ -1,7 +1,10 @@
 import { callPostApi } from "$lib/hooks";
 import { storeClientKey } from "$lib/indexedDB";
 import { signMasterKeyWrapped } from "$lib/modules/crypto";
-import type { InitialMasterKeyRegisterRequest } from "$lib/server/schemas";
+import type {
+  InitialMasterKeyRegisterRequest,
+  InitialHmacSecretRegisterRequest,
+} from "$lib/server/schemas";
 import type { ClientKeys } from "$lib/stores";
 
 export { requestSessionUpgrade } from "$lib/services/auth";
@@ -44,13 +47,22 @@ export const storeClientKeys = async (clientKeys: ClientKeys) => {
   ]);
 };
 
-export const requestInitialMasterKeyRegistration = async (
+export const requestInitialMasterKeyAndHmacSecretRegistration = async (
   masterKeyWrapped: string,
+  hmacSecretWrapped: string,
   signKey: CryptoKey,
 ) => {
-  const res = await callPostApi<InitialMasterKeyRegisterRequest>("/api/mek/register/initial", {
+  let res = await callPostApi<InitialMasterKeyRegisterRequest>("/api/mek/register/initial", {
     mek: masterKeyWrapped,
     mekSig: await signMasterKeyWrapped(masterKeyWrapped, 1, signKey),
   });
-  return res.ok || res.status === 409;
+  if (!res.ok) {
+    return res.status === 409;
+  }
+
+  res = await callPostApi<InitialHmacSecretRegisterRequest>("/api/hsk/register/initial", {
+    mekVersion: 1,
+    hsk: hmacSecretWrapped,
+  });
+  return res.ok;
 };

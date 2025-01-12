@@ -1,5 +1,5 @@
 import { callPostApi } from "$lib/hooks";
-import { encodeToBase64, decryptChallenge, signMessage } from "$lib/modules/crypto";
+import { encodeToBase64, decryptChallenge, signMessageRSA } from "$lib/modules/crypto";
 import type {
   SessionUpgradeRequest,
   SessionUpgradeResponse,
@@ -20,7 +20,7 @@ export const requestSessionUpgrade = async (
 
   const { challenge }: SessionUpgradeResponse = await res.json();
   const answer = await decryptChallenge(challenge, decryptKey);
-  const answerSig = await signMessage(answer, signKey);
+  const answerSig = await signMessageRSA(answer, signKey);
 
   res = await callPostApi<SessionUpgradeVerifyRequest>("/api/auth/upgradeSession/verify", {
     answer: encodeToBase64(answer),

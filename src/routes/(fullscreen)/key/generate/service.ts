@@ -3,8 +3,11 @@ import {
   generateSigningKeyPair,
   exportRSAKeyToBase64,
   makeRSAKeyNonextractable,
-  generateMasterKey,
   wrapMasterKey,
+  generateMasterKey,
+  makeAESKeyNonextractable,
+  wrapHmacSecret,
+  generateHmacSecret,
 } from "$lib/modules/crypto";
 import { clientKeyStore } from "$lib/stores";
 
@@ -31,6 +34,14 @@ export const generateClientKeys = async () => {
 export const generateInitialMasterKey = async (encryptKey: CryptoKey) => {
   const { masterKey } = await generateMasterKey();
   return {
+    masterKey: await makeAESKeyNonextractable(masterKey),
     masterKeyWrapped: await wrapMasterKey(masterKey, encryptKey),
+  };
+};
+
+export const generateInitialHmacSecret = async (masterKey: CryptoKey) => {
+  const { hmacSecret } = await generateHmacSecret();
+  return {
+    hmacSecretWrapped: await wrapHmacSecret(hmacSecret, masterKey),
   };
 };

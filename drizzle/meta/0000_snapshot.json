@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c518e1b4-38f8-4c8e-bdc9-64152ab456d8",
+  "id": "f2fbe45c-1f1d-4dd8-92ab-dd057c0e668b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "client": {
@@ -234,13 +234,6 @@
           "notNull": true,
           "autoincrement": true
         },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "parent_id": {
           "name": "parent_id",
           "type": "integer",
@@ -339,6 +332,64 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "directory_log": {
+      "name": "directory_log",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "directory_id": {
+          "name": "directory_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "new_name": {
+          "name": "new_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "directory_log_directory_id_directory_id_fk": {
+          "name": "directory_log_directory_id_directory_id_fk",
+          "tableFrom": "directory_log",
+          "tableTo": "directory",
+          "columnsFrom": [
+            "directory_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "file": {
       "name": "file",
       "columns": {
@@ -349,13 +400,6 @@
           "notNull": true,
           "autoincrement": true
         },
-        "path": {
-          "name": "path",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "parent_id": {
           "name": "parent_id",
           "type": "integer",
@@ -363,16 +407,16 @@
           "notNull": false,
           "autoincrement": false
         },
-        "created_at": {
-          "name": "created_at",
+        "user_id": {
+          "name": "user_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
+        "path": {
+          "name": "path",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -396,6 +440,20 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "hmac_secret_key_version": {
+          "name": "hmac_secret_key_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "content_hmac": {
+          "name": "content_hmac",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "content_type": {
@@ -470,6 +528,261 @@
           "columnsFrom": [
             "user_id",
             "master_encryption_key_version"
+          ],
+          "columnsTo": [
+            "user_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "file_user_id_hmac_secret_key_version_hmac_secret_key_user_id_version_fk": {
+          "name": "file_user_id_hmac_secret_key_version_hmac_secret_key_user_id_version_fk",
+          "tableFrom": "file",
+          "tableTo": "hmac_secret_key",
+          "columnsFrom": [
+            "user_id",
+            "hmac_secret_key_version"
+          ],
+          "columnsTo": [
+            "user_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "file_log": {
+      "name": "file_log",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "file_id": {
+          "name": "file_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "new_name": {
+          "name": "new_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "file_log_file_id_file_id_fk": {
+          "name": "file_log_file_id_file_id_fk",
+          "tableFrom": "file_log",
+          "tableTo": "file",
+          "columnsFrom": [
+            "file_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "hmac_secret_key": {
+      "name": "hmac_secret_key",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "master_encryption_key_version": {
+          "name": "master_encryption_key_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encrypted_key": {
+          "name": "encrypted_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "hmac_secret_key_encrypted_key_unique": {
+          "name": "hmac_secret_key_encrypted_key_unique",
+          "columns": [
+            "encrypted_key"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "hmac_secret_key_user_id_user_id_fk": {
+          "name": "hmac_secret_key_user_id_user_id_fk",
+          "tableFrom": "hmac_secret_key",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "hmac_secret_key_user_id_master_encryption_key_version_master_encryption_key_user_id_version_fk": {
+          "name": "hmac_secret_key_user_id_master_encryption_key_version_master_encryption_key_user_id_version_fk",
+          "tableFrom": "hmac_secret_key",
+          "tableTo": "master_encryption_key",
+          "columnsFrom": [
+            "user_id",
+            "master_encryption_key_version"
+          ],
+          "columnsTo": [
+            "user_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "hmac_secret_key_user_id_version_pk": {
+          "columns": [
+            "user_id",
+            "version"
+          ],
+          "name": "hmac_secret_key_user_id_version_pk"
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "hmac_secret_key_log": {
+      "name": "hmac_secret_key_log",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "hmac_secret_key_version": {
+          "name": "hmac_secret_key_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "action_by": {
+          "name": "action_by",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "hmac_secret_key_log_user_id_user_id_fk": {
+          "name": "hmac_secret_key_log_user_id_user_id_fk",
+          "tableFrom": "hmac_secret_key_log",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "hmac_secret_key_log_action_by_user_id_fk": {
+          "name": "hmac_secret_key_log_action_by_user_id_fk",
+          "tableFrom": "hmac_secret_key_log",
+          "tableTo": "user",
+          "columnsFrom": [
+            "action_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "hmac_secret_key_log_user_id_hmac_secret_key_version_hmac_secret_key_user_id_version_fk": {
+          "name": "hmac_secret_key_log_user_id_hmac_secret_key_version_hmac_secret_key_user_id_version_fk",
+          "tableFrom": "hmac_secret_key_log",
+          "tableTo": "hmac_secret_key",
+          "columnsFrom": [
+            "user_id",
+            "hmac_secret_key_version"
           ],
           "columnsTo": [
             "user_id",
@@ -594,20 +907,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "created_by": {
-          "name": "created_by",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "state": {
           "name": "state",
           "type": "text",
@@ -637,19 +936,6 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
-        },
-        "master_encryption_key_created_by_client_id_fk": {
-          "name": "master_encryption_key_created_by_client_id_fk",
-          "tableFrom": "master_encryption_key",
-          "tableTo": "client",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -661,6 +947,99 @@
           "name": "master_encryption_key_user_id_version_pk"
         }
       },
+      "uniqueConstraints": {}
+    },
+    "master_encryption_key_log": {
+      "name": "master_encryption_key_log",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "master_encryption_key_version": {
+          "name": "master_encryption_key_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "action_by": {
+          "name": "action_by",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "master_encryption_key_log_user_id_user_id_fk": {
+          "name": "master_encryption_key_log_user_id_user_id_fk",
+          "tableFrom": "master_encryption_key_log",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "master_encryption_key_log_action_by_client_id_fk": {
+          "name": "master_encryption_key_log_action_by_client_id_fk",
+          "tableFrom": "master_encryption_key_log",
+          "tableTo": "client",
+          "columnsFrom": [
+            "action_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "master_encryption_key_log_user_id_master_encryption_key_version_master_encryption_key_user_id_version_fk": {
+          "name": "master_encryption_key_log_user_id_master_encryption_key_version_master_encryption_key_user_id_version_fk",
+          "tableFrom": "master_encryption_key_log",
+          "tableTo": "master_encryption_key",
+          "columnsFrom": [
+            "user_id",
+            "master_encryption_key_version"
+          ],
+          "columnsTo": [
+            "user_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
     "session": {
