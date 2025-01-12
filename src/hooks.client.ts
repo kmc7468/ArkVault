@@ -1,6 +1,6 @@
 import type { ClientInit } from "@sveltejs/kit";
-import { getClientKey, getMasterKeys } from "$lib/indexedDB";
-import { clientKeyStore, masterKeyStore } from "$lib/stores";
+import { getClientKey, getMasterKeys, getHmacSecrets } from "$lib/indexedDB";
+import { clientKeyStore, masterKeyStore, hmacSecretStore } from "$lib/stores";
 
 const prepareClientKeyStore = async () => {
   const [encryptKey, decryptKey, signKey, verifyKey] = await Promise.all([
@@ -21,6 +21,13 @@ const prepareMasterKeyStore = async () => {
   }
 };
 
+const prepareHmacSecretStore = async () => {
+  const hmacSecrets = await getHmacSecrets();
+  if (hmacSecrets.length > 0) {
+    hmacSecretStore.set(new Map(hmacSecrets.map((hmacSecret) => [hmacSecret.version, hmacSecret])));
+  }
+};
+
 export const init: ClientInit = async () => {
-  await Promise.all([prepareClientKeyStore(), prepareMasterKeyStore()]);
+  await Promise.all([prepareClientKeyStore(), prepareMasterKeyStore(), prepareHmacSecretStore()]);
 };

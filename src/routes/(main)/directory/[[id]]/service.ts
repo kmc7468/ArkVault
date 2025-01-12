@@ -1,12 +1,22 @@
-import { callPostApi } from "$lib/hooks";
-import { generateDataKey, wrapDataKey, encryptData, encryptString } from "$lib/modules/crypto";
+import { callGetApi, callPostApi } from "$lib/hooks";
+import { storeHmacSecrets } from "$lib/indexedDB";
+import {
+  encodeToBase64,
+  generateDataKey,
+  wrapDataKey,
+  unwrapHmacSecret,
+  encryptData,
+  encryptString,
+  signMessageHmac,
+} from "$lib/modules/crypto";
 import type {
   DirectoryRenameRequest,
   DirectoryCreateRequest,
   FileRenameRequest,
   FileUploadRequest,
+  HmacSecretListResponse,
 } from "$lib/server/schemas";
-import type { MasterKey } from "$lib/stores";
+import { hmacSecretStore, type MasterKey, type HmacSecret } from "$lib/stores";
 
 export interface SelectedDirectoryEntry {
   type: "directory" | "file";
@@ -15,6 +25,26 @@ export interface SelectedDirectoryEntry {
   dataKeyVersion: Date;
   name: string;
 }
+
+export const requestHmacSecretDownload = async (masterKey: CryptoKey) => {
+  // TODO: MEK rotation
+
+  const res = await callGetApi("/api/hsk/list");
+  if (!res.ok) return false;
+
+  const { hsks: hmacSecretsWrapped }: HmacSecretListResponse = await res.json();
+  const hmacSecrets = await Promise.all(
+    hmacSecretsWrapped.map(async ({ version, state, hsk: hmacSecretWrapped }) => {
+      const { hmacSecret } = await unwrapHmacSecret(hmacSecretWrapped, masterKey);
+      return { version, state, secret: hmacSecret };
+    }),
+  );
+
+  await storeHmacSecrets(hmacSecrets);
+  hmacSecretStore.set(new Map(hmacSecrets.map((hmacSecret) => [hmacSecret.version, hmacSecret])));
+
+  return true;
+};
 
 export const requestDirectoryCreation = async (
   name: string,
@@ -37,10 +67,14 @@ export const requestFileUpload = async (
   file: File,
   parentId: "root" | number,
   masterKey: MasterKey,
+  hmacSecret: HmacSecret,
 ) => {
   const { dataKey, dataKeyVersion } = await generateDataKey();
-  const fileEncrypted = await encryptData(await file.arrayBuffer(), dataKey);
   const nameEncrypted = await encryptString(file.name, dataKey);
+
+  const fileBuffer = await file.arrayBuffer();
+  const fileSigned = await signMessageHmac(fileBuffer, hmacSecret.secret);
+  const fileEncrypted = await encryptData(fileBuffer, dataKey);
 
   const form = new FormData();
   form.set(
@@ -50,6 +84,8 @@ export const requestFileUpload = async (
       mekVersion: masterKey.version,
       dek: await wrapDataKey(dataKey, masterKey.key),
       dekVersion: dataKeyVersion.toISOString(),
+      hskVersion: hmacSecret.version,
+      contentHmac: encodeToBase64(fileSigned),
       contentType: file.type,
       contentIv: fileEncrypted.iv,
       name: nameEncrypted.ciphertext,

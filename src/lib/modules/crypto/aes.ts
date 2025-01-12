@@ -55,6 +55,27 @@ export const unwrapDataKey = async (dataKeyWrapped: string, masterKey: CryptoKey
   };
 };
 
+export const wrapHmacSecret = async (hmacSecret: CryptoKey, masterKey: CryptoKey) => {
+  return encodeToBase64(await window.crypto.subtle.wrapKey("raw", hmacSecret, masterKey, "AES-KW"));
+};
+
+export const unwrapHmacSecret = async (hmacSecretWrapped: string, masterKey: CryptoKey) => {
+  return {
+    hmacSecret: await window.crypto.subtle.unwrapKey(
+      "raw",
+      decodeFromBase64(hmacSecretWrapped),
+      masterKey,
+      "AES-KW",
+      {
+        name: "HMAC",
+        hash: "SHA-256",
+      } satisfies HmacImportParams,
+      false, // Nonextractable
+      ["sign", "verify"],
+    ),
+  };
+};
+
 export const encryptData = async (data: BufferSource, dataKey: CryptoKey) => {
   const iv = window.crypto.getRandomValues(new Uint8Array(12));
   const ciphertext = await window.crypto.subtle.encrypt(

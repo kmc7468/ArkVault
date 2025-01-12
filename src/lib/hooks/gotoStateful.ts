@@ -11,6 +11,7 @@ interface KeyExportState {
   verifyKeyBase64: string;
 
   masterKeyWrapped: string;
+  hmacSecretWrapped: string;
 }
 
 const useAutoNull = <T>(value: T | null) => {

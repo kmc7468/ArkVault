@@ -1,10 +1,11 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import type { Writable } from "svelte/store";
   import { goto } from "$app/navigation";
   import { TopBar } from "$lib/components";
   import { FloatingButton } from "$lib/components/buttons";
   import { getDirectoryInfo } from "$lib/modules/file";
-  import { masterKeyStore, type DirectoryInfo } from "$lib/stores";
+  import { masterKeyStore, hmacSecretStore, type DirectoryInfo } from "$lib/stores";
   import CreateBottomSheet from "./CreateBottomSheet.svelte";
   import CreateDirectoryModal from "./CreateDirectoryModal.svelte";
   import DeleteDirectoryEntryModal from "./DeleteDirectoryEntryModal.svelte";
@@ -12,6 +13,7 @@
   import DirectoryEntryMenuBottomSheet from "./DirectoryEntryMenuBottomSheet.svelte";
   import RenameDirectoryEntryModal from "./RenameDirectoryEntryModal.svelte";
   import {
+    requestHmacSecretDownload,
     requestDirectoryCreation,
     requestFileUpload,
     requestDirectoryEntryRename,
@@ -44,10 +46,18 @@
     const file = fileInput?.files?.[0];
     if (!file) return;
 
-    requestFileUpload(file, data.id, $masterKeyStore?.get(1)!).then(() => {
-      info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
-    });
+    requestFileUpload(file, data.id, $masterKeyStore?.get(1)!, $hmacSecretStore?.get(1)!).then(
+      () => {
+        info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
+      },
+    );
   };
+
+  onMount(async () => {
+    if (!$hmacSecretStore && !(await requestHmacSecretDownload($masterKeyStore?.get(1)?.key!))) {
+      throw new Error("Failed to download hmac secrets");
+    }
+  });
 
   $effect(() => {
     info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!);

@@ -11,7 +11,7 @@
     requestClientRegistration,
     storeClientKeys,
     requestSessionUpgrade,
-    requestInitialMasterKeyRegistration,
+    requestInitialMasterKeyAndHmacSecretRegistration,
   } from "./service";
 
   import IconKey from "~icons/material-symbols/key";
@@ -69,9 +69,13 @@
         throw new Error("Failed to upgrade session");
 
       if (
-        !(await requestInitialMasterKeyRegistration(data.masterKeyWrapped, $clientKeyStore.signKey))
+        !(await requestInitialMasterKeyAndHmacSecretRegistration(
+          data.masterKeyWrapped,
+          data.hmacSecretWrapped,
+          $clientKeyStore.signKey,
+        ))
       )
-        throw new Error("Failed to register initial MEK");
+        throw new Error("Failed to register initial MEK and HSK");
 
       await goto("/client/pending?redirect=" + encodeURIComponent(data.redirectPath));
     } catch (e) {

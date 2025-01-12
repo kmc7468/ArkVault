@@ -6,7 +6,11 @@
   import { gotoStateful } from "$lib/hooks";
   import { clientKeyStore } from "$lib/stores";
   import Order from "./Order.svelte";
-  import { generateClientKeys, generateInitialMasterKey } from "./service";
+  import {
+    generateClientKeys,
+    generateInitialMasterKey,
+    generateInitialHmacSecret,
+  } from "./service";
 
   import IconKey from "~icons/material-symbols/key";
 
@@ -36,12 +40,14 @@
     // TODO: Loading indicator
 
     const { encryptKey, ...clientKeys } = await generateClientKeys();
-    const { masterKeyWrapped } = await generateInitialMasterKey(encryptKey);
+    const { masterKey, masterKeyWrapped } = await generateInitialMasterKey(encryptKey);
+    const { hmacSecretWrapped } = await generateInitialHmacSecret(masterKey);
 
     await gotoStateful("/key/export", {
       ...clientKeys,
       redirectPath: data.redirectPath,
       masterKeyWrapped,
+      hmacSecretWrapped,
     });
   };
 
