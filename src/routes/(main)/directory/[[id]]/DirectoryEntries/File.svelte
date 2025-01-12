@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
   import type { FileInfo } from "$lib/stores";
+  import { formatDate } from "./service";
   import type { SelectedDirectoryEntry } from "../service";
 
   import IconDraft from "~icons/material-symbols/draft";
@@ -34,14 +35,17 @@
 {#if $info}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <!-- svelte-ignore a11y_click_events_have_key_events -->
-  <div id="button" onclick={openFile} class="h-12 rounded-xl">
+  <div id="button" onclick={openFile} class="h-14 rounded-xl">
     <div id="button-content" class="flex h-full items-center gap-x-4 p-2 transition">
       <div class="flex-shrink-0 text-lg">
         <IconDraft class="text-blue-400" />
       </div>
-      <p title={$info.name} class="flex-grow truncate font-medium">
-        {$info.name}
-      </p>
+      <div class="flex flex-grow flex-col overflow-hidden">
+        <p title={$info.name} class="truncate font-medium">
+          {$info.name}
+        </p>
+        <p class="text-xs text-gray-800">{formatDate($info.createdAt ?? $info.lastModifiedAt)}</p>
+      </div>
       <button
         id="open-menu"
         onclick={openMenu}

@@ -28,6 +28,10 @@ export interface NewFileParams {
   encContentIv: string;
   encName: string;
   encNameIv: string;
+  encCreatedAt: string | null;
+  encCreatedAtIv: string | null;
+  encLastModifiedAt: string;
+  encLastModifiedAtIv: string;
 }
 
 export const registerDirectory = async (params: NewDirectoryParams) => {
@@ -154,7 +158,12 @@ export const unregisterDirectory = async (userId: number, directoryId: number) =
 };
 
 export const registerFile = async (params: NewFileParams) => {
-  if ((params.hskVersion && !params.contentHmac) || (!params.hskVersion && params.contentHmac)) {
+  if (
+    (params.hskVersion && !params.contentHmac) ||
+    (!params.hskVersion && params.contentHmac) ||
+    (params.encCreatedAt && !params.encCreatedAtIv) ||
+    (!params.encCreatedAt && params.encCreatedAtIv)
+  ) {
     throw new Error("Invalid arguments");
   }
 
@@ -194,6 +203,14 @@ export const registerFile = async (params: NewFileParams) => {
           dekVersion: params.dekVersion,
           encContentIv: params.encContentIv,
           encName: { ciphertext: params.encName, iv: params.encNameIv },
+          encCreatedAt:
+            params.encCreatedAt && params.encCreatedAtIv
+              ? { ciphertext: params.encCreatedAt, iv: params.encCreatedAtIv }
+              : null,
+          encLastModifiedAt: {
+            ciphertext: params.encLastModifiedAt,
+            iv: params.encLastModifiedAtIv,
+          },
         })
         .returning({ id: file.id });
       const { id: fileId } = newFiles[0]!;

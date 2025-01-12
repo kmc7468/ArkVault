@@ -16,8 +16,16 @@ export const GET: RequestHandler = async ({ locals, params }) => {
   if (!zodRes.success) error(400, "Invalid path parameters");
   const { id } = zodRes.data;
 
-  const { mekVersion, encDek, dekVersion, contentType, encContentIv, encName } =
-    await getFileInformation(userId, id);
+  const {
+    mekVersion,
+    encDek,
+    dekVersion,
+    contentType,
+    encContentIv,
+    encName,
+    encCreatedAt,
+    encLastModifiedAt,
+  } = await getFileInformation(userId, id);
   return json(
     fileInfoResponse.parse({
       mekVersion,
@@ -27,6 +35,10 @@ export const GET: RequestHandler = async ({ locals, params }) => {
       contentIv: encContentIv,
       name: encName.ciphertext,
       nameIv: encName.iv,
+      createdAt: encCreatedAt?.ciphertext,
+      createdAtIv: encCreatedAt?.iv,
+      lastModifiedAt: encLastModifiedAt.ciphertext,
+      lastModifiedAtIv: encLastModifiedAt.iv,
     } satisfies FileInfoResponse),
   );
 };

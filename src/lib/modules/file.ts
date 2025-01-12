@@ -53,6 +53,10 @@ export const getDirectoryInfo = (directoryId: "root" | number, masterKey: Crypto
   return info;
 };
 
+const decryptDate = async (ciphertext: string, iv: string, dataKey: CryptoKey) => {
+  return new Date(parseInt(await decryptString(ciphertext, iv, dataKey), 10));
+};
+
 const fetchFileInfo = async (
   fileId: number,
   masterKey: CryptoKey,
@@ -70,6 +74,11 @@ const fetchFileInfo = async (
     contentType: metadata.contentType,
     contentIv: metadata.contentIv,
     name: await decryptString(metadata.name, metadata.nameIv, dataKey),
+    createdAt:
+      metadata.createdAt && metadata.createdAtIv
+        ? await decryptDate(metadata.createdAt, metadata.createdAtIv, dataKey)
+        : undefined,
+    lastModifiedAt: await decryptDate(metadata.lastModifiedAt, metadata.lastModifiedAtIv, dataKey),
   };
 
   infoStore.update(() => newInfo);

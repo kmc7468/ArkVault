@@ -28,6 +28,8 @@ export const getFileInformation = async (userId: number, fileId: number) => {
     contentType: file.contentType,
     encContentIv: file.encContentIv,
     encName: file.encName,
+    encCreatedAt: file.encCreatedAt,
+    encLastModifiedAt: file.encLastModifiedAt,
   };
 };
 

@@ -12,6 +12,10 @@ export const fileInfoResponse = z.object({
   contentIv: z.string().base64().nonempty(),
   name: z.string().base64().nonempty(),
   nameIv: z.string().base64().nonempty(),
+  createdAt: z.string().base64().nonempty().optional(),
+  createdAtIv: z.string().base64().nonempty().optional(),
+  lastModifiedAt: z.string().base64().nonempty(),
+  lastModifiedAtIv: z.string().base64().nonempty(),
 });
 export type FileInfoResponse = z.infer<typeof fileInfoResponse>;
 
@@ -47,5 +51,9 @@ export const fileUploadRequest = z.object({
   contentIv: z.string().base64().nonempty(),
   name: z.string().base64().nonempty(),
   nameIv: z.string().base64().nonempty(),
+  createdAt: z.string().base64().nonempty().optional(),
+  createdAtIv: z.string().base64().nonempty().optional(),
+  lastModifiedAt: z.string().base64().nonempty(),
+  lastModifiedAtIv: z.string().base64().nonempty(),
 });
 export type FileUploadRequest = z.infer<typeof fileUploadRequest>;

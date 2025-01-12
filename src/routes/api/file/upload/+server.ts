@@ -27,7 +27,13 @@ export const POST: RequestHandler = async ({ locals, request }) => {
     contentIv,
     name,
     nameIv,
+    createdAt,
+    createdAtIv,
+    lastModifiedAt,
+    lastModifiedAtIv,
   } = zodRes.data;
+  if ((createdAt && !createdAtIv) || (!createdAt && createdAtIv))
+    error(400, "Invalid request body");
 
   await uploadFile(
     {
@@ -42,6 +48,10 @@ export const POST: RequestHandler = async ({ locals, request }) => {
       encContentIv: contentIv,
       encName: name,
       encNameIv: nameIv,
+      encCreatedAt: createdAt ?? null,
+      encCreatedAtIv: createdAtIv ?? null,
+      encLastModifiedAt: lastModifiedAt,
+      encLastModifiedAtIv: lastModifiedAtIv,
     },
     content.stream(),
   );
