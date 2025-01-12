@@ -30,12 +30,11 @@ docker compose up --build -d
 필수 환경 변수가 아닌 경우, 설정해야 하는 특별한 이유가 없다면 기본값을 사용하는 것이 좋아요.
 
 |이름|필수|기본값|설명|
-|-:|:-:|:-:|:-|
-|`JWT_SECRET`|Y||JWT의 서명을 위해 사용돼요. 안전한 값으로 설정해 주세요.|
-|`JWT_ACCESS_TOKEN_EXPIRES`||`5m`|Access Token의 유효 시간이에요.|
-|`JWT_REFRESH_TOKEN_EXPIRES`||`14d`|Refresh Token의 유효 시간이에요.|
+|:-|:-:|:-:|:-|
+|`SESSION_SECRET`|Y||Session ID의 서명을 위해 사용돼요. 안전한 값으로 설정해 주세요.|
+|`SESSION_EXPIRES`||`14d`|Session의 유효 시간이에요. Session은 마지막으로 사용된 후 설정된 유효 시간이 지나면 자동으로 삭제돼요.|
 |`USER_CLIENT_CHALLENGE_EXPIRES`||`5m`|암호 키를 서버에 처음 등록할 때 사용되는 챌린지의 유효 시간이에요.|
-|`TOKEN_UPGRADE_CHALLENGE_EXPIRES`||`5m`|암호 키와 함께 로그인할 때 사용되는 챌린지의 유효 시간이에요.|
+|`SESSION_UPGRADE_CHALLENGE_EXPIRES`||`5m`|암호 키와 함께 로그인할 때 사용되는 챌린지의 유효 시간이에요.|
 |`TRUST_PROXY`|||신뢰할 수 있는 리버스 프록시의 수예요. 설정할 경우 1 이상의 정수로 설정해 주세요. 프록시에서 `X-Forwarded-For` HTTP 헤더를 올바르게 설정하도록 구성해 주세요.|
 |`NODE_ENV`||`production`|ArkVault의 사용 용도예요. `production`인 경우, 컨테이너가 실행될 때마다 DB 마이그레이션이 자동으로 실행돼요.|
 |`PORT`||`80`|ArkVault 서버의 포트예요.|

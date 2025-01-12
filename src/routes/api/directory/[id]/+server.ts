@@ -5,8 +5,8 @@ import { directoryInfoResponse, type DirectoryInfoResponse } from "$lib/server/s
 import { getDirectoryInformation } from "$lib/server/services/directory";
 import type { RequestHandler } from "./$types";
 
-export const GET: RequestHandler = async ({ cookies, params }) => {
-  const { userId } = await authorize(cookies, "activeClient");
+export const GET: RequestHandler = async ({ locals, params }) => {
+  const { userId } = await authorize(locals, "activeClient");
 
   const zodRes = z
     .object({

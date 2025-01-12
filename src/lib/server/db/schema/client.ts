@@ -1,4 +1,11 @@
-import { sqliteTable, text, integer, primaryKey, unique } from "drizzle-orm/sqlite-core";
+import {
+  sqliteTable,
+  text,
+  integer,
+  primaryKey,
+  foreignKey,
+  unique,
+} from "drizzle-orm/sqlite-core";
 import { user } from "./user";
 
 export const client = sqliteTable(
@@ -31,16 +38,24 @@ export const userClient = sqliteTable(
   }),
 );
 
-export const userClientChallenge = sqliteTable("user_client_challenge", {
-  id: integer("id").primaryKey(),
-  userId: integer("user_id")
-    .notNull()
-    .references(() => user.id),
-  clientId: integer("client_id")
-    .notNull()
-    .references(() => client.id),
-  answer: text("challenge").notNull().unique(), // Base64
-  allowedIp: text("allowed_ip").notNull(),
-  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
-  isUsed: integer("is_used", { mode: "boolean" }).notNull().default(false),
-});
+export const userClientChallenge = sqliteTable(
+  "user_client_challenge",
+  {
+    id: integer("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => user.id),
+    clientId: integer("client_id")
+      .notNull()
+      .references(() => client.id),
+    answer: text("answer").notNull().unique(), // Base64
+    allowedIp: text("allowed_ip").notNull(),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => ({
+    ref: foreignKey({
+      columns: [t.userId, t.clientId],
+      foreignColumns: [userClient.userId, userClient.clientId],
+    }),
+  }),
+);

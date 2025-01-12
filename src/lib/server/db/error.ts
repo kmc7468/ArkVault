@@ -1,4 +1,6 @@
 type IntegrityErrorMessages =
+  // Challenge
+  | "Challenge already registered"
   // Client
   | "Public key(s) already registered"
   | "User client already exists"
@@ -9,9 +11,9 @@ type IntegrityErrorMessages =
   // MEK
   | "MEK already registered"
   | "Inactive MEK version"
-  // Token
-  | "Refresh token not found"
-  | "Refresh token already registered";
+  // Session
+  | "Session not found"
+  | "Session already exists";
 
 export class IntegrityError extends Error {
   constructor(public message: IntegrityErrorMessages) {

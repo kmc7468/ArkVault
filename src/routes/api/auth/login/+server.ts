@@ -4,20 +4,16 @@ import { loginRequest } from "$lib/server/schemas";
 import { login } from "$lib/server/services/auth";
 import type { RequestHandler } from "./$types";
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
+export const POST: RequestHandler = async ({ locals, request, cookies }) => {
   const zodRes = loginRequest.safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");
   const { email, password } = zodRes.data;
 
-  const { accessToken, refreshToken } = await login(email, password);
-  cookies.set("accessToken", accessToken, {
+  const { sessionIdSigned } = await login(email, password, locals.ip, locals.userAgent);
+  cookies.set("sessionId", sessionIdSigned, {
     path: "/",
-    maxAge: env.jwt.accessExp / 1000,
-    sameSite: "strict",
-  });
-  cookies.set("refreshToken", refreshToken, {
-    path: "/api/auth",
-    maxAge: env.jwt.refreshExp / 1000,
+    maxAge: env.session.exp / 1000,
+    secure: true,
     sameSite: "strict",
   });
 

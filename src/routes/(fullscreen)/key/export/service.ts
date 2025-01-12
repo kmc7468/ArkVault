@@ -4,7 +4,7 @@ import { signMasterKeyWrapped } from "$lib/modules/crypto";
 import type { InitialMasterKeyRegisterRequest } from "$lib/server/schemas";
 import type { ClientKeys } from "$lib/stores";
 
-export { requestTokenUpgrade } from "$lib/services/auth";
+export { requestSessionUpgrade } from "$lib/services/auth";
 export { requestClientRegistration } from "$lib/services/key";
 
 type SerializedKeyPairs = {

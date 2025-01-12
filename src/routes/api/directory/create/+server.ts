@@ -4,8 +4,8 @@ import { directoryCreateRequest } from "$lib/server/schemas";
 import { createDirectory } from "$lib/server/services/directory";
 import type { RequestHandler } from "./$types";
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
-  const { userId } = await authorize(cookies, "activeClient");
+export const POST: RequestHandler = async ({ locals, request }) => {
+  const { userId } = await authorize(locals, "activeClient");
 
   const zodRes = directoryCreateRequest.safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");
