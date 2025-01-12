@@ -5,16 +5,44 @@ import { IntegrityError } from "$lib/server/db/error";
 import {
   upgradeSession,
   deleteSession,
+  deleteAllOtherSessions,
   registerSessionUpgradeChallenge,
   consumeSessionUpgradeChallenge,
 } from "$lib/server/db/session";
-import { getUserByEmail } from "$lib/server/db/user";
+import { getUser, getUserByEmail, setUserPassword } from "$lib/server/db/user";
 import env from "$lib/server/loadenv";
 import { startSession } from "$lib/server/modules/auth";
 import { verifySignature, generateChallenge } from "$lib/server/modules/crypto";
 
+const hashPassword = async (password: string) => {
+  return await argon2.hash(password);
+};
+
 const verifyPassword = async (hash: string, password: string) => {
   return await argon2.verify(hash, password);
+};
+
+export const changePassword = async (
+  userId: number,
+  sessionId: string,
+  oldPassword: string,
+  newPassword: string,
+) => {
+  if (oldPassword === newPassword) {
+    error(400, "Same passwords");
+  } else if (newPassword.length < 8) {
+    error(400, "Too short password");
+  }
+
+  const user = await getUser(userId);
+  if (!user) {
+    error(500, "Invalid session id");
+  } else if (!(await verifyPassword(user.password, oldPassword))) {
+    error(403, "Invalid password");
+  }
+
+  await setUserPassword(userId, await hashPassword(newPassword));
+  await deleteAllOtherSessions(userId, sessionId);
 };
 
 export const login = async (email: string, password: string, ip: string, userAgent: string) => {

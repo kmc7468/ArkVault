@@ -1,5 +1,5 @@
 import { SqliteError } from "better-sqlite3";
-import { and, eq, gt, lte, isNull } from "drizzle-orm";
+import { and, eq, ne, gt, lte, isNull } from "drizzle-orm";
 import env from "$lib/server/loadenv";
 import db from "./drizzle";
 import { IntegrityError } from "./error";
@@ -69,6 +69,10 @@ export const upgradeSession = async (sessionId: string, clientId: number) => {
 
 export const deleteSession = async (sessionId: string) => {
   await db.delete(session).where(eq(session.id, sessionId));
+};
+
+export const deleteAllOtherSessions = async (userId: number, sessionId: string) => {
+  await db.delete(session).where(and(eq(session.userId, userId), ne(session.id, sessionId)));
 };
 
 export const cleanupExpiredSessions = async () => {

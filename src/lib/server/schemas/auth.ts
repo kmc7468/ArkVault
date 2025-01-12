@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+export const changePasswordRequest = z.object({
+  oldPassword: z.string().trim().nonempty(),
+  newPassword: z.string().trim().nonempty(),
+});
+export type ChangePasswordRequest = z.infer<typeof changePasswordRequest>;
+
 export const loginRequest = z.object({
   email: z.string().email().nonempty(),
   password: z.string().trim().nonempty(),
