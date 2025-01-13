@@ -1,10 +1,14 @@
+import { getFileCache, storeFileCache } from "$lib/modules/cache";
 import { decryptData } from "$lib/modules/crypto";
 
-export const requestFileDownload = (
+export const requestFileDownload = async (
   fileId: number,
   fileEncryptedIv: string,
   dataKey: CryptoKey,
 ) => {
+  const cache = await getFileCache(fileId);
+  if (cache) return cache;
+
   return new Promise<ArrayBuffer>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.responseType = "arraybuffer";
@@ -21,6 +25,7 @@ export const requestFileDownload = (
         dataKey,
       );
       resolve(fileDecrypted);
+      await storeFileCache(fileId, fileDecrypted);
     });
 
     // TODO: Progress, ...
