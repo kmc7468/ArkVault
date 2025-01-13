@@ -63,7 +63,13 @@ const fetchFileInfo = async (
   infoStore: Writable<FileInfo | null>,
 ) => {
   const res = await callGetApi(`/api/file/${fileId}`);
-  if (!res.ok) throw new Error("Failed to fetch file information");
+  if (!res.ok) {
+    if (res.status === 404) {
+      infoStore.update(() => null);
+      return;
+    }
+    throw new Error("Failed to fetch file information");
+  }
   const metadata: FileInfoResponse = await res.json();
 
   const { dataKey } = await unwrapDataKey(metadata.dek, masterKey);

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
   import type { FileInfo } from "$lib/stores";
-  import { formatDate } from "./service";
+  import { formatDateTime } from "./service";
   import type { SelectedDirectoryEntry } from "../service";
 
   import IconDraft from "~icons/material-symbols/draft";
@@ -44,7 +44,9 @@
         <p title={$info.name} class="truncate font-medium">
           {$info.name}
         </p>
-        <p class="text-xs text-gray-800">{formatDate($info.createdAt ?? $info.lastModifiedAt)}</p>
+        <p class="text-xs text-gray-800">
+          {formatDateTime($info.createdAt ?? $info.lastModifiedAt)}
+        </p>
       </div>
       <button
         id="open-menu"
