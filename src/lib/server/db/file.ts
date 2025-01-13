@@ -1,7 +1,8 @@
+import { SqliteError } from "better-sqlite3";
 import { and, eq, isNull } from "drizzle-orm";
 import db from "./drizzle";
 import { IntegrityError } from "./error";
-import { directory, directoryLog, file, fileLog, hsk, mek } from "./schema";
+import { directory, directoryLog, file, fileLog, fileCategory, hsk, mek } from "./schema";
 
 type DirectoryId = "root" | number;
 
@@ -237,6 +238,14 @@ export const getAllFilesByParent = async (userId: number, parentId: DirectoryId)
     );
 };
 
+export const getAllFilesByCategory = async (userId: number, categoryId: number) => {
+  return await db
+    .select()
+    .from(file)
+    .innerJoin(fileCategory, eq(file.id, fileCategory.fileId))
+    .where(and(eq(file.userId, userId), eq(fileCategory.categoryId, categoryId)));
+};
+
 export const getAllFileIdsByContentHmac = async (
   userId: number,
   hskVersion: number,
@@ -307,4 +316,47 @@ export const unregisterFile = async (userId: number, fileId: number) => {
     throw new IntegrityError("File not found");
   }
   return files[0].path;
+};
+
+export const addFileToCategory = async (fileId: number, categoryId: number) => {
+  await db.transaction(
+    async (tx) => {
+      try {
+        await tx.insert(fileCategory).values({ fileId, categoryId });
+        await tx.insert(fileLog).values({
+          fileId,
+          timestamp: new Date(),
+          action: "addToCategory",
+          categoryId,
+        });
+      } catch (e) {
+        if (e instanceof SqliteError && e.code === "SQLITE_CONSTRAINT_PRIMARYKEY") {
+          throw new IntegrityError("File already added to category");
+        }
+        throw e;
+      }
+    },
+    { behavior: "exclusive" },
+  );
+};
+
+export const removeFileFromCategory = async (fileId: number, categoryId: number) => {
+  await db.transaction(
+    async (tx) => {
+      const res = await tx
+        .delete(fileCategory)
+        .where(and(eq(fileCategory.fileId, fileId), eq(fileCategory.categoryId, categoryId)));
+      if (res.changes === 0) {
+        throw new IntegrityError("File not found in category");
+      }
+
+      await tx.insert(fileLog).values({
+        fileId,
+        timestamp: new Date(),
+        action: "removeFromCategory",
+        categoryId,
+      });
+    },
+    { behavior: "exclusive" },
+  );
 };

@@ -1,4 +1,5 @@
-import { sqliteTable, text, integer, foreignKey } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, primaryKey, foreignKey } from "drizzle-orm/sqlite-core";
+import { category } from "./category";
 import { hsk } from "./hsk";
 import { mek } from "./mek";
 import { user } from "./user";
@@ -82,6 +83,26 @@ export const fileLog = sqliteTable("file_log", {
     .notNull()
     .references(() => file.id, { onDelete: "cascade" }),
   timestamp: integer("timestamp", { mode: "timestamp_ms" }).notNull(),
-  action: text("action", { enum: ["create", "rename"] }).notNull(),
+  action: text("action", {
+    enum: ["create", "rename", "addToCategory", "removeFromCategory"],
+  }).notNull(),
   newName: ciphertext("new_name"),
+  categoryId: integer("category_id").references(() => category.id, { onDelete: "set null" }),
 });
+
+export const fileCategory = sqliteTable(
+  "file_category",
+  {
+    fileId: integer("file_id")
+      .notNull()
+      .references(() => file.id, { onDelete: "cascade" }),
+    categoryId: integer("category_id")
+      .notNull()
+      .references(() => category.id, { onDelete: "cascade" }),
+  },
+  (t) => ({
+    pk: primaryKey({
+      columns: [t.fileId, t.categoryId],
+    }),
+  }),
+);
