@@ -7,7 +7,7 @@
   import { getFileInfo } from "$lib/modules/file";
   import { masterKeyStore, type FileInfo } from "$lib/stores";
   import File from "./File.svelte";
-  import { formatFileSize } from "./service";
+  import { formatFileSize, deleteFileCache as doDeleteFileCache } from "./service";
 
   interface FileCache {
     index: FileCacheIndex;
@@ -16,6 +16,11 @@
 
   let fileCache: FileCache[] | undefined = $state();
   let fileCacheTotalSize = $state(0);
+
+  const deleteFileCache = async (fileId: number) => {
+    await doDeleteFileCache(fileId);
+    fileCache = fileCache?.filter(({ index }) => index.fileId !== fileId);
+  };
 
   onMount(() => {
     fileCache = getFileCacheIndex()
@@ -45,7 +50,7 @@
       </div>
       <div class="space-y-2">
         {#each fileCache as { index, fileInfo }}
-          <File {index} info={fileInfo} />
+          <File {index} info={fileInfo} onDeleteClick={deleteFileCache} />
         {/each}
       </div>
     </div>

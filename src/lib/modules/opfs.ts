@@ -18,31 +18,32 @@ const getFileHandle = async (path: string, create = true) => {
 
   try {
     let directoryHandle: FileSystemDirectoryHandle = rootHandle;
-
     for (const part of parts.slice(0, -1)) {
       if (!part) continue;
       directoryHandle = await directoryHandle.getDirectoryHandle(part, { create });
     }
 
-    return directoryHandle.getFileHandle(parts[parts.length - 1]!, { create });
+    const filename = parts[parts.length - 1]!;
+    const fileHandle = await directoryHandle.getFileHandle(filename, { create });
+    return { parentHandle: directoryHandle, filename, fileHandle };
   } catch (e) {
     if (e instanceof DOMException && e.name === "NotFoundError") {
-      return null;
+      return {};
     }
     throw e;
   }
 };
 
-export const readFileFromOpfs = async (path: string) => {
-  const fileHandle = await getFileHandle(path, false);
+export const readFile = async (path: string) => {
+  const { fileHandle } = await getFileHandle(path, false);
   if (!fileHandle) return null;
 
   const file = await fileHandle.getFile();
   return await file.arrayBuffer();
 };
 
-export const writeFileToOpfs = async (path: string, data: ArrayBuffer) => {
-  const fileHandle = await getFileHandle(path);
+export const writeFile = async (path: string, data: ArrayBuffer) => {
+  const { fileHandle } = await getFileHandle(path);
   const writable = await fileHandle!.createWritable();
 
   try {
@@ -50,4 +51,11 @@ export const writeFileToOpfs = async (path: string, data: ArrayBuffer) => {
   } finally {
     await writable.close();
   }
+};
+
+export const deleteFile = async (path: string) => {
+  const { parentHandle, filename } = await getFileHandle(path, false);
+  if (!parentHandle) return;
+
+  await parentHandle.removeEntry(filename);
 };

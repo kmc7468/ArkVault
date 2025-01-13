@@ -6,14 +6,15 @@
 
   import IconDraft from "~icons/material-symbols/draft";
   import IconScanDelete from "~icons/material-symbols/scan-delete";
-  // import IconDelete from "~icons/material-symbols/delete";
+  import IconDelete from "~icons/material-symbols/delete";
 
   interface Props {
     index: FileCacheIndex;
     info: Writable<FileInfo | null>;
+    onDeleteClick: (fileId: number) => void;
   }
 
-  let { index, info }: Props = $props();
+  let { index, info, onDeleteClick }: Props = $props();
 </script>
 
 <div class="flex h-14 items-center gap-x-4 p-2">
@@ -36,7 +37,10 @@
       읽음 {formatDate(index.lastRetrievedAt)} · {formatFileSize(index.size)}
     </p>
   </div>
-  <!-- <button class="flex-shrink-0 rounded-full p-1 active:bg-gray-100">
+  <button
+    onclick={() => setTimeout(() => onDeleteClick(index.fileId), 100)}
+    class="flex-shrink-0 rounded-full p-1 active:bg-gray-100"
+  >
     <IconDelete class="text-lg text-gray-600" />
-  </button> -->
+  </button>
 </div>

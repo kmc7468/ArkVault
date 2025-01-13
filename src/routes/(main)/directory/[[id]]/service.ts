@@ -1,6 +1,7 @@
 import ExifReader from "exifreader";
 import { callGetApi, callPostApi } from "$lib/hooks";
 import { storeHmacSecrets } from "$lib/indexedDB";
+import { deleteFileCache } from "$lib/modules/cache";
 import {
   encodeToBase64,
   generateDataKey,
@@ -191,4 +192,5 @@ export const requestDirectoryEntryRename = async (
 
 export const requestDirectoryEntryDeletion = async (entry: SelectedDirectoryEntry) => {
   await callPostApi(`/api/${entry.type}/${entry.id}/delete`);
+  await deleteFileCache(entry.id);
 };
