@@ -1,6 +1,7 @@
-import { error, text } from "@sveltejs/kit";
+import { error, json } from "@sveltejs/kit";
 import { z } from "zod";
 import { authorize } from "$lib/server/modules/auth";
+import { directoryDeleteResponse, type DirectoryDeleteResponse } from "$lib/server/schemas";
 import { deleteDirectory } from "$lib/server/services/directory";
 import type { RequestHandler } from "./$types";
 
@@ -15,6 +16,8 @@ export const POST: RequestHandler = async ({ locals, params }) => {
   if (!zodRes.success) error(400, "Invalid path parameters");
   const { id } = zodRes.data;
 
-  await deleteDirectory(userId, id);
-  return text("Directory deleted", { headers: { "Content-Type": "text/plain" } });
+  const { files } = await deleteDirectory(userId, id);
+  return json(
+    directoryDeleteResponse.parse({ deletedFiles: files } satisfies DirectoryDeleteResponse),
+  );
 };

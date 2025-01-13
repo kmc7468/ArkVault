@@ -29,7 +29,12 @@
         fileInfo: getFileInfo(index.fileId, $masterKeyStore?.get(1)?.key!),
       }))
       .sort((a, b) => a.index.lastRetrievedAt.getTime() - b.index.lastRetrievedAt.getTime());
-    fileCacheTotalSize = fileCache.reduce((acc, { index }) => acc + index.size, 0);
+  });
+
+  $effect(() => {
+    if (fileCache) {
+      fileCacheTotalSize = fileCache.reduce((acc, { index }) => acc + index.size, 0);
+    }
   });
 </script>
 
@@ -39,7 +44,7 @@
 
 <div class="flex h-full flex-col">
   <TopBar title="캐시" />
-  {#if fileCache}
+  {#if fileCache && fileCache.length > 0}
     <div class="space-y-4 pb-4">
       <div class="space-y-1 break-keep text-gray-800">
         <p>
@@ -56,7 +61,13 @@
     </div>
   {:else}
     <div class="flex flex-grow items-center justify-center">
-      <p class="text-gray-500">캐시 목록을 불러오고 있어요.</p>
+      <p class="text-gray-500">
+        {#if fileCache}
+          캐시된 파일이 없어요.
+        {:else}
+          캐시 목록을 불러오고 있어요.
+        {/if}
+      </p>
     </div>
   {/if}
 </div>

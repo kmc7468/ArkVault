@@ -19,6 +19,7 @@ import type {
   HmacSecretListResponse,
   DuplicateFileScanRequest,
   DuplicateFileScanResponse,
+  DirectoryDeleteResponse,
 } from "$lib/server/schemas";
 import { hmacSecretStore, type MasterKey, type HmacSecret } from "$lib/stores";
 
@@ -191,6 +192,15 @@ export const requestDirectoryEntryRename = async (
 };
 
 export const requestDirectoryEntryDeletion = async (entry: SelectedDirectoryEntry) => {
-  await callPostApi(`/api/${entry.type}/${entry.id}/delete`);
-  await deleteFileCache(entry.id);
+  const res = await callPostApi(`/api/${entry.type}/${entry.id}/delete`);
+  if (!res.ok) return false;
+
+  if (entry.type === "directory") {
+    const { deletedFiles }: DirectoryDeleteResponse = await res.json();
+    await Promise.all(deletedFiles.map(deleteFileCache));
+    return true;
+  } else {
+    await deleteFileCache(entry.id);
+    return true;
+  }
 };

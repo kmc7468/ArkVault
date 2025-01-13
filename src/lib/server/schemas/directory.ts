@@ -15,6 +15,11 @@ export const directoryInfoResponse = z.object({
 });
 export type DirectoryInfoResponse = z.infer<typeof directoryInfoResponse>;
 
+export const directoryDeleteResponse = z.object({
+  deletedFiles: z.number().int().positive().array(),
+});
+export type DirectoryDeleteResponse = z.infer<typeof directoryDeleteResponse>;
+
 export const directoryRenameRequest = z.object({
   dekVersion: z.string().datetime(),
   name: z.string().base64().nonempty(),

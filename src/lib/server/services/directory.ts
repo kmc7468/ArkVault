@@ -34,8 +34,13 @@ export const getDirectoryInformation = async (userId: number, directoryId: "root
 
 export const deleteDirectory = async (userId: number, directoryId: number) => {
   try {
-    const filePaths = await unregisterDirectory(userId, directoryId);
-    filePaths.map((path) => unlink(path)); // Intended
+    const files = await unregisterDirectory(userId, directoryId);
+    return {
+      files: files.map(({ id, path }) => {
+        unlink(path); // Intended
+        return id;
+      }),
+    };
   } catch (e) {
     if (e instanceof IntegrityError && e.message === "Directory not found") {
       error(404, "Invalid directory id");

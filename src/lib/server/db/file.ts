@@ -129,14 +129,15 @@ export const unregisterDirectory = async (userId: number, directoryId: number) =
   return await db.transaction(
     async (tx) => {
       const unregisterFiles = async (parentId: number) => {
-        const files = await tx
+        return await tx
           .delete(file)
           .where(and(eq(file.userId, userId), eq(file.parentId, parentId)))
-          .returning({ path: file.path });
-        return files.map(({ path }) => path);
+          .returning({ id: file.id, path: file.path });
       };
-      const unregisterDirectoryRecursively = async (directoryId: number): Promise<string[]> => {
-        const filePaths = await unregisterFiles(directoryId);
+      const unregisterDirectoryRecursively = async (
+        directoryId: number,
+      ): Promise<{ id: number; path: string }[]> => {
+        const files = await unregisterFiles(directoryId);
         const subDirectories = await tx
           .select({ id: directory.id })
           .from(directory)
@@ -149,7 +150,7 @@ export const unregisterDirectory = async (userId: number, directoryId: number) =
         if (deleteRes.changes === 0) {
           throw new IntegrityError("Directory not found");
         }
-        return filePaths.concat(...subDirectoryFilePaths);
+        return files.concat(...subDirectoryFilePaths);
       };
       return await unregisterDirectoryRecursively(directoryId);
     },
