@@ -42,7 +42,9 @@ export const storeFileCache = async (fileId: number, fileBuffer: ArrayBuffer) =>
 };
 
 export const deleteFileCache = async (fileId: number) => {
-  await deleteFile(`/cache/${fileId}`);
+  if (!fileCacheIndex.has(fileId)) return;
+
   fileCacheIndex.delete(fileId);
+  await deleteFile(`/cache/${fileId}`);
   await deleteFileCacheIndex(fileId);
 };
