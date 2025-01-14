@@ -13,6 +13,8 @@ COPY . .
 RUN pnpm install --offline
 RUN pnpm build
 
+RUN sed -i "s/http\.createServer()/http.createServer({ requestTimeout: 0 })/g" ./build/index.js
+
 # Deploy Stage
 FROM base
 RUN pnpm fetch --prod
