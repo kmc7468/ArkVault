@@ -66,9 +66,9 @@
         info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!);
         window.alert("파일이 업로드되었어요.");
       })
-      .catch(() => {
+      .catch((e: Error) => {
         // TODO: FIXME
-        window.alert("파일 업로드에 실패했어요.");
+        window.alert(`파일 업로드에 실패했어요.\n${e.message}`);
       });
   };
 

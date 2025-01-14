@@ -115,10 +115,8 @@ export const uploadFile = async (
   } catch (e) {
     await safeUnlink(path);
 
-    if (e instanceof IntegrityError) {
-      if (e.message === "Inactive MEK version") {
-        error(400, "Invalid MEK version");
-      }
+    if (e instanceof IntegrityError && e.message === "Inactive MEK version") {
+      error(400, "Invalid MEK version");
     }
     throw e;
   }
