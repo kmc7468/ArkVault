@@ -50,6 +50,7 @@
     "vite": "^5.4.11"
   },
   "dependencies": {
+    "@fastify/busboy": "^3.1.1",
     "argon2": "^0.41.1",
     "better-sqlite3": "^11.7.2",
     "drizzle-orm": "^0.33.0",

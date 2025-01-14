@@ -2,7 +2,8 @@ import { error } from "@sveltejs/kit";
 import { createReadStream, createWriteStream } from "fs";
 import { mkdir, stat, unlink } from "fs/promises";
 import { dirname } from "path";
-import { Readable, Writable } from "stream";
+import { Readable } from "stream";
+import { pipeline } from "stream/promises";
 import { v4 as uuidv4 } from "uuid";
 import { IntegrityError } from "$lib/server/db/error";
 import {
@@ -94,7 +95,7 @@ const safeUnlink = async (path: string) => {
 
 export const uploadFile = async (
   params: Omit<NewFileParams, "path">,
-  encContentStream: ReadableStream<Uint8Array>,
+  encContentStream: Readable,
 ) => {
   const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
   const oneMinuteLater = new Date(Date.now() + 60 * 1000);
@@ -106,9 +107,7 @@ export const uploadFile = async (
   await mkdir(dirname(path), { recursive: true });
 
   try {
-    await encContentStream.pipeTo(
-      Writable.toWeb(createWriteStream(path, { flags: "wx", mode: 0o600 })),
-    );
+    await pipeline(encContentStream, createWriteStream(path, { flags: "wx", mode: 0o600 }));
     await registerFile({
       ...params,
       path,
