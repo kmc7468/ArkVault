@@ -1,6 +1,5 @@
 <script lang="ts">
   import FileSaver from "file-saver";
-  import heic2any from "heic2any";
   import { untrack } from "svelte";
   import type { Writable } from "svelte/store";
   import { TopBar } from "$lib/components";
@@ -41,6 +40,7 @@
         requestFileDownload(data.id, $info.contentIv, $info.dataKey).then(async (res) => {
           content = new Blob([res], { type: $info.contentType });
           if (content.type === "image/heic" || content.type === "image/heif") {
+            const { default: heic2any } = await import("heic2any");
             contentUrl = URL.createObjectURL(
               (await heic2any({ blob: content, toType: "image/jpeg" })) as Blob,
             );

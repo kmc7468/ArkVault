@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { saveAs } from "file-saver";
+  import FileSaver from "file-saver";
   import { goto } from "$app/navigation";
   import { Button, TextButton } from "$lib/components/buttons";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
@@ -31,7 +31,7 @@
     const clientKeysBlob = new Blob([JSON.stringify(clientKeysSerialized)], {
       type: "application/json",
     });
-    saveAs(clientKeysBlob, "arkvault-clientkey.json");
+    FileSaver.saveAs(clientKeysBlob, "arkvault-clientkey.json");
 
     if (!isBeforeContinueBottomSheetOpen) {
       setTimeout(() => {
