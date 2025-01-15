@@ -1,11 +1,18 @@
 <script lang="ts">
   import { untrack } from "svelte";
-  import type { Writable } from "svelte/store";
+  import { get, type Writable } from "svelte/store";
   import { getDirectoryInfo, getFileInfo } from "$lib/modules/file";
-  import { masterKeyStore, type DirectoryInfo, type FileInfo } from "$lib/stores";
+  import {
+    fileUploadStatusStore,
+    masterKeyStore,
+    type DirectoryInfo,
+    type FileInfo,
+    type FileUploadStatus,
+  } from "$lib/stores";
   import File from "./File.svelte";
   import SubDirectory from "./SubDirectory.svelte";
   import { SortBy, sortEntries } from "./service";
+  import UploadingFile from "./UploadingFile.svelte";
   import type { SelectedDirectoryEntry } from "../service";
 
   interface Props {
@@ -17,37 +24,102 @@
 
   let { info, onEntryClick, onEntryMenuClick, sortBy = SortBy.NAME_ASC }: Props = $props();
 
-  let subDirectoryInfos: Writable<DirectoryInfo | null>[] = $state([]);
-  let fileInfos: Writable<FileInfo | null>[] = $state([]);
+  interface DirectoryEntry {
+    name?: string;
+    info: Writable<DirectoryInfo | null>;
+  }
+
+  type FileEntry =
+    | {
+        type: "file";
+        name?: string;
+        info: Writable<FileInfo | null>;
+      }
+    | {
+        type: "uploading-file";
+        name: string;
+        info: Writable<FileUploadStatus>;
+      };
+
+  let subDirectories: DirectoryEntry[] = $state([]);
+  let files: FileEntry[] = $state([]);
 
   $effect(() => {
     // TODO: Fix duplicated requests
 
-    subDirectoryInfos = info.subDirectoryIds.map((id) =>
-      getDirectoryInfo(id, $masterKeyStore?.get(1)?.key!),
-    );
-    fileInfos = info.fileIds.map((id) => getFileInfo(id, $masterKeyStore?.get(1)?.key!));
+    subDirectories = info.subDirectoryIds.map((id) => {
+      const info = getDirectoryInfo(id, $masterKeyStore?.get(1)?.key!);
+      return { name: get(info)?.name, info };
+    });
+    files = info.fileIds
+      .map((id): FileEntry => {
+        const info = getFileInfo(id, $masterKeyStore?.get(1)?.key!);
+        return {
+          type: "file",
+          name: get(info)?.name,
+          info,
+        };
+      })
+      .concat(
+        $fileUploadStatusStore
+          .filter((statusStore) => {
+            const status = get(statusStore);
+            return (
+              status.parentId === info.id &&
+              status.status !== "uploaded" &&
+              status.status !== "canceled" &&
+              status.status !== "error"
+            );
+          })
+          .map(
+            (status): FileEntry => ({
+              type: "uploading-file",
+              name: get(status).name,
+              info: status,
+            }),
+          ),
+      );
 
     const sort = () => {
-      sortEntries(subDirectoryInfos, sortBy);
-      sortEntries(fileInfos, sortBy);
+      sortEntries(subDirectories, sortBy);
+      sortEntries(files, sortBy);
     };
+    sort();
+
     return untrack(() => {
-      const unsubscribes = subDirectoryInfos
-        .map((subDirectoryInfo) => subDirectoryInfo.subscribe(sort))
-        .concat(fileInfos.map((fileInfo) => fileInfo.subscribe(sort)));
+      const unsubscribes = subDirectories
+        .map((subDirectory) =>
+          subDirectory.info.subscribe((value) => {
+            if (subDirectory.name === value?.name) return;
+            subDirectory.name = value?.name;
+            sort();
+          }),
+        )
+        .concat(
+          files.map((file) =>
+            file.info.subscribe((value) => {
+              if (file.name === value?.name) return;
+              file.name = value?.name;
+              sort();
+            }),
+          ),
+        );
       return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
     });
   });
 </script>
 
-{#if info.subDirectoryIds.length + info.fileIds.length > 0}
+{#if subDirectories.length + files.length > 0}
   <div class="pb-[4.5rem]">
-    {#each subDirectoryInfos as subDirectory}
-      <SubDirectory info={subDirectory} onclick={onEntryClick} onOpenMenuClick={onEntryMenuClick} />
+    {#each subDirectories as { info }}
+      <SubDirectory {info} onclick={onEntryClick} onOpenMenuClick={onEntryMenuClick} />
     {/each}
-    {#each fileInfos as file}
-      <File info={file} onclick={onEntryClick} onOpenMenuClick={onEntryMenuClick} />
+    {#each files as file}
+      {#if file.type === "file"}
+        <File info={file.info} onclick={onEntryClick} onOpenMenuClick={onEntryMenuClick} />
+      {:else}
+        <UploadingFile info={file.info} />
+      {/if}
     {/each}
   </div>
 {:else}
