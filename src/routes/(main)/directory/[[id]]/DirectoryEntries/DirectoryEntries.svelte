@@ -84,9 +84,9 @@
       sortEntries(subDirectories, sortBy);
       sortEntries(files, sortBy);
     };
-    sort();
-
     return untrack(() => {
+      sort();
+
       const unsubscribes = subDirectories
         .map((subDirectory) =>
           subDirectory.info.subscribe((value) => {
