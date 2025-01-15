@@ -16,7 +16,6 @@
   import {
     requestHmacSecretDownload,
     requestDirectoryCreation,
-    requestDuplicateFileScan,
     requestFileUpload,
     requestDirectoryEntryRename,
     requestDirectoryEntryDeletion,
@@ -25,17 +24,11 @@
 
   import IconAdd from "~icons/material-symbols/add";
 
-  interface LoadedFile {
-    file: File;
-    fileBuffer: ArrayBuffer;
-    fileSigned: string;
-  }
-
   let { data } = $props();
 
   let info: Writable<DirectoryInfo | null> | undefined = $state();
   let fileInput: HTMLInputElement | undefined = $state();
-  let loadedFile: LoadedFile | undefined = $state();
+  let resolveForDuplicateFileModal: ((res: boolean) => void) | undefined = $state();
   let selectedEntry: SelectedDirectoryEntry | undefined = $state();
 
   let isCreateBottomSheetOpen = $state(false);
@@ -52,41 +45,30 @@
     info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
   };
 
-  const uploadFile = (loadedFile: LoadedFile) => {
-    requestFileUpload(
-      loadedFile.file,
-      loadedFile.fileBuffer,
-      loadedFile.fileSigned,
-      data.id,
-      $masterKeyStore?.get(1)!,
-      $hmacSecretStore?.get(1)!,
-    )
-      .then(() => {
+  const uploadFile = () => {
+    const file = fileInput?.files?.[0];
+    if (!file) return;
+
+    fileInput!.value = "";
+
+    requestFileUpload(file, data.id, $hmacSecretStore?.get(1)!, $masterKeyStore?.get(1)!, () => {
+      return new Promise((resolve) => {
+        resolveForDuplicateFileModal = resolve;
+        isDuplicateFileModalOpen = true;
+      });
+    })
+      .then((res) => {
+        if (!res) return;
+
         // TODO: FIXME
         info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!);
         window.alert("파일이 업로드되었어요.");
       })
       .catch((e: Error) => {
         // TODO: FIXME
+        console.error(e);
         window.alert(`파일 업로드에 실패했어요.\n${e.message}`);
       });
-  };
-
-  const loadAndUploadFile = async () => {
-    const file = fileInput?.files?.[0];
-    if (!file) return;
-
-    fileInput!.value = "";
-
-    const scanRes = await requestDuplicateFileScan(file, $hmacSecretStore?.get(1)!);
-    if (scanRes === null) {
-      throw new Error("Failed to scan duplicate files");
-    } else if (scanRes.isDuplicate) {
-      loadedFile = { ...scanRes, file };
-      isDuplicateFileModalOpen = true;
-    } else {
-      uploadFile({ ...scanRes, file });
-    }
   };
 
   onMount(async () => {
@@ -104,7 +86,7 @@
   <title>파일</title>
 </svelte:head>
 
-<input bind:this={fileInput} onchange={loadAndUploadFile} type="file" class="hidden" />
+<input bind:this={fileInput} onchange={uploadFile} type="file" class="hidden" />
 
 <div class="flex min-h-full flex-col px-4">
   {#if data.id !== "root"}
@@ -148,13 +130,14 @@
 <DuplicateFileModal
   bind:isOpen={isDuplicateFileModalOpen}
   onclose={() => {
+    resolveForDuplicateFileModal?.(false);
+    resolveForDuplicateFileModal = undefined;
     isDuplicateFileModalOpen = false;
-    loadedFile = undefined;
   }}
   onDuplicateClick={() => {
-    uploadFile(loadedFile!);
+    resolveForDuplicateFileModal?.(true);
+    resolveForDuplicateFileModal = undefined;
     isDuplicateFileModalOpen = false;
-    loadedFile = undefined;
   }}
 />
 

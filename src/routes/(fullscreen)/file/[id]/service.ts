@@ -1,4 +1,4 @@
-import { getFileCache, storeFileCache } from "$lib/modules/cache";
+import { getFileCache, storeFileCache } from "$lib/modules/file";
 import { decryptData } from "$lib/modules/crypto";
 
 export const requestFileDownload = async (

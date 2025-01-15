@@ -1,4 +1,4 @@
-import { deleteFileCache as doDeleteFileCache } from "$lib/modules/cache";
+import { deleteFileCache as doDeleteFileCache } from "$lib/modules/file";
 
 export { formatDate, formatFileSize } from "$lib/modules/util";
 
