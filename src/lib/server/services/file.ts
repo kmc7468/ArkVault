@@ -97,9 +97,9 @@ export const uploadFile = async (
   params: Omit<NewFileParams, "path">,
   encContentStream: Readable,
 ) => {
-  const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const oneMinuteLater = new Date(Date.now() + 60 * 1000);
-  if (params.dekVersion <= oneMinuteAgo || params.dekVersion >= oneMinuteLater) {
+  if (params.dekVersion <= oneDayAgo || params.dekVersion >= oneMinuteLater) {
     error(400, "Invalid DEK version");
   }
 

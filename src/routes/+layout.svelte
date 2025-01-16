@@ -1,10 +1,27 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { get } from "svelte/store";
   import { goto as svelteGoto } from "$app/navigation";
-  import { clientKeyStore, masterKeyStore } from "$lib/stores";
+  import { fileUploadStatusStore, clientKeyStore, masterKeyStore } from "$lib/stores";
   import "../app.css";
 
   let { children } = $props();
+
+  const checkFileUploadStatus = (e: BeforeUnloadEvent) => {
+    if (
+      $fileUploadStatusStore.some((statusStore) => {
+        const status = get(statusStore);
+        return (
+          status.status === "encryption-pending" ||
+          status.status === "encrypting" ||
+          status.status === "upload-pending" ||
+          status.status === "uploading"
+        );
+      })
+    ) {
+      e.preventDefault();
+    }
+  };
 
   onMount(async () => {
     const goto = async (url: string) => {
@@ -23,5 +40,7 @@
     }
   });
 </script>
+
+<svelte:window onbeforeunload={checkFileUploadStatus} />
 
 {@render children()}
