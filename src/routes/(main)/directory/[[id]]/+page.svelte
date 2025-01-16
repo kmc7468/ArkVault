@@ -29,6 +29,7 @@
   let info: Writable<DirectoryInfo | null> | undefined = $state();
   let fileInput: HTMLInputElement | undefined = $state();
   let resolveForDuplicateFileModal: ((res: boolean) => void) | undefined = $state();
+  let duplicatedFile: File | undefined = $state();
   let selectedEntry: SelectedDirectoryEntry | undefined = $state();
 
   let isCreateBottomSheetOpen = $state(false);
@@ -46,29 +47,32 @@
   };
 
   const uploadFile = () => {
-    const file = fileInput?.files?.[0];
-    if (!file) return;
+    const files = fileInput?.files;
+    if (!files || files.length === 0) return;
+
+    for (const file of files) {
+      requestFileUpload(file, data.id, $hmacSecretStore?.get(1)!, $masterKeyStore?.get(1)!, () => {
+        return new Promise((resolve) => {
+          resolveForDuplicateFileModal = resolve;
+          duplicatedFile = file;
+          isDuplicateFileModalOpen = true;
+        });
+      })
+        .then((res) => {
+          if (!res) return;
+
+          // TODO: FIXME
+          info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!);
+          window.alert(`'${file.name}' 파일이 업로드되었어요.`);
+        })
+        .catch((e: Error) => {
+          // TODO: FIXME
+          console.error(e);
+          window.alert(`'${file.name}' 파일 업로드에 실패했어요.\n${e.message}`);
+        });
+    }
 
     fileInput!.value = "";
-
-    requestFileUpload(file, data.id, $hmacSecretStore?.get(1)!, $masterKeyStore?.get(1)!, () => {
-      return new Promise((resolve) => {
-        resolveForDuplicateFileModal = resolve;
-        isDuplicateFileModalOpen = true;
-      });
-    })
-      .then((res) => {
-        if (!res) return;
-
-        // TODO: FIXME
-        info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!);
-        window.alert("파일이 업로드되었어요.");
-      })
-      .catch((e: Error) => {
-        // TODO: FIXME
-        console.error(e);
-        window.alert(`파일 업로드에 실패했어요.\n${e.message}`);
-      });
   };
 
   onMount(async () => {
@@ -86,7 +90,7 @@
   <title>파일</title>
 </svelte:head>
 
-<input bind:this={fileInput} onchange={uploadFile} type="file" class="hidden" />
+<input bind:this={fileInput} onchange={uploadFile} type="file" multiple class="hidden" />
 
 <div class="flex min-h-full flex-col px-4">
   {#if data.id !== "root"}
@@ -129,14 +133,17 @@
 <CreateDirectoryModal bind:isOpen={isCreateDirectoryModalOpen} onCreateClick={createDirectory} />
 <DuplicateFileModal
   bind:isOpen={isDuplicateFileModalOpen}
+  file={duplicatedFile}
   onclose={() => {
     resolveForDuplicateFileModal?.(false);
     resolveForDuplicateFileModal = undefined;
+    duplicatedFile = undefined;
     isDuplicateFileModalOpen = false;
   }}
   onDuplicateClick={() => {
     resolveForDuplicateFileModal?.(true);
     resolveForDuplicateFileModal = undefined;
+    duplicatedFile = undefined;
     isDuplicateFileModalOpen = false;
   }}
 />
