@@ -1,5 +1,5 @@
-import { getFileCache, storeFileCache } from "$lib/modules/file";
-import { decryptData } from "$lib/modules/crypto";
+import { getFileCache, storeFileCache, downloadFile } from "$lib/modules/file";
+import { formatFileSize } from "$lib/modules/util";
 
 export const requestFileDownload = async (
   fileId: number,
@@ -9,28 +9,15 @@ export const requestFileDownload = async (
   const cache = await getFileCache(fileId);
   if (cache) return cache;
 
-  return new Promise<ArrayBuffer>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.responseType = "arraybuffer";
+  const fileBuffer = await downloadFile(fileId, fileEncryptedIv, dataKey);
+  storeFileCache(fileId, fileBuffer); // Intended
+  return fileBuffer;
+};
 
-    xhr.addEventListener("load", async () => {
-      if (xhr.status !== 200) {
-        reject(new Error("Failed to download file"));
-        return;
-      }
+export const formatDownloadProgress = (progress?: number) => {
+  return `${Math.floor((progress ?? 0) * 100)}%`;
+};
 
-      const fileDecrypted = await decryptData(
-        xhr.response as ArrayBuffer,
-        fileEncryptedIv,
-        dataKey,
-      );
-      resolve(fileDecrypted);
-      await storeFileCache(fileId, fileDecrypted);
-    });
-
-    // TODO: Progress, ...
-
-    xhr.open("GET", `/api/file/${fileId}/download`);
-    xhr.send();
-  });
+export const formatDownloadRate = (rate?: number) => {
+  return `${formatFileSize((rate ?? 0) / 8)}/s`;
 };

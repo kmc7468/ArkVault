@@ -120,7 +120,7 @@ const encryptFile = limitFunction(
   { concurrency: 4 },
 );
 
-const uploadFileInternal = limitFunction(
+const requestFileUpload = limitFunction(
   async (status: Writable<FileUploadStatus>, form: FormData) => {
     status.update((value) => {
       value.status = "uploading";
@@ -209,7 +209,7 @@ export const uploadFile = async (
     );
     form.set("content", new Blob([fileEncrypted.ciphertext]));
 
-    await uploadFileInternal(status, form);
+    await requestFileUpload(status, form);
     return true;
   } catch (e) {
     status.update((value) => {

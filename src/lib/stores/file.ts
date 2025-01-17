@@ -15,4 +15,22 @@ export interface FileUploadStatus {
   estimated?: number;
 }
 
+export interface FileDownloadStatus {
+  id: number;
+  status:
+    | "download-pending"
+    | "downloading"
+    | "decryption-pending"
+    | "decrypting"
+    | "decrypted"
+    | "canceled"
+    | "error";
+  progress?: number;
+  rate?: number;
+  estimated?: number;
+  result?: ArrayBuffer;
+}
+
 export const fileUploadStatusStore = writable<Writable<FileUploadStatus>[]>([]);
+
+export const fileDownloadStatusStore = writable<Writable<FileDownloadStatus>[]>([]);
