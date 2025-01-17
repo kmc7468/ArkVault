@@ -1,5 +1,5 @@
 import type { ClientInit } from "@sveltejs/kit";
-import { getClientKey, getMasterKeys, getHmacSecrets } from "$lib/indexedDB";
+import { cleanupDanglingInfos, getClientKey, getMasterKeys, getHmacSecrets } from "$lib/indexedDB";
 import { prepareFileCache } from "$lib/modules/file";
 import { prepareOpfs } from "$lib/modules/opfs";
 import { clientKeyStore, masterKeyStore, hmacSecretStore } from "$lib/stores";
@@ -38,4 +38,6 @@ export const init: ClientInit = async () => {
     prepareHmacSecretStore(),
     prepareOpfs(),
   ]);
+
+  cleanupDanglingInfos(); // Intended
 };

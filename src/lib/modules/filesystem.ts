@@ -4,9 +4,11 @@ import {
   getDirectoryInfos as getDirectoryInfosFromIndexedDB,
   getDirectoryInfo as getDirectoryInfoFromIndexedDB,
   storeDirectoryInfo,
+  deleteDirectoryInfo,
   getFileInfos as getFileInfosFromIndexedDB,
   getFileInfo as getFileInfoFromIndexedDB,
   storeFileInfo,
+  deleteFileInfo,
   type DirectoryId,
 } from "$lib/indexedDB";
 import { unwrapDataKey, decryptString } from "$lib/modules/crypto";
@@ -72,7 +74,13 @@ const fetchDirectoryInfoFromServer = async (
   masterKey: CryptoKey,
 ) => {
   const res = await callGetApi(`/api/directory/${id}`);
-  if (!res.ok) throw new Error("Failed to fetch directory information"); // TODO: Handle 404
+  if (res.status === 404) {
+    info.set(null);
+    await deleteDirectoryInfo(id as number);
+  } else if (!res.ok) {
+    throw new Error("Failed to fetch directory information");
+  }
+
   const {
     metadata,
     subDirectories: subDirectoryIds,
@@ -138,10 +146,16 @@ const fetchFileInfoFromServer = async (
   masterKey: CryptoKey,
 ) => {
   const res = await callGetApi(`/api/file/${id}`);
-  if (!res.ok) throw new Error("Failed to fetch file information"); // TODO: Handle 404
-  const metadata: FileInfoResponse = await res.json();
+  if (res.status === 404) {
+    info.set(null);
+    await deleteFileInfo(id);
+  } else if (!res.ok) {
+    throw new Error("Failed to fetch file information");
+  }
 
+  const metadata: FileInfoResponse = await res.json();
   const { dataKey } = await unwrapDataKey(metadata.dek, masterKey);
+
   const name = await decryptString(metadata.name, metadata.nameIv, dataKey);
   const createdAt =
     metadata.createdAt && metadata.createdAtIv
