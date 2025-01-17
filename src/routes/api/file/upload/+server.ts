@@ -12,7 +12,7 @@ const parseFileMetadata = (userId: number, json: string) => {
   const zodRes = fileUploadRequest.safeParse(JSON.parse(json));
   if (!zodRes.success) error(400, "Invalid request body");
   const {
-    parentId,
+    parent,
     mekVersion,
     dek,
     dekVersion,
@@ -32,7 +32,7 @@ const parseFileMetadata = (userId: number, json: string) => {
 
   return {
     userId,
-    parentId,
+    parentId: parent,
     mekVersion,
     encDek: dek,
     dekVersion: new Date(dekVersion),

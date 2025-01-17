@@ -19,9 +19,9 @@ export const getDirectoryInformation = async (userId: number, directoryId: "root
 
   const directories = await getAllDirectoriesByParent(userId, directoryId);
   const files = await getAllFilesByParent(userId, directoryId);
-
   return {
     metadata: directory && {
+      parentId: directory.parentId ?? ("root" as const),
       mekVersion: directory.mekVersion,
       encDek: directory.encDek,
       dekVersion: directory.dekVersion,

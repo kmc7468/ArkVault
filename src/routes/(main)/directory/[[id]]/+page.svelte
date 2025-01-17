@@ -4,8 +4,8 @@
   import { goto } from "$app/navigation";
   import { TopBar } from "$lib/components";
   import { FloatingButton } from "$lib/components/buttons";
-  import { getDirectoryInfo } from "$lib/modules/file";
-  import { masterKeyStore, hmacSecretStore, type DirectoryInfo } from "$lib/stores";
+  import { getDirectoryInfo, type DirectoryInfo } from "$lib/modules/filesystem";
+  import { masterKeyStore, hmacSecretStore } from "$lib/stores";
   import CreateBottomSheet from "./CreateBottomSheet.svelte";
   import CreateDirectoryModal from "./CreateDirectoryModal.svelte";
   import DeleteDirectoryEntryModal from "./DeleteDirectoryEntryModal.svelte";

@@ -191,7 +191,7 @@ export const uploadFile = async (
     form.set(
       "metadata",
       JSON.stringify({
-        parentId,
+        parent: parentId,
         mekVersion: masterKey.version,
         dek: dataKeyWrapped,
         dekVersion: dataKeyVersion.toISOString(),

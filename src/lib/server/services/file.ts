@@ -23,6 +23,7 @@ export const getFileInformation = async (userId: number, fileId: number) => {
   }
 
   return {
+    parentId: file.parentId ?? ("root" as const),
     mekVersion: file.mekVersion,
     encDek: file.encDek,
     dekVersion: file.dekVersion,

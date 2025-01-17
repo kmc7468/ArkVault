@@ -20,6 +20,7 @@ export const GET: RequestHandler = async ({ locals, params }) => {
   return json(
     directoryInfoResponse.parse({
       metadata: metadata && {
+        parent: metadata.parentId,
         mekVersion: metadata.mekVersion,
         dek: metadata.encDek,
         dekVersion: metadata.dekVersion.toISOString(),

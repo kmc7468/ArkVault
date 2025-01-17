@@ -47,7 +47,7 @@ export const requestDirectoryCreation = async (
   const { dataKey, dataKeyVersion } = await generateDataKey();
   const nameEncrypted = await encryptString(name, dataKey);
   await callPostApi<DirectoryCreateRequest>("/api/directory/create", {
-    parentId,
+    parent: parentId,
     mekVersion: masterKey.version,
     dek: await wrapDataKey(dataKey, masterKey.key),
     dekVersion: dataKeyVersion.toISOString(),

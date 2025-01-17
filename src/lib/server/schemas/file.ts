@@ -2,6 +2,7 @@ import mime from "mime";
 import { z } from "zod";
 
 export const fileInfoResponse = z.object({
+  parent: z.union([z.enum(["root"]), z.number().int().positive()]),
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
   dekVersion: z.string().datetime(),
@@ -38,7 +39,7 @@ export const duplicateFileScanResponse = z.object({
 export type DuplicateFileScanResponse = z.infer<typeof duplicateFileScanResponse>;
 
 export const fileUploadRequest = z.object({
-  parentId: z.union([z.enum(["root"]), z.number().int().positive()]),
+  parent: z.union([z.enum(["root"]), z.number().int().positive()]),
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
   dekVersion: z.string().datetime(),

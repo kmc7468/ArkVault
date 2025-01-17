@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
   import type { FileCacheIndex } from "$lib/indexedDB";
-  import type { FileInfo } from "$lib/stores";
+  import type { FileInfo } from "$lib/modules/filesystem";
   import { formatDate, formatFileSize } from "./service";
 
   import IconDraft from "~icons/material-symbols/draft";

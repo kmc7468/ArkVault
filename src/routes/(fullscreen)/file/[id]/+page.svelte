@@ -3,8 +3,8 @@
   import { untrack } from "svelte";
   import type { Writable } from "svelte/store";
   import { TopBar } from "$lib/components";
-  import { getFileInfo } from "$lib/modules/file";
-  import { masterKeyStore, type FileInfo } from "$lib/stores";
+  import { getFileInfo, type FileInfo } from "$lib/modules/filesystem";
+  import { masterKeyStore } from "$lib/stores";
   import { requestFileDownload } from "./service";
 
   type ContentType = "image" | "video";
@@ -27,7 +27,7 @@
   });
 
   $effect(() => {
-    if ($info && !isDownloaded) {
+    if ($info?.contentIv && $info?.dataKey && !isDownloaded) {
       untrack(() => {
         isDownloaded = true;
 
@@ -37,7 +37,7 @@
           contentType = "video";
         }
 
-        requestFileDownload(data.id, $info.contentIv, $info.dataKey).then(async (res) => {
+        requestFileDownload(data.id, $info.contentIv!, $info.dataKey!).then(async (res) => {
           content = new Blob([res], { type: $info.contentType });
           if (content.type === "image/heic" || content.type === "image/heif") {
             const { default: heic2any } = await import("heic2any");

@@ -3,8 +3,9 @@
   import type { Writable } from "svelte/store";
   import { TopBar } from "$lib/components";
   import type { FileCacheIndex } from "$lib/indexedDB";
-  import { getFileCacheIndex, getFileInfo } from "$lib/modules/file";
-  import { masterKeyStore, type FileInfo } from "$lib/stores";
+  import { getFileCacheIndex } from "$lib/modules/file";
+  import { getFileInfo, type FileInfo } from "$lib/modules/filesystem";
+  import { masterKeyStore } from "$lib/stores";
   import File from "./File.svelte";
   import { formatFileSize, deleteFileCache as doDeleteFileCache } from "./service";
 

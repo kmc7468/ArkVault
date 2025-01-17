@@ -1,14 +1,13 @@
 <script lang="ts">
   import { untrack } from "svelte";
   import { get, type Writable } from "svelte/store";
-  import { getDirectoryInfo, getFileInfo } from "$lib/modules/file";
   import {
-    fileUploadStatusStore,
-    masterKeyStore,
+    getDirectoryInfo,
+    getFileInfo,
     type DirectoryInfo,
     type FileInfo,
-    type FileUploadStatus,
-  } from "$lib/stores";
+  } from "$lib/modules/filesystem";
+  import { fileUploadStatusStore, masterKeyStore, type FileUploadStatus } from "$lib/stores";
   import File from "./File.svelte";
   import SubDirectory from "./SubDirectory.svelte";
   import { SortBy, sortEntries } from "./service";
@@ -110,7 +109,7 @@
 </script>
 
 {#if subDirectories.length + files.length > 0}
-  <div class="pb-[4.5rem]">
+  <div class="space-y-1 pb-[4.5rem]">
     {#each subDirectories as { info }}
       <SubDirectory {info} onclick={onEntryClick} onOpenMenuClick={onEntryMenuClick} />
     {/each}

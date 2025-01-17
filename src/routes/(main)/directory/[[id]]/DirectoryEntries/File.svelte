@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
-  import type { FileInfo } from "$lib/stores";
+  import type { FileInfo } from "$lib/modules/filesystem";
   import { formatDateTime } from "./service";
   import type { SelectedDirectoryEntry } from "../service";
 
@@ -17,6 +17,8 @@
 
   const openFile = () => {
     const { id, dataKey, dataKeyVersion, name } = $info!;
+    if (!dataKey || !dataKeyVersion) return; // TODO: Error handling
+
     setTimeout(() => {
       onclick({ type: "file", id, dataKey, dataKeyVersion, name });
     }, 100);
@@ -26,6 +28,8 @@
     e.stopPropagation();
 
     const { id, dataKey, dataKeyVersion, name } = $info!;
+    if (!dataKey || !dataKeyVersion) return; // TODO: Error handling
+
     setTimeout(() => {
       onOpenMenuClick({ type: "file", id, dataKey, dataKeyVersion, name });
     }, 100);
