@@ -1,22 +1,13 @@
 import { callGetApi, callPostApi } from "$lib/hooks";
 import { storeHmacSecrets } from "$lib/indexedDB";
-import {
-  encodeToBase64,
-  generateDataKey,
-  wrapDataKey,
-  unwrapHmacSecret,
-  encryptData,
-  encryptString,
-  signMessageHmac,
-} from "$lib/modules/crypto";
+import { generateDataKey, wrapDataKey, unwrapHmacSecret, encryptString } from "$lib/modules/crypto";
+import { deleteFileCache, uploadFile } from "$lib/modules/file";
 import type {
   DirectoryRenameRequest,
   DirectoryCreateRequest,
   FileRenameRequest,
-  FileUploadRequest,
   HmacSecretListResponse,
-  DuplicateFileScanRequest,
-  DuplicateFileScanResponse,
+  DirectoryDeleteResponse,
 } from "$lib/server/schemas";
 import { hmacSecretStore, type MasterKey, type HmacSecret } from "$lib/stores";
 
@@ -56,7 +47,7 @@ export const requestDirectoryCreation = async (
   const { dataKey, dataKeyVersion } = await generateDataKey();
   const nameEncrypted = await encryptString(name, dataKey);
   await callPostApi<DirectoryCreateRequest>("/api/directory/create", {
-    parentId,
+    parent: parentId,
     mekVersion: masterKey.version,
     dek: await wrapDataKey(dataKey, masterKey.key),
     dekVersion: dataKeyVersion.toISOString(),
@@ -65,68 +56,14 @@ export const requestDirectoryCreation = async (
   });
 };
 
-export const requestDuplicateFileScan = async (file: File, hmacSecret: HmacSecret) => {
-  const fileBuffer = await file.arrayBuffer();
-  const fileSigned = encodeToBase64(await signMessageHmac(fileBuffer, hmacSecret.secret));
-  const res = await callPostApi<DuplicateFileScanRequest>("/api/file/scanDuplicates", {
-    hskVersion: hmacSecret.version,
-    contentHmac: fileSigned,
-  });
-  if (!res.ok) return null;
-
-  const { files }: DuplicateFileScanResponse = await res.json();
-  return {
-    fileBuffer,
-    fileSigned,
-    isDuplicate: files.length > 0,
-  };
-};
-
 export const requestFileUpload = async (
   file: File,
-  fileBuffer: ArrayBuffer,
-  fileSigned: string,
   parentId: "root" | number,
-  masterKey: MasterKey,
   hmacSecret: HmacSecret,
+  masterKey: MasterKey,
+  onDuplicate: () => Promise<boolean>,
 ) => {
-  const { dataKey, dataKeyVersion } = await generateDataKey();
-  const nameEncrypted = await encryptString(file.name, dataKey);
-  const fileEncrypted = await encryptData(fileBuffer, dataKey);
-
-  const form = new FormData();
-  form.set(
-    "metadata",
-    JSON.stringify({
-      parentId,
-      mekVersion: masterKey.version,
-      dek: await wrapDataKey(dataKey, masterKey.key),
-      dekVersion: dataKeyVersion.toISOString(),
-      hskVersion: hmacSecret.version,
-      contentHmac: fileSigned,
-      contentType: file.type,
-      contentIv: fileEncrypted.iv,
-      name: nameEncrypted.ciphertext,
-      nameIv: nameEncrypted.iv,
-    } satisfies FileUploadRequest),
-  );
-  form.set("content", new Blob([fileEncrypted.ciphertext]));
-
-  return new Promise<void>((resolve, reject) => {
-    // TODO: Progress, Scheduling, ...
-
-    const xhr = new XMLHttpRequest();
-    xhr.addEventListener("load", () => {
-      if (xhr.status === 200) {
-        resolve();
-      } else {
-        reject(new Error(xhr.responseText));
-      }
-    });
-
-    xhr.open("POST", "/api/file/upload");
-    xhr.send(form);
-  });
+  return await uploadFile(file, parentId, hmacSecret, masterKey, onDuplicate);
 };
 
 export const requestDirectoryEntryRename = async (
@@ -151,5 +88,15 @@ export const requestDirectoryEntryRename = async (
 };
 
 export const requestDirectoryEntryDeletion = async (entry: SelectedDirectoryEntry) => {
-  await callPostApi(`/api/${entry.type}/${entry.id}/delete`);
+  const res = await callPostApi(`/api/${entry.type}/${entry.id}/delete`);
+  if (!res.ok) return false;
+
+  if (entry.type === "directory") {
+    const { deletedFiles }: DirectoryDeleteResponse = await res.json();
+    await Promise.all(deletedFiles.map(deleteFileCache));
+    return true;
+  } else {
+    await deleteFileCache(entry.id);
+    return true;
+  }
 };

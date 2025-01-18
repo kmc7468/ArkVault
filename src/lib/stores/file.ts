@@ -1,31 +1,49 @@
-import type { Writable } from "svelte/store";
+import { writable, type Writable } from "svelte/store";
 
-export type DirectoryInfo =
-  | {
-      id: "root";
-      dataKey?: undefined;
-      dataKeyVersion?: undefined;
-      name?: undefined;
-      subDirectoryIds: number[];
-      fileIds: number[];
-    }
-  | {
-      id: number;
-      dataKey: CryptoKey;
-      dataKeyVersion: Date;
-      name: string;
-      subDirectoryIds: number[];
-      fileIds: number[];
-    };
-
-export interface FileInfo {
-  id: number;
-  dataKey: CryptoKey;
-  dataKeyVersion: Date;
-  contentType: string;
-  contentIv: string;
+export interface FileUploadStatus {
   name: string;
+  parentId: "root" | number;
+  status:
+    | "encryption-pending"
+    | "encrypting"
+    | "upload-pending"
+    | "uploading"
+    | "uploaded"
+    | "canceled"
+    | "error";
+  progress?: number;
+  rate?: number;
+  estimated?: number;
 }
 
-export const directoryInfoStore = new Map<"root" | number, Writable<DirectoryInfo | null>>();
-export const fileInfoStore = new Map<number, Writable<FileInfo | null>>();
+export interface FileDownloadStatus {
+  id: number;
+  status:
+    | "download-pending"
+    | "downloading"
+    | "decryption-pending"
+    | "decrypting"
+    | "decrypted"
+    | "canceled"
+    | "error";
+  progress?: number;
+  rate?: number;
+  estimated?: number;
+  result?: ArrayBuffer;
+}
+
+export const fileUploadStatusStore = writable<Writable<FileUploadStatus>[]>([]);
+
+export const fileDownloadStatusStore = writable<Writable<FileDownloadStatus>[]>([]);
+
+export const isFileUploading = (
+  status: FileUploadStatus["status"],
+): status is "encryption-pending" | "encrypting" | "upload-pending" | "uploading" => {
+  return ["encryption-pending", "encrypting", "upload-pending", "uploading"].includes(status);
+};
+
+export const isFileDownloading = (
+  status: FileDownloadStatus["status"],
+): status is "download-pending" | "downloading" | "decryption-pending" | "decrypting" => {
+  return ["download-pending", "downloading", "decryption-pending", "decrypting"].includes(status);
+};

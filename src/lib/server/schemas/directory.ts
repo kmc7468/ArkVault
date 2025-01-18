@@ -3,6 +3,7 @@ import { z } from "zod";
 export const directoryInfoResponse = z.object({
   metadata: z
     .object({
+      parent: z.union([z.enum(["root"]), z.number().int().positive()]),
       mekVersion: z.number().int().positive(),
       dek: z.string().base64().nonempty(),
       dekVersion: z.string().datetime(),
@@ -15,6 +16,11 @@ export const directoryInfoResponse = z.object({
 });
 export type DirectoryInfoResponse = z.infer<typeof directoryInfoResponse>;
 
+export const directoryDeleteResponse = z.object({
+  deletedFiles: z.number().int().positive().array(),
+});
+export type DirectoryDeleteResponse = z.infer<typeof directoryDeleteResponse>;
+
 export const directoryRenameRequest = z.object({
   dekVersion: z.string().datetime(),
   name: z.string().base64().nonempty(),
@@ -23,7 +29,7 @@ export const directoryRenameRequest = z.object({
 export type DirectoryRenameRequest = z.infer<typeof directoryRenameRequest>;
 
 export const directoryCreateRequest = z.object({
-  parentId: z.union([z.enum(["root"]), z.number().int().positive()]),
+  parent: z.union([z.enum(["root"]), z.number().int().positive()]),
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
   dekVersion: z.string().datetime(),

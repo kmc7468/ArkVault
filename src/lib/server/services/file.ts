@@ -2,7 +2,8 @@ import { error } from "@sveltejs/kit";
 import { createReadStream, createWriteStream } from "fs";
 import { mkdir, stat, unlink } from "fs/promises";
 import { dirname } from "path";
-import { Readable, Writable } from "stream";
+import { Readable } from "stream";
+import { pipeline } from "stream/promises";
 import { v4 as uuidv4 } from "uuid";
 import { IntegrityError } from "$lib/server/db/error";
 import {
@@ -22,12 +23,15 @@ export const getFileInformation = async (userId: number, fileId: number) => {
   }
 
   return {
+    parentId: file.parentId ?? ("root" as const),
     mekVersion: file.mekVersion,
     encDek: file.encDek,
     dekVersion: file.dekVersion,
     contentType: file.contentType,
     encContentIv: file.encContentIv,
     encName: file.encName,
+    encCreatedAt: file.encCreatedAt,
+    encLastModifiedAt: file.encLastModifiedAt,
   };
 };
 
@@ -92,11 +96,11 @@ const safeUnlink = async (path: string) => {
 
 export const uploadFile = async (
   params: Omit<NewFileParams, "path">,
-  encContentStream: ReadableStream<Uint8Array>,
+  encContentStream: Readable,
 ) => {
-  const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const oneMinuteLater = new Date(Date.now() + 60 * 1000);
-  if (params.dekVersion <= oneMinuteAgo || params.dekVersion >= oneMinuteLater) {
+  if (params.dekVersion <= oneDayAgo || params.dekVersion >= oneMinuteLater) {
     error(400, "Invalid DEK version");
   }
 
@@ -104,9 +108,7 @@ export const uploadFile = async (
   await mkdir(dirname(path), { recursive: true });
 
   try {
-    await encContentStream.pipeTo(
-      Writable.toWeb(createWriteStream(path, { flags: "wx", mode: 0o600 })),
-    );
+    await pipeline(encContentStream, createWriteStream(path, { flags: "wx", mode: 0o600 }));
     await registerFile({
       ...params,
       path,
@@ -114,10 +116,8 @@ export const uploadFile = async (
   } catch (e) {
     await safeUnlink(path);
 
-    if (e instanceof IntegrityError) {
-      if (e.message === "Inactive MEK version") {
-        error(400, "Invalid MEK version");
-      }
+    if (e instanceof IntegrityError && e.message === "Inactive MEK version") {
+      error(400, "Invalid MEK version");
     }
     throw e;
   }

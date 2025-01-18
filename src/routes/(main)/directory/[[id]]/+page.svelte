@@ -4,19 +4,20 @@
   import { goto } from "$app/navigation";
   import { TopBar } from "$lib/components";
   import { FloatingButton } from "$lib/components/buttons";
-  import { getDirectoryInfo } from "$lib/modules/file";
-  import { masterKeyStore, hmacSecretStore, type DirectoryInfo } from "$lib/stores";
+  import { getDirectoryInfo, type DirectoryInfo } from "$lib/modules/filesystem";
+  import { masterKeyStore, hmacSecretStore } from "$lib/stores";
   import CreateBottomSheet from "./CreateBottomSheet.svelte";
   import CreateDirectoryModal from "./CreateDirectoryModal.svelte";
   import DeleteDirectoryEntryModal from "./DeleteDirectoryEntryModal.svelte";
   import DirectoryEntries from "./DirectoryEntries";
   import DirectoryEntryMenuBottomSheet from "./DirectoryEntryMenuBottomSheet.svelte";
+  import DownloadStatusCard from "./DownloadStatusCard.svelte";
   import DuplicateFileModal from "./DuplicateFileModal.svelte";
   import RenameDirectoryEntryModal from "./RenameDirectoryEntryModal.svelte";
+  import UploadStatusCard from "./UploadStatusCard.svelte";
   import {
     requestHmacSecretDownload,
     requestDirectoryCreation,
-    requestDuplicateFileScan,
     requestFileUpload,
     requestDirectoryEntryRename,
     requestDirectoryEntryDeletion,
@@ -25,17 +26,12 @@
 
   import IconAdd from "~icons/material-symbols/add";
 
-  interface LoadedFile {
-    file: File;
-    fileBuffer: ArrayBuffer;
-    fileSigned: string;
-  }
-
   let { data } = $props();
 
   let info: Writable<DirectoryInfo | null> | undefined = $state();
   let fileInput: HTMLInputElement | undefined = $state();
-  let loadedFile: LoadedFile | undefined = $state();
+  let resolveForDuplicateFileModal: ((res: boolean) => void) | undefined = $state();
+  let duplicatedFile: File | undefined = $state();
   let selectedEntry: SelectedDirectoryEntry | undefined = $state();
 
   let isCreateBottomSheetOpen = $state(false);
@@ -52,34 +48,33 @@
     info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
   };
 
-  const uploadFile = (loadedFile: LoadedFile) => {
-    requestFileUpload(
-      loadedFile.file,
-      loadedFile.fileBuffer,
-      loadedFile.fileSigned,
-      data.id,
-      $masterKeyStore?.get(1)!,
-      $hmacSecretStore?.get(1)!,
-    ).then(() => {
-      info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
-    });
-  };
+  const uploadFile = () => {
+    const files = fileInput?.files;
+    if (!files || files.length === 0) return;
 
-  const loadAndUploadFile = async () => {
-    const file = fileInput?.files?.[0];
-    if (!file) return;
+    for (const file of files) {
+      requestFileUpload(file, data.id, $hmacSecretStore?.get(1)!, $masterKeyStore?.get(1)!, () => {
+        return new Promise((resolve) => {
+          resolveForDuplicateFileModal = resolve;
+          duplicatedFile = file;
+          isDuplicateFileModalOpen = true;
+        });
+      })
+        .then((res) => {
+          if (!res) return;
+
+          // TODO: FIXME
+          info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!);
+          window.alert(`'${file.name}' 파일이 업로드되었어요.`);
+        })
+        .catch((e: Error) => {
+          // TODO: FIXME
+          console.error(e);
+          window.alert(`'${file.name}' 파일 업로드에 실패했어요.\n${e.message}`);
+        });
+    }
 
     fileInput!.value = "";
-
-    const scanRes = await requestDuplicateFileScan(file, $hmacSecretStore?.get(1)!);
-    if (scanRes === null) {
-      throw new Error("Failed to scan duplicate files");
-    } else if (scanRes.isDuplicate) {
-      loadedFile = { ...scanRes, file };
-      isDuplicateFileModalOpen = true;
-    } else {
-      uploadFile({ ...scanRes, file });
-    }
   };
 
   onMount(async () => {
@@ -97,7 +92,7 @@
   <title>파일</title>
 </svelte:head>
 
-<input bind:this={fileInput} onchange={loadAndUploadFile} type="file" class="hidden" />
+<input bind:this={fileInput} onchange={uploadFile} type="file" multiple class="hidden" />
 
 <div class="flex min-h-full flex-col px-4">
   {#if data.id !== "root"}
@@ -106,6 +101,10 @@
   {#if $info}
     {@const topMargin = data.id === "root" ? "mt-4" : ""}
     <div class="mb-4 flex flex-grow flex-col {topMargin}">
+      <div class="flex gap-x-2">
+        <UploadStatusCard onclick={() => goto("/file/uploads")} />
+        <DownloadStatusCard onclick={() => goto("/file/downloads")} />
+      </div>
       {#key $info}
         <DirectoryEntries
           info={$info}
@@ -140,14 +139,18 @@
 <CreateDirectoryModal bind:isOpen={isCreateDirectoryModalOpen} onCreateClick={createDirectory} />
 <DuplicateFileModal
   bind:isOpen={isDuplicateFileModalOpen}
+  file={duplicatedFile}
   onclose={() => {
+    resolveForDuplicateFileModal?.(false);
+    resolveForDuplicateFileModal = undefined;
+    duplicatedFile = undefined;
     isDuplicateFileModalOpen = false;
-    loadedFile = undefined;
   }}
   onDuplicateClick={() => {
-    uploadFile(loadedFile!);
+    resolveForDuplicateFileModal?.(true);
+    resolveForDuplicateFileModal = undefined;
+    duplicatedFile = undefined;
     isDuplicateFileModalOpen = false;
-    loadedFile = undefined;
   }}
 />
 

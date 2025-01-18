@@ -61,6 +61,8 @@ export const file = sqliteTable(
     contentType: text("content_type").notNull(),
     encContentIv: text("encrypted_content_iv").notNull(), // Base64
     encName: ciphertext("encrypted_name").notNull(),
+    encCreatedAt: ciphertext("encrypted_created_at"),
+    encLastModifiedAt: ciphertext("encrypted_last_modified_at").notNull(),
   },
   (t) => ({
     ref1: foreignKey({

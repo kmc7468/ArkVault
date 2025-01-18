@@ -28,6 +28,10 @@ export interface NewFileParams {
   encContentIv: string;
   encName: string;
   encNameIv: string;
+  encCreatedAt: string | null;
+  encCreatedAtIv: string | null;
+  encLastModifiedAt: string;
+  encLastModifiedAtIv: string;
 }
 
 export const registerDirectory = async (params: NewDirectoryParams) => {
@@ -125,14 +129,15 @@ export const unregisterDirectory = async (userId: number, directoryId: number) =
   return await db.transaction(
     async (tx) => {
       const unregisterFiles = async (parentId: number) => {
-        const files = await tx
+        return await tx
           .delete(file)
           .where(and(eq(file.userId, userId), eq(file.parentId, parentId)))
-          .returning({ path: file.path });
-        return files.map(({ path }) => path);
+          .returning({ id: file.id, path: file.path });
       };
-      const unregisterDirectoryRecursively = async (directoryId: number): Promise<string[]> => {
-        const filePaths = await unregisterFiles(directoryId);
+      const unregisterDirectoryRecursively = async (
+        directoryId: number,
+      ): Promise<{ id: number; path: string }[]> => {
+        const files = await unregisterFiles(directoryId);
         const subDirectories = await tx
           .select({ id: directory.id })
           .from(directory)
@@ -145,7 +150,7 @@ export const unregisterDirectory = async (userId: number, directoryId: number) =
         if (deleteRes.changes === 0) {
           throw new IntegrityError("Directory not found");
         }
-        return filePaths.concat(...subDirectoryFilePaths);
+        return files.concat(...subDirectoryFilePaths);
       };
       return await unregisterDirectoryRecursively(directoryId);
     },
@@ -154,7 +159,12 @@ export const unregisterDirectory = async (userId: number, directoryId: number) =
 };
 
 export const registerFile = async (params: NewFileParams) => {
-  if ((params.hskVersion && !params.contentHmac) || (!params.hskVersion && params.contentHmac)) {
+  if (
+    (params.hskVersion && !params.contentHmac) ||
+    (!params.hskVersion && params.contentHmac) ||
+    (params.encCreatedAt && !params.encCreatedAtIv) ||
+    (!params.encCreatedAt && params.encCreatedAtIv)
+  ) {
     throw new Error("Invalid arguments");
   }
 
@@ -194,6 +204,14 @@ export const registerFile = async (params: NewFileParams) => {
           dekVersion: params.dekVersion,
           encContentIv: params.encContentIv,
           encName: { ciphertext: params.encName, iv: params.encNameIv },
+          encCreatedAt:
+            params.encCreatedAt && params.encCreatedAtIv
+              ? { ciphertext: params.encCreatedAt, iv: params.encCreatedAtIv }
+              : null,
+          encLastModifiedAt: {
+            ciphertext: params.encLastModifiedAt,
+            iv: params.encLastModifiedAtIv,
+          },
         })
         .returning({ id: file.id });
       const { id: fileId } = newFiles[0]!;
