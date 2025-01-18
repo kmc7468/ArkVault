@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Component, Snippet } from "svelte";
-  import { EntryButton } from "$lib/components/buttons";
   import type { SvelteHTMLElements } from "svelte/elements";
+  import { EntryButton } from "$lib/components/buttons";
 
   interface Props {
     children: Snippet;

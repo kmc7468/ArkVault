@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import MenuEntryButton from "./MenuEntryButton.svelte";
-  import { requestLogout } from "./service.js";
+  import { requestLogout } from "./service";
 
   import IconStorage from "~icons/material-symbols/storage";
   import IconPassword from "~icons/material-symbols/password";

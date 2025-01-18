@@ -1,7 +1,7 @@
 import { callGetApi, callPostApi } from "$lib/hooks";
 import { storeHmacSecrets } from "$lib/indexedDB";
-import { deleteFileCache, uploadFile } from "$lib/modules/file";
 import { generateDataKey, wrapDataKey, unwrapHmacSecret, encryptString } from "$lib/modules/crypto";
+import { deleteFileCache, uploadFile } from "$lib/modules/file";
 import type {
   DirectoryRenameRequest,
   DirectoryCreateRequest,

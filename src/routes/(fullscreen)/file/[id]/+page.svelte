@@ -4,7 +4,7 @@
   import { get, type Writable } from "svelte/store";
   import { TopBar } from "$lib/components";
   import { getFileInfo, type FileInfo } from "$lib/modules/filesystem";
-  import { fileDownloadStatusStore, masterKeyStore } from "$lib/stores";
+  import { fileDownloadStatusStore, isFileDownloading, masterKeyStore } from "$lib/stores";
   import DownloadStatus from "./DownloadStatus.svelte";
   import { requestFileDownload } from "./service";
 
@@ -14,14 +14,8 @@
 
   const downloadStatus = $derived(
     $fileDownloadStatusStore.find((statusStore) => {
-      const status = get(statusStore);
-      return (
-        status.id === data.id &&
-        (status.status === "download-pending" ||
-          status.status === "downloading" ||
-          status.status === "decryption-pending" ||
-          status.status === "decrypting")
-      );
+      const { id, status } = get(statusStore);
+      return id === data.id && isFileDownloading(status);
     }),
   );
 

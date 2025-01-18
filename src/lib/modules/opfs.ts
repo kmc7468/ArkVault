@@ -17,7 +17,7 @@ const getFileHandle = async (path: string, create = true) => {
   }
 
   try {
-    let directoryHandle: FileSystemDirectoryHandle = rootHandle;
+    let directoryHandle = rootHandle;
     for (const part of parts.slice(0, -1)) {
       if (!part) continue;
       directoryHandle = await directoryHandle.getDirectoryHandle(part, { create });
