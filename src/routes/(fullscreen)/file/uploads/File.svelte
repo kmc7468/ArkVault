@@ -33,8 +33,8 @@
       <IconError class="text-red-500" />
     {/if}
   </div>
-  <div class="flex flex-grow flex-col overflow-hidden">
-    <p title={$status.name} class="truncate font-medium text-gray-800">
+  <div class="flex-grow overflow-hidden">
+    <p title={$status.name} class="truncate font-medium">
       {$status.name}
     </p>
     <p class="text-xs text-gray-800">

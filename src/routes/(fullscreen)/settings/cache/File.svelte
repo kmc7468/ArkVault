@@ -27,7 +27,7 @@
       <IconScanDelete class="text-red-400" />
     </div>
   {/if}
-  <div class="flex flex-grow flex-col overflow-hidden">
+  <div class="flex-grow overflow-hidden">
     {#if $info}
       <p title={$info.name} class="truncate font-medium">{$info.name}</p>
     {:else}

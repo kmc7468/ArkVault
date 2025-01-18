@@ -11,7 +11,7 @@
 </script>
 
 {#if $status && isFileDownloading($status.status)}
-  <div class="flex w-full flex-col rounded-xl bg-gray-100 p-3">
+  <div class="w-full rounded-xl bg-gray-100 p-3">
     <p class="font-medium">
       {#if $status.status === "download-pending"}
         다운로드를 기다리는 중

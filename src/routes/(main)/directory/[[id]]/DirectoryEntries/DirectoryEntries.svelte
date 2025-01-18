@@ -117,7 +117,7 @@
       {#if file.type === "file"}
         <File info={file.info} onclick={onEntryClick} onOpenMenuClick={onEntryMenuClick} />
       {:else}
-        <UploadingFile info={file.info} />
+        <UploadingFile status={file.info} />
       {/if}
     {/each}
   </div>

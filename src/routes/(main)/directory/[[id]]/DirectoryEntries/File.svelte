@@ -44,7 +44,7 @@
       <div class="flex-shrink-0 text-lg">
         <IconDraft class="text-blue-400" />
       </div>
-      <div class="flex flex-grow flex-col overflow-hidden">
+      <div class="flex-grow overflow-hidden">
         <p title={$info.name} class="truncate font-medium">
           {$info.name}
         </p>
