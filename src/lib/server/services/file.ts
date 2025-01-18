@@ -112,7 +112,16 @@ export const uploadFile = async (
   try {
     const hashStream = createHash("sha256");
     const [_, hash] = await Promise.all([
-      pipeline(encContentStream, hashStream, createWriteStream(path, { flags: "wx", mode: 0o600 })),
+      pipeline(
+        encContentStream,
+        async function* (source) {
+          for await (const chunk of source) {
+            hashStream.update(chunk);
+            yield chunk;
+          }
+        },
+        createWriteStream(path, { flags: "wx", mode: 0o600 }),
+      ),
       encContentHash,
     ]);
     if (hashStream.digest("base64") != hash) {
