@@ -19,9 +19,9 @@
   <title>진행 중인 업로드</title>
 </svelte:head>
 
-<div class="flex h-full flex-col">
+<div class="flex flex-col">
   <TopBar />
-  <div class="space-y-2">
+  <div class="space-y-2 pb-4">
     {#each uploadingFiles as status}
       <File {status} />
     {/each}

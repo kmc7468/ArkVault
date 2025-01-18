@@ -19,9 +19,9 @@
   <title>진행 중인 다운로드</title>
 </svelte:head>
 
-<div class="flex h-full flex-col">
+<div class="flex flex-col">
   <TopBar />
-  <div class="space-y-2">
+  <div class="space-y-2 pb-4">
     {#each downloadingFiles as status}
       <File {status} />
     {/each}
