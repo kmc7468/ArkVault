@@ -8,6 +8,7 @@ import {
   wrapDataKey,
   encryptData,
   encryptString,
+  digestMessage,
   signMessageHmac,
 } from "$lib/modules/crypto";
 import type {
@@ -97,6 +98,8 @@ const encryptFile = limitFunction(
     const dataKeyWrapped = await wrapDataKey(dataKey, masterKey.key);
 
     const fileEncrypted = await encryptData(fileBuffer, dataKey);
+    const fileEncryptedHash = encodeToBase64(await digestMessage(fileEncrypted.ciphertext));
+
     const nameEncrypted = await encryptString(file.name, dataKey);
     const createdAtEncrypted =
       createdAt && (await encryptString(createdAt.getTime().toString(), dataKey));
@@ -110,8 +113,9 @@ const encryptFile = limitFunction(
     return {
       dataKeyWrapped,
       dataKeyVersion,
-      fileEncrypted,
       fileType,
+      fileEncrypted,
+      fileEncryptedHash,
       nameEncrypted,
       createdAtEncrypted,
       lastModifiedAtEncrypted,
@@ -184,8 +188,9 @@ export const uploadFile = async (
     const {
       dataKeyWrapped,
       dataKeyVersion,
-      fileEncrypted,
       fileType,
+      fileEncrypted,
+      fileEncryptedHash,
       nameEncrypted,
       createdAtEncrypted,
       lastModifiedAtEncrypted,
@@ -212,6 +217,7 @@ export const uploadFile = async (
       } as FileUploadRequest),
     );
     form.set("content", new Blob([fileEncrypted.ciphertext]));
+    form.set("checksum", fileEncryptedHash);
 
     await requestFileUpload(status, form);
     return true;

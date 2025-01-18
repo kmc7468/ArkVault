@@ -26,6 +26,7 @@ export interface NewFileParams {
   contentHmac: string | null;
   contentType: string;
   encContentIv: string;
+  encContentHash: string;
   encName: string;
   encNameIv: string;
   encCreatedAt: string | null;
@@ -198,11 +199,12 @@ export const registerFile = async (params: NewFileParams) => {
           userId: params.userId,
           mekVersion: params.mekVersion,
           hskVersion: params.hskVersion,
-          contentHmac: params.contentHmac,
-          contentType: params.contentType,
           encDek: params.encDek,
           dekVersion: params.dekVersion,
+          contentHmac: params.contentHmac,
+          contentType: params.contentType,
           encContentIv: params.encContentIv,
+          encContentHash: params.encContentHash,
           encName: { ciphertext: params.encName, iv: params.encNameIv },
           encCreatedAt:
             params.encCreatedAt && params.encCreatedAtIv

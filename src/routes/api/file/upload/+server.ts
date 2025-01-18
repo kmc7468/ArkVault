@@ -67,27 +67,39 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 
     let metadata: FileMetadata | null = null;
     let content: Readable | null = null;
+    const checksum = new Promise<string>((resolveChecksum, rejectChecksum) => {
+      bb.on(
+        "field",
+        handler(async (fieldname, val) => {
+          if (fieldname === "metadata") {
+            if (!metadata) {
+              // Ignore subsequent metadata fields
+              metadata = parseFileMetadata(userId, val);
+            }
+          } else if (fieldname === "checksum") {
+            resolveChecksum(val); // Ignore subsequent checksum fields
+          } else {
+            error(400, "Invalid request body");
+          }
+        }),
+      );
+      bb.on(
+        "file",
+        handler(async (fieldname, file) => {
+          if (fieldname !== "content") error(400, "Invalid request body");
+          if (!metadata || content) error(400, "Invalid request body");
+          content = file;
 
-    bb.on(
-      "field",
-      handler(async (fieldname, val) => {
-        if (fieldname !== "metadata") error(400, "Invalid request body");
-        if (metadata || content) error(400, "Invalid request body");
-        metadata = parseFileMetadata(userId, val);
-      }),
-    );
-    bb.on(
-      "file",
-      handler(async (fieldname, file) => {
-        if (fieldname !== "content") error(400, "Invalid request body");
-        if (!metadata || content) error(400, "Invalid request body");
-        content = file;
-
-        await uploadFile(metadata, content);
-        resolve(text("File uploaded", { headers: { "Content-Type": "text/plain" } }));
-      }),
-    );
-    bb.on("error", (e) => content?.emit("error", e) ?? reject(e));
+          await uploadFile(metadata, content, checksum);
+          resolve(text("File uploaded", { headers: { "Content-Type": "text/plain" } }));
+        }),
+      );
+      bb.on("finish", () => rejectChecksum(new Error("Invalid request body")));
+      bb.on("error", (e) => {
+        content?.emit("error", e) ?? reject(e);
+        rejectChecksum(e);
+      });
+    });
 
     request.body!.pipeTo(Writable.toWeb(bb)).catch(() => {}); // busboy will handle the error
   });

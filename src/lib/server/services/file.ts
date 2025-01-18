@@ -1,4 +1,5 @@
 import { error } from "@sveltejs/kit";
+import { createHash } from "crypto";
 import { createReadStream, createWriteStream } from "fs";
 import { mkdir, stat, unlink } from "fs/promises";
 import { dirname } from "path";
@@ -95,8 +96,9 @@ const safeUnlink = async (path: string) => {
 };
 
 export const uploadFile = async (
-  params: Omit<NewFileParams, "path">,
+  params: Omit<NewFileParams, "path" | "encContentHash">,
   encContentStream: Readable,
+  encContentHash: Promise<string>,
 ) => {
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const oneMinuteLater = new Date(Date.now() + 60 * 1000);
@@ -108,16 +110,30 @@ export const uploadFile = async (
   await mkdir(dirname(path), { recursive: true });
 
   try {
-    await pipeline(encContentStream, createWriteStream(path, { flags: "wx", mode: 0o600 }));
+    const hashStream = createHash("sha256");
+    const [_, hash] = await Promise.all([
+      pipeline(encContentStream, hashStream, createWriteStream(path, { flags: "wx", mode: 0o600 })),
+      encContentHash,
+    ]);
+    if (hashStream.digest("base64") != hash) {
+      throw new Error("Invalid checksum");
+    }
+
     await registerFile({
       ...params,
       path,
+      encContentHash: hash,
     });
   } catch (e) {
     await safeUnlink(path);
 
     if (e instanceof IntegrityError && e.message === "Inactive MEK version") {
       error(400, "Invalid MEK version");
+    } else if (
+      e instanceof Error &&
+      (e.message === "Invalid request body" || e.message === "Invalid checksum")
+    ) {
+      error(400, "Invalid request body");
     }
     throw e;
   }

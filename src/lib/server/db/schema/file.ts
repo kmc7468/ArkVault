@@ -60,6 +60,7 @@ export const file = sqliteTable(
     contentHmac: text("content_hmac"), // Base64
     contentType: text("content_type").notNull(),
     encContentIv: text("encrypted_content_iv").notNull(), // Base64
+    encContentHash: text("encrypted_content_hash").notNull(), // Base64
     encName: ciphertext("encrypted_name").notNull(),
     encCreatedAt: ciphertext("encrypted_created_at"),
     encLastModifiedAt: ciphertext("encrypted_last_modified_at").notNull(),
