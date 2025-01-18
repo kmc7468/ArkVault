@@ -68,7 +68,7 @@
         $fileUploadStatusStore
           .filter((statusStore) => {
             const { parentId, status } = get(statusStore);
-            return parentId === info.id && !isFileUploading(status);
+            return parentId === info.id && isFileUploading(status);
           })
           .map((status) => ({
             type: "uploading-file",
