@@ -1,35 +1,36 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
   import { formatNetworkSpeed } from "$lib/modules/util";
-  import type { FileUploadStatus } from "$lib/stores";
+  import { isFileUploading, type FileUploadStatus } from "$lib/stores";
 
   import IconDraft from "~icons/material-symbols/draft";
 
   interface Props {
-    info: Writable<FileUploadStatus>;
+    status: Writable<FileUploadStatus>;
   }
 
-  let { info }: Props = $props();
+  let { status }: Props = $props();
 </script>
 
-{#if $info.status !== "uploaded" && $info.status !== "canceled" && $info.status !== "error"}
+{#if isFileUploading($status.status)}
   <div class="flex h-14 items-center gap-x-4 p-2">
     <div class="flex-shrink-0 text-lg">
       <IconDraft class="text-gray-600" />
     </div>
     <div class="flex flex-grow flex-col overflow-hidden">
-      <p title={$info.name} class="truncate font-medium text-gray-800">
-        {$info.name}
+      <p title={$status.name} class="truncate font-medium text-gray-800">
+        {$status.name}
       </p>
       <p class="text-xs text-gray-800">
-        {#if $info.status === "encryption-pending"}
+        {#if $status.status === "encryption-pending"}
           준비 중
-        {:else if $info.status === "encrypting"}
+        {:else if $status.status === "encrypting"}
           암호화하는 중
-        {:else if $info.status === "upload-pending"}
+        {:else if $status.status === "upload-pending"}
           업로드를 기다리는 중
-        {:else if $info.status === "uploading"}
-          전송됨 {Math.floor(($info.progress ?? 0) * 100)}% · {formatNetworkSpeed($info.rate ?? 0)}
+        {:else if $status.status === "uploading"}
+          전송됨 {Math.floor(($status.progress ?? 0) * 100)}% ·
+          {formatNetworkSpeed(($status.rate ?? 0) * 8)}
         {/if}
       </p>
     </div>

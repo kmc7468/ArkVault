@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
   import { formatNetworkSpeed } from "$lib/modules/util";
-  import type { FileDownloadStatus } from "$lib/stores";
+  import { isFileDownloading, type FileDownloadStatus } from "$lib/stores";
 
   interface Props {
     status?: Writable<FileDownloadStatus>;
@@ -10,7 +10,7 @@
   let { status }: Props = $props();
 </script>
 
-{#if $status && $status.status !== "decrypted" && $status.status !== "canceled" && $status.status !== "error"}
+{#if $status && isFileDownloading($status.status)}
   <div class="flex w-full flex-col rounded-xl bg-gray-100 p-3">
     <p class="font-medium">
       {#if $status.status === "download-pending"}
@@ -26,7 +26,7 @@
     <p class="text-xs">
       {#if $status.status === "downloading"}
         전송됨
-        {Math.floor(($status.progress ?? 0) * 100)}% · {formatNetworkSpeed($status.rate ?? 0)}
+        {Math.floor(($status.progress ?? 0) * 100)}% · {formatNetworkSpeed(($status.rate ?? 0) * 8)}
       {/if}
     </p>
   </div>

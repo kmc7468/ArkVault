@@ -50,7 +50,8 @@
           다운로드를 기다리는 중
         {:else if $status.status === "downloading"}
           전송됨
-          {Math.floor(($status.progress ?? 0) * 100)}% · {formatNetworkSpeed($status.rate ?? 0)}
+          {Math.floor(($status.progress ?? 0) * 100)}% ·
+          {formatNetworkSpeed(($status.rate ?? 0) * 8)}
         {:else if $status.status === "decryption-pending"}
           복호화를 기다리는 중
         {:else if $status.status === "decrypting"}

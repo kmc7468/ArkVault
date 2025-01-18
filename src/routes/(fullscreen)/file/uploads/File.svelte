@@ -46,7 +46,7 @@
         업로드를 기다리는 중
       {:else if $status.status === "uploading"}
         전송됨
-        {Math.floor(($status.progress ?? 0) * 100)}% · {formatNetworkSpeed($status.rate ?? 0)}
+        {Math.floor(($status.progress ?? 0) * 100)}% · {formatNetworkSpeed(($status.rate ?? 0) * 8)}
       {:else if $status.status === "uploaded"}
         업로드 완료
       {:else if $status.status === "error"}
