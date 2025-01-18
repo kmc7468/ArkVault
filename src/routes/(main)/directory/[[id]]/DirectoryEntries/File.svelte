@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
   import type { FileInfo } from "$lib/modules/filesystem";
-  import { formatDateTime } from "./service";
+  import { formatDateTime } from "$lib/modules/util";
   import type { SelectedDirectoryEntry } from "../service";
 
   import IconDraft from "~icons/material-symbols/draft";

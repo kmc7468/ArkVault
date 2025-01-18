@@ -11,8 +11,10 @@
   import DeleteDirectoryEntryModal from "./DeleteDirectoryEntryModal.svelte";
   import DirectoryEntries from "./DirectoryEntries";
   import DirectoryEntryMenuBottomSheet from "./DirectoryEntryMenuBottomSheet.svelte";
+  import DownloadStatusCard from "./DownloadStatusCard.svelte";
   import DuplicateFileModal from "./DuplicateFileModal.svelte";
   import RenameDirectoryEntryModal from "./RenameDirectoryEntryModal.svelte";
+  import UploadStatusCard from "./UploadStatusCard.svelte";
   import {
     requestHmacSecretDownload,
     requestDirectoryCreation,
@@ -99,6 +101,10 @@
   {#if $info}
     {@const topMargin = data.id === "root" ? "mt-4" : ""}
     <div class="mb-4 flex flex-grow flex-col {topMargin}">
+      <div class="flex gap-x-2">
+        <UploadStatusCard onclick={() => goto("/file/uploads")} />
+        <DownloadStatusCard onclick={() => goto("/file/downloads")} />
+      </div>
       {#key $info}
         <DirectoryEntries
           info={$info}

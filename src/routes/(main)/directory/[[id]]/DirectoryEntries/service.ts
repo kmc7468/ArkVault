@@ -1,7 +1,3 @@
-import { formatFileSize } from "$lib/modules/util";
-
-export { formatDateTime } from "$lib/modules/util";
-
 export enum SortBy {
   NAME_ASC,
   NAME_DESC,
@@ -30,12 +26,4 @@ export const sortEntries = <T extends { name?: string }>(
   }
 
   entries.sort((a, b) => sortFunc(a.name, b.name));
-};
-
-export const formatUploadProgress = (progress?: number) => {
-  return `${Math.floor((progress ?? 0) * 100)}%`;
-};
-
-export const formatUploadRate = (rate?: number) => {
-  return `${formatFileSize((rate ?? 0) / 8)}/s`;
 };

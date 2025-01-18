@@ -1,31 +1,32 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
+  import { formatNetworkSpeed } from "$lib/modules/util";
   import type { FileDownloadStatus } from "$lib/stores";
-  import { formatDownloadProgress, formatDownloadRate } from "./service";
 
   interface Props {
-    info?: Writable<FileDownloadStatus>;
+    status?: Writable<FileDownloadStatus>;
   }
 
-  let { info }: Props = $props();
+  let { status }: Props = $props();
 </script>
 
-{#if $info && $info.status !== "decrypted" && $info.status !== "canceled" && $info.status !== "error"}
+{#if $status && $status.status !== "decrypted" && $status.status !== "canceled" && $status.status !== "error"}
   <div class="flex w-full flex-col rounded-xl bg-gray-100 p-3">
     <p class="font-medium">
-      {#if $info.status === "download-pending"}
+      {#if $status.status === "download-pending"}
         다운로드를 기다리는 중
-      {:else if $info.status === "downloading"}
+      {:else if $status.status === "downloading"}
         다운로드하는 중
-      {:else if $info.status === "decryption-pending"}
+      {:else if $status.status === "decryption-pending"}
         복호화를 기다리는 중
-      {:else if $info.status === "decrypting"}
+      {:else if $status.status === "decrypting"}
         복호화하는 중
       {/if}
     </p>
     <p class="text-xs">
-      {#if $info.status === "downloading"}
-        전송됨 {formatDownloadProgress($info.progress)} · {formatDownloadRate($info.rate)}
+      {#if $status.status === "downloading"}
+        전송됨
+        {Math.floor(($status.progress ?? 0) * 100)}% · {formatNetworkSpeed($status.rate ?? 0)}
       {/if}
     </p>
   </div>

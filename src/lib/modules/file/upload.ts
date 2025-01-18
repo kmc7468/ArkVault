@@ -174,6 +174,10 @@ export const uploadFile = async (
         value.status = "canceled";
         return value;
       });
+      fileUploadStatusStore.update((value) => {
+        value = value.filter((v) => v !== status);
+        return value;
+      });
       return false;
     }
 

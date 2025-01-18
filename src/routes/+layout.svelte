@@ -2,22 +2,22 @@
   import { onMount } from "svelte";
   import { get } from "svelte/store";
   import { goto as svelteGoto } from "$app/navigation";
-  import { fileUploadStatusStore, clientKeyStore, masterKeyStore } from "$lib/stores";
+  import {
+    fileUploadStatusStore,
+    fileDownloadStatusStore,
+    isFileUploading,
+    isFileDownloading,
+    clientKeyStore,
+    masterKeyStore,
+  } from "$lib/stores";
   import "../app.css";
 
   let { children } = $props();
 
-  const checkFileUploadStatus = (e: BeforeUnloadEvent) => {
+  const protectFileUploadAndDownload = (e: BeforeUnloadEvent) => {
     if (
-      $fileUploadStatusStore.some((statusStore) => {
-        const status = get(statusStore);
-        return (
-          status.status === "encryption-pending" ||
-          status.status === "encrypting" ||
-          status.status === "upload-pending" ||
-          status.status === "uploading"
-        );
-      })
+      $fileUploadStatusStore.some((status) => isFileUploading(get(status).status)) ||
+      $fileDownloadStatusStore.some((status) => isFileDownloading(get(status).status))
     ) {
       e.preventDefault();
     }
@@ -41,6 +41,6 @@
   });
 </script>
 
-<svelte:window onbeforeunload={checkFileUploadStatus} />
+<svelte:window onbeforeunload={protectFileUploadAndDownload} />
 
 {@render children()}

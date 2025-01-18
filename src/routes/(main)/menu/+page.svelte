@@ -27,7 +27,7 @@
   <div class="space-y-2">
     <p class="font-semibold">설정</p>
     <MenuEntryButton
-      onclick={() => goto("/setting/cache")}
+      onclick={() => goto("/settings/cache")}
       icon={IconStorage}
       iconColor="text-green-500"
     >

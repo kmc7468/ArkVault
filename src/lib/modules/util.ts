@@ -20,3 +20,10 @@ export const formatFileSize = (size: number) => {
   if (size < 1024 * 1024 * 1024) return `${(size / 1024 / 1024).toFixed(1)} MiB`;
   return `${(size / 1024 / 1024 / 1024).toFixed(1)} GiB`;
 };
+
+export const formatNetworkSpeed = (speed: number) => {
+  if (speed < 1000) return `${speed} bps`;
+  if (speed < 1000 * 1000) return `${(speed / 1000).toFixed(1)} kbps`;
+  if (speed < 1000 * 1000 * 1000) return `${(speed / 1000 / 1000).toFixed(1)} Mbps`;
+  return `${(speed / 1000 / 1000 / 1000).toFixed(1)} Gbps`;
+};

@@ -87,7 +87,7 @@
 
 <div class="flex h-full flex-col">
   <TopBar title={$info?.name} />
-  <DownloadStatus info={downloadStatus} />
+  <DownloadStatus status={downloadStatus} />
   <div class="flex w-full flex-grow flex-col items-center pb-4">
     {#snippet viewerLoading(message: string)}
       <div class="flex flex-grow items-center justify-center">

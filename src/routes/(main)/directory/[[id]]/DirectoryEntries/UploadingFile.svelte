@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
+  import { formatNetworkSpeed } from "$lib/modules/util";
   import type { FileUploadStatus } from "$lib/stores";
-  import { formatUploadProgress, formatUploadRate } from "./service";
 
   import IconDraft from "~icons/material-symbols/draft";
 
@@ -29,7 +29,7 @@
         {:else if $info.status === "upload-pending"}
           업로드를 기다리는 중
         {:else if $info.status === "uploading"}
-          전송됨 {formatUploadProgress($info.progress)} · {formatUploadRate($info.rate)}
+          전송됨 {Math.floor(($info.progress ?? 0) * 100)}% · {formatNetworkSpeed($info.rate ?? 0)}
         {/if}
       </p>
     </div>
