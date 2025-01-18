@@ -77,6 +77,7 @@ const fetchDirectoryInfoFromServer = async (
   if (res.status === 404) {
     info.set(null);
     await deleteDirectoryInfo(id as number);
+    return;
   } else if (!res.ok) {
     throw new Error("Failed to fetch directory information");
   }
@@ -149,6 +150,7 @@ const fetchFileInfoFromServer = async (
   if (res.status === 404) {
     info.set(null);
     await deleteFileInfo(id);
+    return;
   } else if (!res.ok) {
     throw new Error("Failed to fetch file information");
   }
