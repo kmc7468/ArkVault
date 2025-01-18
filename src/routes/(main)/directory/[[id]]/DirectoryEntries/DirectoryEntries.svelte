@@ -7,7 +7,12 @@
     type DirectoryInfo,
     type FileInfo,
   } from "$lib/modules/filesystem";
-  import { fileUploadStatusStore, masterKeyStore, type FileUploadStatus } from "$lib/stores";
+  import {
+    fileUploadStatusStore,
+    isFileUploading,
+    masterKeyStore,
+    type FileUploadStatus,
+  } from "$lib/stores";
   import File from "./File.svelte";
   import SubDirectory from "./SubDirectory.svelte";
   import { SortBy, sortEntries } from "./service";
@@ -62,21 +67,14 @@
       .concat(
         $fileUploadStatusStore
           .filter((statusStore) => {
-            const status = get(statusStore);
-            return (
-              status.parentId === info.id &&
-              status.status !== "uploaded" &&
-              status.status !== "canceled" &&
-              status.status !== "error"
-            );
+            const { parentId, status } = get(statusStore);
+            return parentId === info.id && !isFileUploading(status);
           })
-          .map(
-            (status): FileEntry => ({
-              type: "uploading-file",
-              name: get(status).name,
-              info: status,
-            }),
-          ),
+          .map((status) => ({
+            type: "uploading-file",
+            name: get(status).name,
+            info: status,
+          })),
       );
 
     const sort = () => {
