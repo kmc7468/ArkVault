@@ -33,7 +33,7 @@
     onclick={() => setTimeout(onclick, 100)}
     class="mb-4 max-w-[50%] flex-1 rounded-xl bg-green-100 p-3 active:bg-green-200"
   >
-    <div class="flex h-full w-full flex-col text-left transition active:scale-95">
+    <div class="text-left transition active:scale-95">
       <p class="text-xs text-gray-800">진행 중인 다운로드</p>
       <p class="font-medium text-green-800">{downloadingFiles.length}개</p>
     </div>

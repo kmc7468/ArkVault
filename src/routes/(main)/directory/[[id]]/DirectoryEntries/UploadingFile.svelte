@@ -17,11 +17,11 @@
     <div class="flex-shrink-0 text-lg">
       <IconDraft class="text-gray-600" />
     </div>
-    <div class="flex flex-grow flex-col overflow-hidden">
-      <p title={$status.name} class="truncate font-medium text-gray-800">
+    <div class="flex flex-grow flex-col overflow-hidden text-gray-800">
+      <p title={$status.name} class="truncate font-medium">
         {$status.name}
       </p>
-      <p class="text-xs text-gray-800">
+      <p class="text-xs">
         {#if $status.status === "encryption-pending"}
           준비 중
         {:else if $status.status === "encrypting"}
