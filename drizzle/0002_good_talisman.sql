@@ -1,1 +1,0 @@
-ALTER TABLE `file` ADD `encrypted_content_hash` text NOT NULL;

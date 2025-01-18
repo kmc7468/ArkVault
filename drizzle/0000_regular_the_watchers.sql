@@ -59,7 +59,10 @@ CREATE TABLE `file` (
 	`content_hmac` text,
 	`content_type` text NOT NULL,
 	`encrypted_content_iv` text NOT NULL,
+	`encrypted_content_hash` text NOT NULL,
 	`encrypted_name` text NOT NULL,
+	`encrypted_created_at` text,
+	`encrypted_last_modified_at` text NOT NULL,
 	FOREIGN KEY (`parent_id`) REFERENCES `directory`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`user_id`,`master_encryption_key_version`) REFERENCES `master_encryption_key`(`user_id`,`version`) ON UPDATE no action ON DELETE no action,
@@ -94,7 +97,7 @@ CREATE TABLE `hmac_secret_key_log` (
 	`action` text NOT NULL,
 	`action_by` integer,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`action_by`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`action_by`) REFERENCES `client`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`user_id`,`hmac_secret_key_version`) REFERENCES `hmac_secret_key`(`user_id`,`version`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint

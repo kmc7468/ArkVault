@@ -1,4 +1,5 @@
 import { sqliteTable, text, integer, primaryKey, foreignKey } from "drizzle-orm/sqlite-core";
+import { client } from "./client";
 import { mek } from "./mek";
 import { user } from "./user";
 
@@ -32,7 +33,7 @@ export const hskLog = sqliteTable(
     hskVersion: integer("hmac_secret_key_version").notNull(),
     timestamp: integer("timestamp", { mode: "timestamp_ms" }).notNull(),
     action: text("action", { enum: ["create"] }).notNull(),
-    actionBy: integer("action_by").references(() => user.id),
+    actionBy: integer("action_by").references(() => client.id),
   },
   (t) => ({
     ref: foreignKey({
