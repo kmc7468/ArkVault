@@ -5,8 +5,10 @@ export enum SortBy {
 
 type SortFunc = (a?: string, b?: string) => number;
 
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+
 const sortByNameAsc: SortFunc = (a, b) => {
-  if (a && b) return a.localeCompare(b);
+  if (a && b) return collator.compare(a, b);
   if (a) return -1;
   if (b) return 1;
   return 0;
