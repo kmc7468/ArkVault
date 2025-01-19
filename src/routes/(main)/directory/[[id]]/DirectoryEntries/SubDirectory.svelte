@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
-  import type { DirectoryInfo } from "$lib/stores";
+  import type { DirectoryInfo } from "$lib/modules/filesystem";
   import type { SelectedDirectoryEntry } from "../service";
 
   import IconFolder from "~icons/material-symbols/folder";
@@ -18,6 +18,8 @@
 
   const openDirectory = () => {
     const { id, dataKey, dataKeyVersion, name } = $info as SubDirectoryInfo;
+    if (!dataKey || !dataKeyVersion) return; // TODO: Error handling
+
     setTimeout(() => {
       onclick({ type: "directory", id, dataKey, dataKeyVersion, name });
     }, 100);
@@ -27,6 +29,8 @@
     e.stopPropagation();
 
     const { id, dataKey, dataKeyVersion, name } = $info as SubDirectoryInfo;
+    if (!dataKey || !dataKeyVersion) return; // TODO: Error handling
+
     setTimeout(() => {
       onOpenMenuClick({ type: "directory", id, dataKey, dataKeyVersion, name });
     }, 100);

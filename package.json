@@ -27,6 +27,7 @@
     "@types/ms": "^0.7.34",
     "@types/node-schedule": "^2.1.7",
     "autoprefixer": "^10.4.20",
+    "axios": "^1.7.9",
     "dexie": "^4.0.10",
     "drizzle-kit": "^0.22.8",
     "eslint": "^9.17.0",
@@ -38,6 +39,7 @@
     "globals": "^15.14.0",
     "heic2any": "^0.0.4",
     "mime": "^4.0.6",
+    "p-limit": "^6.2.0",
     "prettier": "^3.4.2",
     "prettier-plugin-svelte": "^3.3.2",
     "prettier-plugin-tailwindcss": "^0.6.9",
@@ -50,6 +52,7 @@
     "vite": "^5.4.11"
   },
   "dependencies": {
+    "@fastify/busboy": "^3.1.1",
     "argon2": "^0.41.1",
     "better-sqlite3": "^11.7.2",
     "drizzle-orm": "^0.33.0",

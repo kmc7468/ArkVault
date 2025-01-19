@@ -1,8 +1,9 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { EntryButton } from "$lib/components/buttons";
-  import { requestLogout } from "./service.js";
+  import MenuEntryButton from "./MenuEntryButton.svelte";
+  import { requestLogout } from "./service";
 
+  import IconStorage from "~icons/material-symbols/storage";
   import IconPassword from "~icons/material-symbols/password";
   import IconLogout from "~icons/material-symbols/logout";
 
@@ -24,22 +25,26 @@
 </div>
 <div class="space-y-4 px-4 pb-4">
   <div class="space-y-2">
+    <p class="font-semibold">설정</p>
+    <MenuEntryButton
+      onclick={() => goto("/settings/cache")}
+      icon={IconStorage}
+      iconColor="text-green-500"
+    >
+      캐시
+    </MenuEntryButton>
+  </div>
+  <div class="space-y-2">
     <p class="font-semibold">보안</p>
-    <EntryButton onclick={() => goto("/auth/changePassword")}>
-      <div class="flex items-center gap-x-4">
-        <div class="rounded-lg bg-gray-200 p-1 text-blue-500">
-          <IconPassword />
-        </div>
-        <p class="font-medium">비밀번호 바꾸기</p>
-      </div>
-    </EntryButton>
-    <EntryButton onclick={logout}>
-      <div class="flex items-center gap-x-4">
-        <div class="rounded-lg bg-gray-200 p-1 text-red-500">
-          <IconLogout />
-        </div>
-        <p class="font-medium">로그아웃</p>
-      </div>
-    </EntryButton>
+    <MenuEntryButton
+      onclick={() => goto("/auth/changePassword")}
+      icon={IconPassword}
+      iconColor="text-blue-500"
+    >
+      비밀번호 바꾸기
+    </MenuEntryButton>
+    <MenuEntryButton onclick={logout} icon={IconLogout} iconColor="text-red-500">
+      로그아웃
+    </MenuEntryButton>
   </div>
 </div>

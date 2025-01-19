@@ -9,11 +9,11 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 
   const zodRes = directoryCreateRequest.safeParse(await request.json());
   if (!zodRes.success) error(400, "Invalid request body");
-  const { parentId, mekVersion, dek, dekVersion, name, nameIv } = zodRes.data;
+  const { parent, mekVersion, dek, dekVersion, name, nameIv } = zodRes.data;
 
   await createDirectory({
     userId,
-    parentId,
+    parentId: parent,
     mekVersion,
     encDek: dek,
     dekVersion: new Date(dekVersion),

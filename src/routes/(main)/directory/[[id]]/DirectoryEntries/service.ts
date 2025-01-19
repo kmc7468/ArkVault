@@ -1,22 +1,23 @@
-import { get, type Writable } from "svelte/store";
-import type { DirectoryInfo, FileInfo } from "$lib/stores";
-
 export enum SortBy {
   NAME_ASC,
   NAME_DESC,
 }
 
-type SortFunc = (a: DirectoryInfo | FileInfo | null, b: DirectoryInfo | FileInfo | null) => number;
+type SortFunc = (a?: string, b?: string) => number;
+
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
 
 const sortByNameAsc: SortFunc = (a, b) => {
-  if (a && b) return a.name!.localeCompare(b.name!);
+  if (a && b) return collator.compare(a, b);
+  if (a) return -1;
+  if (b) return 1;
   return 0;
 };
 
 const sortByNameDesc: SortFunc = (a, b) => -sortByNameAsc(a, b);
 
-export const sortEntries = <T extends DirectoryInfo | FileInfo>(
-  entries: Writable<T | null>[],
+export const sortEntries = <T extends { name?: string }>(
+  entries: T[],
   sortBy: SortBy = SortBy.NAME_ASC,
 ) => {
   let sortFunc: SortFunc;
@@ -26,17 +27,5 @@ export const sortEntries = <T extends DirectoryInfo | FileInfo>(
     sortFunc = sortByNameDesc;
   }
 
-  entries.sort((a, b) => sortFunc(get(a), get(b)));
-};
-
-const pad2 = (num: number) => num.toString().padStart(2, "0");
-
-export const formatDate = (date: Date) => {
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-
-  return `${year}. ${month}. ${day}. ${pad2(hours)}:${pad2(minutes)}`;
+  entries.sort((a, b) => sortFunc(a.name, b.name));
 };

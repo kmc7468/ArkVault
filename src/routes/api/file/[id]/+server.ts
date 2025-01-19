@@ -17,6 +17,7 @@ export const GET: RequestHandler = async ({ locals, params }) => {
   const { id } = zodRes.data;
 
   const {
+    parentId,
     mekVersion,
     encDek,
     dekVersion,
@@ -28,6 +29,7 @@ export const GET: RequestHandler = async ({ locals, params }) => {
   } = await getFileInformation(userId, id);
   return json(
     fileInfoResponse.parse({
+      parent: parentId,
       mekVersion,
       dek: encDek,
       dekVersion: dekVersion.toISOString(),

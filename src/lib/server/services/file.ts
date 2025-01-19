@@ -1,8 +1,10 @@
 import { error } from "@sveltejs/kit";
+import { createHash } from "crypto";
 import { createReadStream, createWriteStream } from "fs";
 import { mkdir, stat, unlink } from "fs/promises";
 import { dirname } from "path";
-import { Readable, Writable } from "stream";
+import { Readable } from "stream";
+import { pipeline } from "stream/promises";
 import { v4 as uuidv4 } from "uuid";
 import { IntegrityError } from "$lib/server/db/error";
 import {
@@ -22,6 +24,7 @@ export const getFileInformation = async (userId: number, fileId: number) => {
   }
 
   return {
+    parentId: file.parentId ?? ("root" as const),
     mekVersion: file.mekVersion,
     encDek: file.encDek,
     dekVersion: file.dekVersion,
@@ -93,12 +96,13 @@ const safeUnlink = async (path: string) => {
 };
 
 export const uploadFile = async (
-  params: Omit<NewFileParams, "path">,
-  encContentStream: ReadableStream<Uint8Array>,
+  params: Omit<NewFileParams, "path" | "encContentHash">,
+  encContentStream: Readable,
+  encContentHash: Promise<string>,
 ) => {
-  const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const oneMinuteLater = new Date(Date.now() + 60 * 1000);
-  if (params.dekVersion <= oneMinuteAgo || params.dekVersion >= oneMinuteLater) {
+  if (params.dekVersion <= oneDayAgo || params.dekVersion >= oneMinuteLater) {
     error(400, "Invalid DEK version");
   }
 
@@ -106,20 +110,39 @@ export const uploadFile = async (
   await mkdir(dirname(path), { recursive: true });
 
   try {
-    await encContentStream.pipeTo(
-      Writable.toWeb(createWriteStream(path, { flags: "wx", mode: 0o600 })),
-    );
+    const hashStream = createHash("sha256");
+    const [_, hash] = await Promise.all([
+      pipeline(
+        encContentStream,
+        async function* (source) {
+          for await (const chunk of source) {
+            hashStream.update(chunk);
+            yield chunk;
+          }
+        },
+        createWriteStream(path, { flags: "wx", mode: 0o600 }),
+      ),
+      encContentHash,
+    ]);
+    if (hashStream.digest("base64") != hash) {
+      throw new Error("Invalid checksum");
+    }
+
     await registerFile({
       ...params,
       path,
+      encContentHash: hash,
     });
   } catch (e) {
     await safeUnlink(path);
 
-    if (e instanceof IntegrityError) {
-      if (e.message === "Inactive MEK version") {
-        error(400, "Invalid MEK version");
-      }
+    if (e instanceof IntegrityError && e.message === "Inactive MEK version") {
+      error(400, "Invalid MEK version");
+    } else if (
+      e instanceof Error &&
+      (e.message === "Invalid request body" || e.message === "Invalid checksum")
+    ) {
+      error(400, "Invalid request body");
     }
     throw e;
   }

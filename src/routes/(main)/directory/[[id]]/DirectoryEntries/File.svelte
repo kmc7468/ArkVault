@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
-  import type { FileInfo } from "$lib/stores";
-  import { formatDate } from "./service";
+  import type { FileInfo } from "$lib/modules/filesystem";
+  import { formatDateTime } from "$lib/modules/util";
   import type { SelectedDirectoryEntry } from "../service";
 
   import IconDraft from "~icons/material-symbols/draft";
@@ -17,6 +17,8 @@
 
   const openFile = () => {
     const { id, dataKey, dataKeyVersion, name } = $info!;
+    if (!dataKey || !dataKeyVersion) return; // TODO: Error handling
+
     setTimeout(() => {
       onclick({ type: "file", id, dataKey, dataKeyVersion, name });
     }, 100);
@@ -26,6 +28,8 @@
     e.stopPropagation();
 
     const { id, dataKey, dataKeyVersion, name } = $info!;
+    if (!dataKey || !dataKeyVersion) return; // TODO: Error handling
+
     setTimeout(() => {
       onOpenMenuClick({ type: "file", id, dataKey, dataKeyVersion, name });
     }, 100);
@@ -40,11 +44,13 @@
       <div class="flex-shrink-0 text-lg">
         <IconDraft class="text-blue-400" />
       </div>
-      <div class="flex flex-grow flex-col overflow-hidden">
+      <div class="flex-grow overflow-hidden">
         <p title={$info.name} class="truncate font-medium">
           {$info.name}
         </p>
-        <p class="text-xs text-gray-800">{formatDate($info.createdAt ?? $info.lastModifiedAt)}</p>
+        <p class="text-xs text-gray-800">
+          {formatDateTime($info.createdAt ?? $info.lastModifiedAt)}
+        </p>
       </div>
       <button
         id="open-menu"
