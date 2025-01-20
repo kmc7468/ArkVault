@@ -1,30 +1,31 @@
-import { SqliteError } from "better-sqlite3";
-import { and, eq, ne, gt, lte, isNull } from "drizzle-orm";
+import { DatabaseError } from "pg";
 import env from "$lib/server/loadenv";
-import db from "./drizzle";
 import { IntegrityError } from "./error";
-import { session, sessionUpgradeChallenge } from "./schema";
+import db from "./kysely";
 
 export const createSession = async (
   userId: number,
   clientId: number | null,
   sessionId: string,
   ip: string | null,
-  userAgent: string | null,
+  agent: string | null,
 ) => {
   try {
     const now = new Date();
-    await db.insert(session).values({
-      id: sessionId,
-      userId,
-      clientId,
-      createdAt: now,
-      lastUsedAt: now,
-      lastUsedByIp: ip || null,
-      lastUsedByUserAgent: userAgent || null,
-    });
+    await db
+      .insertInto("session")
+      .values({
+        id: sessionId,
+        user_id: userId,
+        client_id: clientId,
+        created_at: now,
+        last_used_at: now,
+        last_used_by_ip: ip || null,
+        last_used_by_agent: agent || null,
+      })
+      .execute();
   } catch (e) {
-    if (e instanceof SqliteError && e.code === "SQLITE_CONSTRAINT_UNIQUE") {
+    if (e instanceof DatabaseError && e.code === "23505") {
       throw new IntegrityError("Session already exists");
     }
     throw e;
@@ -34,49 +35,55 @@ export const createSession = async (
 export const refreshSession = async (
   sessionId: string,
   ip: string | null,
-  userAgent: string | null,
+  agent: string | null,
 ) => {
   const now = new Date();
-  const sessions = await db
-    .update(session)
+  const session = await db
+    .updateTable("session")
     .set({
-      lastUsedAt: now,
-      lastUsedByIp: ip || undefined,
-      lastUsedByUserAgent: userAgent || undefined,
+      last_used_at: now,
+      last_used_by_ip: ip !== "" ? ip : undefined, // Don't update if empty
+      last_used_by_agent: agent !== "" ? agent : undefined, // Don't update if empty
     })
-    .where(
-      and(
-        eq(session.id, sessionId),
-        gt(session.lastUsedAt, new Date(now.getTime() - env.session.exp)),
-      ),
-    )
-    .returning({ userId: session.userId, clientId: session.clientId });
-  if (!sessions[0]) {
+    .where("id", "=", sessionId)
+    .where("last_used_at", ">", new Date(now.getTime() - env.session.exp))
+    .returning(["user_id", "client_id"])
+    .executeTakeFirst();
+  if (!session) {
     throw new IntegrityError("Session not found");
   }
-  return sessions[0];
+  return { userId: session.user_id, clientId: session.client_id };
 };
 
 export const upgradeSession = async (sessionId: string, clientId: number) => {
   const res = await db
-    .update(session)
-    .set({ clientId })
-    .where(and(eq(session.id, sessionId), isNull(session.clientId)));
-  if (res.changes === 0) {
+    .updateTable("session")
+    .set({ client_id: clientId })
+    .where("id", "=", sessionId)
+    .where("client_id", "is", null)
+    .executeTakeFirst();
+  if (res.numUpdatedRows === 0n) {
     throw new IntegrityError("Session not found");
   }
 };
 
 export const deleteSession = async (sessionId: string) => {
-  await db.delete(session).where(eq(session.id, sessionId));
+  await db.deleteFrom("session").where("id", "=", sessionId).execute();
 };
 
 export const deleteAllOtherSessions = async (userId: number, sessionId: string) => {
-  await db.delete(session).where(and(eq(session.userId, userId), ne(session.id, sessionId)));
+  await db
+    .deleteFrom("session")
+    .where("id", "!=", sessionId)
+    .where("user_id", "=", userId)
+    .execute();
 };
 
 export const cleanupExpiredSessions = async () => {
-  await db.delete(session).where(lte(session.lastUsedAt, new Date(Date.now() - env.session.exp)));
+  await db
+    .deleteFrom("session")
+    .where("last_used_at", "<=", new Date(Date.now() - env.session.exp))
+    .execute();
 };
 
 export const registerSessionUpgradeChallenge = async (
@@ -87,15 +94,18 @@ export const registerSessionUpgradeChallenge = async (
   expiresAt: Date,
 ) => {
   try {
-    await db.insert(sessionUpgradeChallenge).values({
-      sessionId,
-      clientId,
-      answer,
-      allowedIp,
-      expiresAt,
-    });
+    await db
+      .insertInto("session_upgrade_challenge")
+      .values({
+        session_id: sessionId,
+        client_id: clientId,
+        answer,
+        allowed_ip: allowedIp,
+        expires_at: expiresAt,
+      })
+      .execute();
   } catch (e) {
-    if (e instanceof SqliteError && e.code === "SQLITE_CONSTRAINT_UNIQUE") {
+    if (e instanceof DatabaseError && e.code === "23505") {
       throw new IntegrityError("Challenge already registered");
     }
     throw e;
@@ -107,22 +117,17 @@ export const consumeSessionUpgradeChallenge = async (
   answer: string,
   ip: string,
 ) => {
-  const challenges = await db
-    .delete(sessionUpgradeChallenge)
-    .where(
-      and(
-        eq(sessionUpgradeChallenge.sessionId, sessionId),
-        eq(sessionUpgradeChallenge.answer, answer),
-        eq(sessionUpgradeChallenge.allowedIp, ip),
-        gt(sessionUpgradeChallenge.expiresAt, new Date()),
-      ),
-    )
-    .returning({ clientId: sessionUpgradeChallenge.clientId });
-  return challenges[0] ?? null;
+  const challenge = await db
+    .deleteFrom("session_upgrade_challenge")
+    .where("session_id", "=", sessionId)
+    .where("answer", "=", answer)
+    .where("allowed_ip", "=", ip)
+    .where("expires_at", ">", new Date())
+    .returning("client_id")
+    .executeTakeFirst();
+  return challenge ? { clientId: challenge.client_id } : null;
 };
 
 export const cleanupExpiredSessionUpgradeChallenges = async () => {
-  await db
-    .delete(sessionUpgradeChallenge)
-    .where(lte(sessionUpgradeChallenge.expiresAt, new Date()));
+  await db.deleteFrom("session_upgrade_challenge").where("expires_at", "<=", new Date()).execute();
 };

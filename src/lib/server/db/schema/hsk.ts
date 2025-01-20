@@ -44,10 +44,12 @@ export const hskLog = sqliteTable(
   }),
 );
 
+export type HskState = "active";
+
 interface HskTable {
   user_id: number;
   version: number;
-  state: "active";
+  state: HskState;
   master_encryption_key_version: number;
   encrypted_key: string; // Base64
 }

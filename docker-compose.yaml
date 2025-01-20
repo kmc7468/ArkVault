@@ -1,13 +1,17 @@
 services:
   server:
     build: .
-    restart: unless-stopped
+    restart: on-failure
+    depends_on:
+      - database
     user: ${CONTAINER_UID:-0}:${CONTAINER_GID:-0}
     volumes:
-      - ./data:/app/data
+      - ./data/library:/app/data/library
     environment:
       # ArkVault
-      - DATABASE_URL=/app/data/database.sqlite
+      - DATABASE_HOST=database
+      - DATABASE_USER=arkvault
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD:?} # Required
       - SESSION_SECRET=${SESSION_SECRET:?} # Required
       - SESSION_EXPIRES
       - USER_CLIENT_CHALLENGE_EXPIRES
@@ -19,3 +23,12 @@ services:
       - NODE_ENV=${NODE_ENV:-production}
     ports:
       - ${PORT:-80}:3000
+
+  database:
+    image: postgres:17.2-alpine
+    restart: on-failure
+    volumes:
+      - ./data/database:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=arkvault
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD:?}

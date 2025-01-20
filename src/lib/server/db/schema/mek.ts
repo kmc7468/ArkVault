@@ -60,10 +60,12 @@ export const clientMek = sqliteTable(
   }),
 );
 
+export type MekState = "active" | "retired" | "dead";
+
 interface MekTable {
   user_id: number;
   version: number;
-  state: "active" | "retired" | "dead";
+  state: MekState;
 }
 
 interface MekLogTable {

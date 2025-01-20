@@ -5,4 +5,5 @@ export * from "./mek";
 export * from "./session";
 export * from "./user";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Database {}

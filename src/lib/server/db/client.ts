@@ -1,53 +1,97 @@
-import { SqliteError } from "better-sqlite3";
-import { and, or, eq, gt, lte } from "drizzle-orm";
-import db from "./drizzle";
+import { DatabaseError } from "pg";
 import { IntegrityError } from "./error";
-import { client, userClient, userClientChallenge } from "./schema";
+import db from "./kysely";
+import type { UserClientState } from "./schema";
+
+interface Client {
+  id: number;
+  encPubKey: string;
+  sigPubKey: string;
+}
+
+interface UserClient {
+  userId: number;
+  clientId: number;
+  state: UserClientState;
+}
+
+interface UserClientWithDetails extends UserClient {
+  encPubKey: string;
+  sigPubKey: string;
+}
 
 export const createClient = async (encPubKey: string, sigPubKey: string, userId: number) => {
-  return await db.transaction(
-    async (tx) => {
-      const clients = await tx
-        .select({ id: client.id })
-        .from(client)
-        .where(or(eq(client.encPubKey, sigPubKey), eq(client.sigPubKey, encPubKey)))
-        .limit(1);
-      if (clients.length !== 0) {
+  return await db
+    .transaction()
+    .setIsolationLevel("serializable")
+    .execute(async (trx) => {
+      const client = await trx
+        .selectFrom("client")
+        .where((eb) =>
+          eb.or([
+            eb("encryption_public_key", "=", encPubKey),
+            eb("encryption_public_key", "=", sigPubKey),
+            eb("signature_public_key", "=", encPubKey),
+            eb("signature_public_key", "=", sigPubKey),
+          ]),
+        )
+        .limit(1)
+        .executeTakeFirst();
+      if (client) {
         throw new IntegrityError("Public key(s) already registered");
       }
 
-      const newClients = await tx
-        .insert(client)
-        .values({ encPubKey, sigPubKey })
-        .returning({ id: client.id });
-      const { id: clientId } = newClients[0]!;
-      await tx.insert(userClient).values({ userId, clientId });
-
-      return clientId;
-    },
-    { behavior: "exclusive" },
-  );
+      const { clientId } = await trx
+        .insertInto("client")
+        .values({ encryption_public_key: encPubKey, signature_public_key: sigPubKey })
+        .returning("id as clientId")
+        .executeTakeFirstOrThrow();
+      await trx
+        .insertInto("user_client")
+        .values({ user_id: userId, client_id: clientId })
+        .execute();
+      return { clientId };
+    });
 };
 
 export const getClient = async (clientId: number) => {
-  const clients = await db.select().from(client).where(eq(client.id, clientId)).limit(1);
-  return clients[0] ?? null;
+  const client = await db
+    .selectFrom("client")
+    .selectAll()
+    .where("id", "=", clientId)
+    .limit(1)
+    .executeTakeFirst();
+  return client
+    ? ({
+        id: client.id,
+        encPubKey: client.encryption_public_key,
+        sigPubKey: client.signature_public_key,
+      } satisfies Client)
+    : null;
 };
 
 export const getClientByPubKeys = async (encPubKey: string, sigPubKey: string) => {
-  const clients = await db
-    .select()
-    .from(client)
-    .where(and(eq(client.encPubKey, encPubKey), eq(client.sigPubKey, sigPubKey)))
-    .limit(1);
-  return clients[0] ?? null;
+  const client = await db
+    .selectFrom("client")
+    .selectAll()
+    .where("encryption_public_key", "=", encPubKey)
+    .where("signature_public_key", "=", sigPubKey)
+    .limit(1)
+    .executeTakeFirst();
+  return client
+    ? ({
+        id: client.id,
+        encPubKey: client.encryption_public_key,
+        sigPubKey: client.signature_public_key,
+      } satisfies Client)
+    : null;
 };
 
 export const createUserClient = async (userId: number, clientId: number) => {
   try {
-    await db.insert(userClient).values({ userId, clientId });
+    await db.insertInto("user_client").values({ user_id: userId, client_id: clientId }).execute();
   } catch (e) {
-    if (e instanceof SqliteError && e.code === "SQLITE_CONSTRAINT_PRIMARYKEY") {
+    if (e instanceof DatabaseError && e.code === "23505") {
       throw new IntegrityError("User client already exists");
     }
     throw e;
@@ -55,52 +99,76 @@ export const createUserClient = async (userId: number, clientId: number) => {
 };
 
 export const getAllUserClients = async (userId: number) => {
-  return await db.select().from(userClient).where(eq(userClient.userId, userId));
+  const userClients = await db
+    .selectFrom("user_client")
+    .selectAll()
+    .where("user_id", "=", userId)
+    .execute();
+  return userClients.map(
+    ({ user_id, client_id, state }) =>
+      ({
+        userId: user_id,
+        clientId: client_id,
+        state,
+      }) satisfies UserClient,
+  );
 };
 
 export const getUserClient = async (userId: number, clientId: number) => {
-  const userClients = await db
-    .select()
-    .from(userClient)
-    .where(and(eq(userClient.userId, userId), eq(userClient.clientId, clientId)))
-    .limit(1);
-  return userClients[0] ?? null;
+  const userClient = await db
+    .selectFrom("user_client")
+    .selectAll()
+    .where("user_id", "=", userId)
+    .where("client_id", "=", clientId)
+    .limit(1)
+    .executeTakeFirst();
+  return userClient
+    ? ({
+        userId: userClient.user_id,
+        clientId: userClient.client_id,
+        state: userClient.state,
+      } satisfies UserClient)
+    : null;
 };
 
 export const getUserClientWithDetails = async (userId: number, clientId: number) => {
-  const userClients = await db
-    .select()
-    .from(userClient)
-    .innerJoin(client, eq(userClient.clientId, client.id))
-    .where(and(eq(userClient.userId, userId), eq(userClient.clientId, clientId)))
-    .limit(1);
-  return userClients[0] ?? null;
+  const userClient = await db
+    .selectFrom("user_client")
+    .innerJoin("client", "user_client.client_id", "client.id")
+    .selectAll()
+    .where("user_id", "=", userId)
+    .where("client_id", "=", clientId)
+    .limit(1)
+    .executeTakeFirst();
+  return userClient
+    ? ({
+        userId: userClient.user_id,
+        clientId: userClient.client_id,
+        state: userClient.state,
+        encPubKey: userClient.encryption_public_key,
+        sigPubKey: userClient.signature_public_key,
+      } satisfies UserClientWithDetails)
+    : null;
 };
 
 export const setUserClientStateToPending = async (userId: number, clientId: number) => {
   await db
-    .update(userClient)
+    .updateTable("user_client")
     .set({ state: "pending" })
-    .where(
-      and(
-        eq(userClient.userId, userId),
-        eq(userClient.clientId, clientId),
-        eq(userClient.state, "challenging"),
-      ),
-    );
+    .where("user_id", "=", userId)
+    .where("client_id", "=", clientId)
+    .where("state", "=", "challenging")
+    .execute();
 };
 
 export const setUserClientStateToActive = async (userId: number, clientId: number) => {
   await db
-    .update(userClient)
+    .updateTable("user_client")
     .set({ state: "active" })
-    .where(
-      and(
-        eq(userClient.userId, userId),
-        eq(userClient.clientId, clientId),
-        eq(userClient.state, "pending"),
-      ),
-    );
+    .where("user_id", "=", userId)
+    .where("client_id", "=", clientId)
+    .where("state", "=", "pending")
+    .execute();
 };
 
 export const registerUserClientChallenge = async (
@@ -110,30 +178,30 @@ export const registerUserClientChallenge = async (
   allowedIp: string,
   expiresAt: Date,
 ) => {
-  await db.insert(userClientChallenge).values({
-    userId,
-    clientId,
-    answer,
-    allowedIp,
-    expiresAt,
-  });
+  await db
+    .insertInto("user_client_challenge")
+    .values({
+      user_id: userId,
+      client_id: clientId,
+      answer,
+      allowed_ip: allowedIp,
+      expires_at: expiresAt,
+    })
+    .execute();
 };
 
 export const consumeUserClientChallenge = async (userId: number, answer: string, ip: string) => {
-  const challenges = await db
-    .delete(userClientChallenge)
-    .where(
-      and(
-        eq(userClientChallenge.userId, userId),
-        eq(userClientChallenge.answer, answer),
-        eq(userClientChallenge.allowedIp, ip),
-        gt(userClientChallenge.expiresAt, new Date()),
-      ),
-    )
-    .returning({ clientId: userClientChallenge.clientId });
-  return challenges[0] ?? null;
+  const challenge = await db
+    .deleteFrom("user_client_challenge")
+    .where("user_id", "=", userId)
+    .where("answer", "=", answer)
+    .where("allowed_ip", "=", ip)
+    .where("expires_at", ">", new Date())
+    .returning("client_id")
+    .executeTakeFirst();
+  return challenge ? { clientId: challenge.client_id } : null;
 };
 
 export const cleanupExpiredUserClientChallenges = async () => {
-  await db.delete(userClientChallenge).where(lte(userClientChallenge.expiresAt, new Date()));
+  await db.deleteFrom("user_client_challenge").where("expires_at", "<=", new Date()).execute();
 };

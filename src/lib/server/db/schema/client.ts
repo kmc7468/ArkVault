@@ -67,10 +67,12 @@ interface ClientTable {
   signature_public_key: string; // Base64
 }
 
+export type UserClientState = "challenging" | "pending" | "active";
+
 interface UserClientTable {
   user_id: number;
   client_id: number;
-  state: "challenging" | "pending" | "active";
+  state: ColumnType<UserClientState, UserClientState | undefined>;
 }
 
 interface UserClientChallengeTable {

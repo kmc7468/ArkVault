@@ -1,5 +1,5 @@
 import { sqliteTable, text, integer, foreignKey } from "drizzle-orm/sqlite-core";
-import type { ColumnType, Generated, JSONColumnType } from "kysely";
+import type { ColumnType, Generated } from "kysely";
 import { hsk } from "./hsk";
 import { mek } from "./mek";
 import { user } from "./user";
@@ -88,10 +88,10 @@ export const fileLog = sqliteTable("file_log", {
   newName: ciphertext("new_name"),
 });
 
-type Ciphertext = JSONColumnType<{
+export type Ciphertext = {
   ciphertext: string; // Base64
   iv: string; // Base64
-}>;
+};
 
 interface DirectoryTable {
   id: Generated<number>;
