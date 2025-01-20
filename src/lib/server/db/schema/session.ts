@@ -1,4 +1,5 @@
 import { sqliteTable, text, integer, unique } from "drizzle-orm/sqlite-core";
+import type { ColumnType, Generated } from "kysely";
 import { client } from "./client";
 import { user } from "./user";
 
@@ -33,3 +34,29 @@ export const sessionUpgradeChallenge = sqliteTable("session_upgrade_challenge", 
   allowedIp: text("allowed_ip").notNull(),
   expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
 });
+
+interface SessionTable {
+  id: string;
+  user_id: number;
+  client_id: number | null;
+  created_at: ColumnType<Date, Date, never>;
+  last_used_at: Date;
+  last_used_by_ip: string | null;
+  last_used_by_agent: string | null;
+}
+
+interface SessionUpgradeChallengeTable {
+  id: Generated<number>;
+  session_id: string;
+  client_id: number;
+  answer: string; // Base64
+  allowed_ip: string;
+  expires_at: ColumnType<Date, Date, never>;
+}
+
+declare module "./index" {
+  interface Database {
+    session: SessionTable;
+    session_upgrade_challenge: SessionUpgradeChallengeTable;
+  }
+}
