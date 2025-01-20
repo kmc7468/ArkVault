@@ -9,8 +9,8 @@ if (!building) {
 
 export default {
   database: {
-    host: env.DATABASE_HOST || "localhost",
-    port: parseInt(env.DATABASE_PORT || "5432", 10),
+    host: env.DATABASE_HOST,
+    port: env.DATABASE_PORT ? parseInt(env.DATABASE_PORT, 10) : undefined,
     user: env.DATABASE_USER,
     password: env.DATABASE_PASSWORD!,
     name: env.DATABASE_NAME,
