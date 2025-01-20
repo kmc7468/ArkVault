@@ -20,6 +20,6 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
   if (!bodyZodRes.success) error(400, "Invalid request body");
   const { dekVersion, name, nameIv } = bodyZodRes.data;
 
-  await renameFile(userId, id, new Date(dekVersion), name, nameIv);
+  await renameFile(userId, id, new Date(dekVersion), { ciphertext: name, iv: nameIv });
   return text("File renamed", { headers: { "Content-Type": "text/plain" } });
 };

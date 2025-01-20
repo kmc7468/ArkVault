@@ -13,8 +13,9 @@ import {
   getFile,
   setFileEncName,
   unregisterFile,
-  type NewFileParams,
+  type NewFile,
 } from "$lib/server/db/file";
+import type { Ciphertext } from "$lib/server/db/schema";
 import env from "$lib/server/loadenv";
 
 export const getFileInformation = async (userId: number, fileId: number) => {
@@ -38,8 +39,8 @@ export const getFileInformation = async (userId: number, fileId: number) => {
 
 export const deleteFile = async (userId: number, fileId: number) => {
   try {
-    const filePath = await unregisterFile(userId, fileId);
-    unlink(filePath); // Intended
+    const { path } = await unregisterFile(userId, fileId);
+    unlink(path); // Intended
   } catch (e) {
     if (e instanceof IntegrityError && e.message === "File not found") {
       error(404, "Invalid file id");
@@ -65,11 +66,10 @@ export const renameFile = async (
   userId: number,
   fileId: number,
   dekVersion: Date,
-  newEncName: string,
-  newEncNameIv: string,
+  newEncName: Ciphertext,
 ) => {
   try {
-    await setFileEncName(userId, fileId, dekVersion, newEncName, newEncNameIv);
+    await setFileEncName(userId, fileId, dekVersion, newEncName);
   } catch (e) {
     if (e instanceof IntegrityError) {
       if (e.message === "File not found") {
@@ -96,7 +96,7 @@ const safeUnlink = async (path: string) => {
 };
 
 export const uploadFile = async (
-  params: Omit<NewFileParams, "path" | "encContentHash">,
+  params: Omit<NewFile, "path" | "encContentHash">,
   encContentStream: Readable,
   encContentHash: Promise<string>,
 ) => {

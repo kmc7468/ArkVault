@@ -1,8 +1,15 @@
-import { SqliteError } from "better-sqlite3";
-import { and, eq } from "drizzle-orm";
-import db from "./drizzle";
+import pg from "pg";
 import { IntegrityError } from "./error";
-import { hsk, hskLog } from "./schema";
+import db from "./kysely";
+import type { HskState } from "./schema";
+
+interface Hsk {
+  userId: number;
+  version: number;
+  state: HskState;
+  mekVersion: number;
+  encHsk: string;
+}
 
 export const registerInitialHsk = async (
   userId: number,
@@ -10,37 +17,52 @@ export const registerInitialHsk = async (
   mekVersion: number,
   encHsk: string,
 ) => {
-  await db.transaction(
-    async (tx) => {
-      try {
-        await tx.insert(hsk).values({
-          userId,
+  await db.transaction().execute(async (trx) => {
+    try {
+      await trx
+        .insertInto("hmac_secret_key")
+        .values({
+          user_id: userId,
           version: 1,
           state: "active",
-          mekVersion,
-          encHsk,
-        });
-        await tx.insert(hskLog).values({
-          userId,
-          hskVersion: 1,
+          master_encryption_key_version: mekVersion,
+          encrypted_key: encHsk,
+        })
+        .execute();
+      await trx
+        .insertInto("hmac_secret_key_log")
+        .values({
+          user_id: userId,
+          hmac_secret_key_version: 1,
           timestamp: new Date(),
           action: "create",
-          actionBy: createdBy,
-        });
-      } catch (e) {
-        if (e instanceof SqliteError && e.code === "SQLITE_CONSTRAINT_PRIMARYKEY") {
-          throw new IntegrityError("HSK already registered");
-        }
-        throw e;
+          action_by: createdBy,
+        })
+        .execute();
+    } catch (e) {
+      if (e instanceof pg.DatabaseError && e.code === "23505") {
+        throw new IntegrityError("HSK already registered");
       }
-    },
-    { behavior: "exclusive" },
-  );
+      throw e;
+    }
+  });
 };
 
 export const getAllValidHsks = async (userId: number) => {
-  return await db
-    .select()
-    .from(hsk)
-    .where(and(eq(hsk.userId, userId), eq(hsk.state, "active")));
+  const hsks = await db
+    .selectFrom("hmac_secret_key")
+    .selectAll()
+    .where("user_id", "=", userId)
+    .where("state", "=", "active")
+    .execute();
+  return hsks.map(
+    ({ user_id, version, state, master_encryption_key_version, encrypted_key }) =>
+      ({
+        userId: user_id,
+        version,
+        state: state as "active",
+        mekVersion: master_encryption_key_version,
+        encHsk: encrypted_key,
+      }) satisfies Hsk,
+  );
 };
