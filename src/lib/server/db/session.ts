@@ -1,4 +1,4 @@
-import { DatabaseError } from "pg";
+import pg from "pg";
 import env from "$lib/server/loadenv";
 import { IntegrityError } from "./error";
 import db from "./kysely";
@@ -25,7 +25,7 @@ export const createSession = async (
       })
       .execute();
   } catch (e) {
-    if (e instanceof DatabaseError && e.code === "23505") {
+    if (e instanceof pg.DatabaseError && e.code === "23505") {
       throw new IntegrityError("Session already exists");
     }
     throw e;
@@ -105,7 +105,7 @@ export const registerSessionUpgradeChallenge = async (
       })
       .execute();
   } catch (e) {
-    if (e instanceof DatabaseError && e.code === "23505") {
+    if (e instanceof pg.DatabaseError && e.code === "23505") {
       throw new IntegrityError("Challenge already registered");
     }
     throw e;

@@ -1,4 +1,4 @@
-import { DatabaseError } from "pg";
+import pg from "pg";
 import { IntegrityError } from "./error";
 import db from "./kysely";
 import type { UserClientState } from "./schema";
@@ -91,7 +91,7 @@ export const createUserClient = async (userId: number, clientId: number) => {
   try {
     await db.insertInto("user_client").values({ user_id: userId, client_id: clientId }).execute();
   } catch (e) {
-    if (e instanceof DatabaseError && e.code === "23505") {
+    if (e instanceof pg.DatabaseError && e.code === "23505") {
       throw new IntegrityError("User client already exists");
     }
     throw e;

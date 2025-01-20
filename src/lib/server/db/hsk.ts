@@ -1,4 +1,4 @@
-import { DatabaseError } from "pg";
+import pg from "pg";
 import { IntegrityError } from "./error";
 import db from "./kysely";
 import type { HskState } from "./schema";
@@ -40,7 +40,7 @@ export const registerInitialHsk = async (
         })
         .execute();
     } catch (e) {
-      if (e instanceof DatabaseError && e.code === "23505") {
+      if (e instanceof pg.DatabaseError && e.code === "23505") {
         throw new IntegrityError("HSK already registered");
       }
       throw e;

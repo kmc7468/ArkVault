@@ -27,6 +27,7 @@ services:
   database:
     image: postgres:17.2-alpine
     restart: on-failure
+    user: ${CONTAINER_UID:-0}:${CONTAINER_GID:-0}
     volumes:
       - ./data/database:/var/lib/postgresql/data
     environment:

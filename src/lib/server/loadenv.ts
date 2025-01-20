@@ -8,6 +8,7 @@ if (!building) {
 }
 
 export default {
+  nodeEnv: env.NODE_ENV || "development",
   database: {
     host: env.DATABASE_HOST,
     port: env.DATABASE_PORT ? parseInt(env.DATABASE_PORT, 10) : undefined,
