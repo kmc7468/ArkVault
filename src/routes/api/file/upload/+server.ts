@@ -40,12 +40,9 @@ const parseFileMetadata = (userId: number, json: string) => {
     contentHmac,
     contentType,
     encContentIv: contentIv,
-    encName: name,
-    encNameIv: nameIv,
-    encCreatedAt: createdAt ?? null,
-    encCreatedAtIv: createdAtIv ?? null,
-    encLastModifiedAt: lastModifiedAt,
-    encLastModifiedAtIv: lastModifiedAtIv,
+    encName: { ciphertext: name, iv: nameIv },
+    encCreatedAt: createdAt && createdAtIv ? { ciphertext: createdAt, iv: createdAtIv } : null,
+    encLastModifiedAt: { ciphertext: lastModifiedAt, iv: lastModifiedAtIv },
   } satisfies FileMetadata;
 };
 

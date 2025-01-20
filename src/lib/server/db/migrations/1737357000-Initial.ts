@@ -1,5 +1,6 @@
 import { Kysely } from "kysely";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const up = async (db: Kysely<any>) => {
   // user.ts
   await db.schema
@@ -203,6 +204,7 @@ export const up = async (db: Kysely<any>) => {
     .execute();
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const down = async (db: Kysely<any>) => {
   await db.schema.dropTable("file_log").execute();
   await db.schema.dropTable("file").execute();

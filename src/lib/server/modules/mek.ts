@@ -21,5 +21,5 @@ export const verifyClientEncMekSig = async (
   }
 
   const data = JSON.stringify({ version, key: encMek });
-  return verifySignature(Buffer.from(data), encMekSig, userClient.client.sigPubKey);
+  return verifySignature(Buffer.from(data), encMekSig, userClient.sigPubKey);
 };

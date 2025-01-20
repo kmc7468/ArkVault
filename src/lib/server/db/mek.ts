@@ -82,8 +82,8 @@ export const getAllValidClientMeks = async (userId: number, clientId: number) =>
         .onRef("client_master_encryption_key.version", "=", "master_encryption_key.version"),
     )
     .selectAll()
-    .where("user_id", "=", userId)
-    .where("client_id", "=", clientId)
+    .where("client_master_encryption_key.user_id", "=", userId)
+    .where("client_master_encryption_key.client_id", "=", clientId)
     .where((eb) => eb.or([eb("state", "=", "active"), eb("state", "=", "retired")]))
     .execute();
   return clientMeks.map(
