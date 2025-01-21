@@ -2,7 +2,7 @@ import { IntegrityError } from "./error";
 import db from "./kysely";
 import type { Ciphertext } from "./schema";
 
-type CategoryId = "root" | number;
+export type CategoryId = "root" | number;
 
 interface Category {
   id: number;

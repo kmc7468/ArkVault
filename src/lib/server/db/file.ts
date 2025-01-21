@@ -3,7 +3,7 @@ import { IntegrityError } from "./error";
 import db from "./kysely";
 import type { Ciphertext } from "./schema";
 
-type DirectoryId = "root" | number;
+export type DirectoryId = "root" | number;
 
 interface Directory {
   id: number;

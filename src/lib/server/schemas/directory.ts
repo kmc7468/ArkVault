@@ -1,9 +1,11 @@
 import { z } from "zod";
 
+export const directoryIdSchema = z.union([z.enum(["root"]), z.number().int().positive()]);
+
 export const directoryInfoResponse = z.object({
   metadata: z
     .object({
-      parent: z.union([z.enum(["root"]), z.number().int().positive()]),
+      parent: directoryIdSchema,
       mekVersion: z.number().int().positive(),
       dek: z.string().base64().nonempty(),
       dekVersion: z.string().datetime(),
@@ -29,7 +31,7 @@ export const directoryRenameRequest = z.object({
 export type DirectoryRenameRequest = z.infer<typeof directoryRenameRequest>;
 
 export const directoryCreateRequest = z.object({
-  parent: z.union([z.enum(["root"]), z.number().int().positive()]),
+  parent: directoryIdSchema,
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
   dekVersion: z.string().datetime(),

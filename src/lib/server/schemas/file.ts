@@ -1,8 +1,9 @@
 import mime from "mime";
 import { z } from "zod";
+import { directoryIdSchema } from "./directory";
 
 export const fileInfoResponse = z.object({
-  parent: z.union([z.enum(["root"]), z.number().int().positive()]),
+  parent: directoryIdSchema,
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
   dekVersion: z.string().datetime(),
@@ -39,7 +40,7 @@ export const duplicateFileScanResponse = z.object({
 export type DuplicateFileScanResponse = z.infer<typeof duplicateFileScanResponse>;
 
 export const fileUploadRequest = z.object({
-  parent: z.union([z.enum(["root"]), z.number().int().positive()]),
+  parent: directoryIdSchema,
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
   dekVersion: z.string().datetime(),
