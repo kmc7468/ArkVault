@@ -17,6 +17,16 @@ export const categoryInfoResponse = z.object({
 });
 export type CategoryInfoResponse = z.infer<typeof categoryInfoResponse>;
 
+export const categoryFileAddRequest = z.object({
+  file: z.number().int().positive(),
+});
+export type CategoryFileAddRequest = z.infer<typeof categoryFileAddRequest>;
+
+export const categoryFileListResponse = z.object({
+  files: z.number().int().positive().array(),
+});
+export type CategoryFileListResponse = z.infer<typeof categoryFileListResponse>;
+
 export const categoryCreateRequest = z.object({
   parent: categoryIdSchema,
   mekVersion: z.number().int().positive(),

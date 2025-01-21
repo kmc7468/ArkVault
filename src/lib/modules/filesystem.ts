@@ -13,6 +13,7 @@ import {
 } from "$lib/indexedDB";
 import { unwrapDataKey, decryptString } from "$lib/modules/crypto";
 import type {
+  CategoryFileListResponse,
   CategoryInfoResponse,
   DirectoryInfoResponse,
   FileInfoResponse,
@@ -56,6 +57,7 @@ export type CategoryInfo =
       dataKeyVersion?: undefined;
       name?: undefined;
       subCategoryIds: number[];
+      files?: undefined;
     }
   | {
       id: number;
@@ -63,6 +65,7 @@ export type CategoryInfo =
       dataKeyVersion?: Date;
       name: string;
       subCategoryIds: number[];
+      files: number[];
     };
 
 const directoryInfoStore = new Map<DirectoryId, Writable<DirectoryInfo | null>>();
@@ -235,7 +238,7 @@ const fetchCategoryInfoFromServer = async (
   info: Writable<CategoryInfo | null>,
   masterKey: CryptoKey,
 ) => {
-  const res = await callGetApi(`/api/category/${id}`);
+  let res = await callGetApi(`/api/category/${id}`);
   if (res.status === 404) {
     info.set(null);
     return;
@@ -251,12 +254,20 @@ const fetchCategoryInfoFromServer = async (
     const { dataKey } = await unwrapDataKey(metadata!.dek, masterKey);
     const name = await decryptString(metadata!.name, metadata!.nameIv, dataKey);
 
+    res = await callGetApi(`/api/category/${id}/file/list`);
+    if (!res.ok) {
+      throw new Error("Failed to fetch category files");
+    }
+
+    const { files }: CategoryFileListResponse = await res.json();
+
     info.set({
       id,
       dataKey,
       dataKeyVersion: new Date(metadata!.dekVersion),
       name,
       subCategoryIds: subCategories,
+      files,
     });
   }
 };

@@ -5,6 +5,7 @@
   import { getCategoryInfo, type CategoryInfo } from "$lib/modules/filesystem";
   import { masterKeyStore } from "$lib/stores";
   import CreateCategoryModal from "./CreateCategoryModal.svelte";
+  import Files from "./Files.svelte";
   import SubCategories from "./SubCategories.svelte";
   import { requestCategoryCreation } from "./service";
 
@@ -34,7 +35,7 @@
     <TopBar title={$info?.name} xPadding />
   {/if}
   {#if $info}
-    <div class="flex-grow space-y-4 bg-gray-100">
+    <div class="flex-grow space-y-4 bg-gray-100 pb-[5.5em]">
       <div class="space-y-4 bg-white p-4">
         {#if data.id !== "root"}
           <p class="text-lg font-bold text-gray-800">하위 카테고리</p>
@@ -52,6 +53,9 @@
       {#if data.id !== "root"}
         <div class="space-y-4 bg-white p-4">
           <p class="text-lg font-bold text-gray-800">파일</p>
+          {#key $info}
+            <Files info={$info} onFileClick={({ id }) => goto(`/file/${id}`)} />
+          {/key}
         </div>
       {/if}
     </div>
