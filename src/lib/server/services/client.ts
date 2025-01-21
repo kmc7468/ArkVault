@@ -63,7 +63,7 @@ export const registerUserClient = async (
     }
 
     try {
-      const clientId = await createClient(encPubKey, sigPubKey, userId);
+      const { clientId } = await createClient(encPubKey, sigPubKey, userId);
       return { challenge: await createUserClientChallenge(ip, userId, clientId, encPubKey) };
     } catch (e) {
       if (e instanceof IntegrityError && e.message === "Public key(s) already registered") {

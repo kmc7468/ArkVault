@@ -7,11 +7,11 @@ import { verifyClientEncMekSig } from "$lib/server/modules/mek";
 export const getClientMekList = async (userId: number, clientId: number) => {
   const clientMeks = await getAllValidClientMeks(userId, clientId);
   return {
-    encMeks: clientMeks.map((clientMek) => ({
-      version: clientMek.master_encryption_key.version,
-      state: clientMek.master_encryption_key.state as "active" | "retired",
-      encMek: clientMek.client_master_encryption_key.encMek,
-      encMekSig: clientMek.client_master_encryption_key.encMekSig,
+    encMeks: clientMeks.map(({ version, state, encMek, encMekSig }) => ({
+      version,
+      state,
+      encMek,
+      encMekSig,
     })),
   };
 };
