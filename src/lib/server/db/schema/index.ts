@@ -5,6 +5,7 @@ export * from "./hsk";
 export * from "./mek";
 export * from "./session";
 export * from "./user";
+export * from "./util";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Database {}

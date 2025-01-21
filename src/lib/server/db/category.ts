@@ -1,111 +1,144 @@
-import { and, eq, isNull } from "drizzle-orm";
-import db from "./drizzle";
 import { IntegrityError } from "./error";
-import { category, categoryLog, mek } from "./schema";
+import db from "./kysely";
+import type { Ciphertext } from "./schema";
 
 type CategoryId = "root" | number;
 
-export interface NewCategoryParams {
-  parentId: "root" | number;
+interface Category {
+  id: number;
+  parentId: CategoryId;
   userId: number;
   mekVersion: number;
   encDek: string;
   dekVersion: Date;
-  encName: string;
-  encNameIv: string;
+  encName: Ciphertext;
 }
 
-export const registerCategory = async (params: NewCategoryParams) => {
-  await db.transaction(
-    async (tx) => {
-      const meks = await tx
-        .select({ version: mek.version })
-        .from(mek)
-        .where(and(eq(mek.userId, params.userId), eq(mek.state, "active")))
-        .limit(1);
-      if (meks[0]?.version !== params.mekVersion) {
-        throw new IntegrityError("Inactive MEK version");
-      }
+export type NewCategory = Omit<Category, "id">;
 
-      const newCategories = await tx
-        .insert(category)
-        .values({
-          parentId: params.parentId === "root" ? null : params.parentId,
-          userId: params.userId,
-          mekVersion: params.mekVersion,
-          encDek: params.encDek,
-          dekVersion: params.dekVersion,
-          encName: { ciphertext: params.encName, iv: params.encNameIv },
-        })
-        .returning({ id: category.id });
-      const { id: categoryId } = newCategories[0]!;
-      await tx.insert(categoryLog).values({
-        categoryId,
+export const registerCategory = async (params: NewCategory) => {
+  await db.transaction().execute(async (trx) => {
+    const mek = await trx
+      .selectFrom("master_encryption_key")
+      .select("version")
+      .where("user_id", "=", params.userId)
+      .where("state", "=", "active")
+      .limit(1)
+      .forUpdate()
+      .executeTakeFirst();
+    if (mek?.version !== params.mekVersion) {
+      throw new IntegrityError("Inactive MEK version");
+    }
+
+    const { categoryId } = await trx
+      .insertInto("category")
+      .values({
+        parent_id: params.parentId !== "root" ? params.parentId : null,
+        user_id: params.userId,
+        master_encryption_key_version: params.mekVersion,
+        encrypted_data_encryption_key: params.encDek,
+        data_encryption_key_version: params.dekVersion,
+        encrypted_name: params.encName,
+      })
+      .returning("id as categoryId")
+      .executeTakeFirstOrThrow();
+    await trx
+      .insertInto("category_log")
+      .values({
+        category_id: categoryId,
         timestamp: new Date(),
         action: "create",
-        newName: { ciphertext: params.encName, iv: params.encNameIv },
-      });
-    },
-    { behavior: "exclusive" },
-  );
+        new_name: params.encName,
+      })
+      .execute();
+  });
 };
 
 export const getAllCategoriesByParent = async (userId: number, parentId: CategoryId) => {
-  return await db
-    .select()
-    .from(category)
-    .where(
-      and(
-        eq(category.userId, userId),
-        parentId === "root" ? isNull(category.parentId) : eq(category.parentId, parentId),
-      ),
-    );
+  let query = db.selectFrom("category").selectAll().where("user_id", "=", userId);
+  query =
+    parentId === "root"
+      ? query.where("parent_id", "is", null)
+      : query.where("parent_id", "=", parentId);
+  const categories = await query.execute();
+  return categories.map(
+    (category) =>
+      ({
+        id: category.id,
+        parentId: category.parent_id ?? "root",
+        userId: category.user_id,
+        mekVersion: category.master_encryption_key_version,
+        encDek: category.encrypted_data_encryption_key,
+        dekVersion: category.data_encryption_key_version,
+        encName: category.encrypted_name,
+      }) satisfies Category,
+  );
 };
 
 export const getCategory = async (userId: number, categoryId: number) => {
-  const res = await db
-    .select()
-    .from(category)
-    .where(and(eq(category.userId, userId), eq(category.id, categoryId)))
-    .limit(1);
-  return res[0] ?? null;
+  const category = await db
+    .selectFrom("category")
+    .selectAll()
+    .where("id", "=", categoryId)
+    .where("user_id", "=", userId)
+    .limit(1)
+    .executeTakeFirst();
+  return category
+    ? ({
+        id: category.id,
+        parentId: category.parent_id ?? "root",
+        userId: category.user_id,
+        mekVersion: category.master_encryption_key_version,
+        encDek: category.encrypted_data_encryption_key,
+        dekVersion: category.data_encryption_key_version,
+        encName: category.encrypted_name,
+      } satisfies Category)
+    : null;
 };
 
 export const setCategoryEncName = async (
   userId: number,
   categoryId: number,
   dekVersion: Date,
-  encName: string,
-  encNameIv: string,
+  encName: Ciphertext,
 ) => {
-  await db.transaction(
-    async (tx) => {
-      const categories = await tx
-        .select({ version: category.dekVersion })
-        .from(category)
-        .where(and(eq(category.userId, userId), eq(category.id, categoryId)))
-        .limit(1);
-      if (!categories[0]) {
-        throw new IntegrityError("Category not found");
-      } else if (categories[0].version.getTime() !== dekVersion.getTime()) {
-        throw new IntegrityError("Invalid DEK version");
-      }
+  await db.transaction().execute(async (trx) => {
+    const category = await trx
+      .selectFrom("category")
+      .select("data_encryption_key_version")
+      .where("id", "=", categoryId)
+      .where("user_id", "=", userId)
+      .limit(1)
+      .forUpdate()
+      .executeTakeFirst();
+    if (!category) {
+      throw new IntegrityError("Category not found");
+    } else if (category.data_encryption_key_version.getTime() !== dekVersion.getTime()) {
+      throw new IntegrityError("Invalid DEK version");
+    }
 
-      await tx
-        .update(category)
-        .set({ encName: { ciphertext: encName, iv: encNameIv } })
-        .where(and(eq(category.userId, userId), eq(category.id, categoryId)));
-      await tx.insert(categoryLog).values({
-        categoryId,
+    await trx
+      .updateTable("category")
+      .set({ encrypted_name: encName })
+      .where("id", "=", categoryId)
+      .where("user_id", "=", userId)
+      .execute();
+    await trx
+      .insertInto("category_log")
+      .values({
+        category_id: categoryId,
         timestamp: new Date(),
         action: "rename",
-        newName: { ciphertext: encName, iv: encNameIv },
-      });
-    },
-    { behavior: "exclusive" },
-  );
+        new_name: encName,
+      })
+      .execute();
+  });
 };
 
 export const unregisterCategory = async (userId: number, categoryId: number) => {
-  await db.delete(category).where(and(eq(category.userId, userId), eq(category.id, categoryId)));
+  await db
+    .deleteFrom("category")
+    .where("id", "=", categoryId)
+    .where("user_id", "=", userId)
+    .execute();
 };

@@ -1,3 +1,4 @@
+import pg from "pg";
 import { IntegrityError } from "./error";
 import db from "./kysely";
 import type { Ciphertext } from "./schema";
@@ -290,11 +291,33 @@ export const getAllFilesByParent = async (userId: number, parentId: DirectoryId)
 };
 
 export const getAllFilesByCategory = async (userId: number, categoryId: number) => {
-  return await db
-    .select()
-    .from(file)
-    .innerJoin(fileCategory, eq(file.id, fileCategory.fileId))
-    .where(and(eq(file.userId, userId), eq(fileCategory.categoryId, categoryId)));
+  const files = await db
+    .selectFrom("file")
+    .innerJoin("file_category", "file.id", "file_category.file_id")
+    .selectAll("file")
+    .where("user_id", "=", userId)
+    .where("category_id", "=", categoryId)
+    .execute();
+  return files.map(
+    (file) =>
+      ({
+        id: file.id,
+        parentId: file.parent_id ?? "root",
+        userId: file.user_id,
+        path: file.path,
+        mekVersion: file.master_encryption_key_version,
+        encDek: file.encrypted_data_encryption_key,
+        dekVersion: file.data_encryption_key_version,
+        hskVersion: file.hmac_secret_key_version,
+        contentHmac: file.content_hmac,
+        contentType: file.content_type,
+        encContentIv: file.encrypted_content_iv,
+        encContentHash: file.encrypted_content_hash,
+        encName: file.encrypted_name,
+        encCreatedAt: file.encrypted_created_at,
+        encLastModifiedAt: file.encrypted_last_modified_at,
+      }) satisfies File,
+  );
 };
 
 export const getAllFileIdsByContentHmac = async (
@@ -394,44 +417,49 @@ export const unregisterFile = async (userId: number, fileId: number) => {
 };
 
 export const addFileToCategory = async (fileId: number, categoryId: number) => {
-  await db.transaction(
-    async (tx) => {
-      try {
-        await tx.insert(fileCategory).values({ fileId, categoryId });
-        await tx.insert(fileLog).values({
-          fileId,
+  await db.transaction().execute(async (trx) => {
+    try {
+      await trx
+        .insertInto("file_category")
+        .values({ file_id: fileId, category_id: categoryId })
+        .execute();
+      await trx
+        .insertInto("file_log")
+        .values({
+          file_id: fileId,
           timestamp: new Date(),
-          action: "addToCategory",
-          categoryId,
-        });
-      } catch (e) {
-        if (e instanceof SqliteError && e.code === "SQLITE_CONSTRAINT_PRIMARYKEY") {
-          throw new IntegrityError("File already added to category");
-        }
-        throw e;
+          action: "add-to-category",
+          category_id: categoryId,
+        })
+        .execute();
+    } catch (e) {
+      if (e instanceof pg.DatabaseError && e.code === "23505") {
+        throw new IntegrityError("File already added to category");
       }
-    },
-    { behavior: "exclusive" },
-  );
+      throw e;
+    }
+  });
 };
 
 export const removeFileFromCategory = async (fileId: number, categoryId: number) => {
-  await db.transaction(
-    async (tx) => {
-      const res = await tx
-        .delete(fileCategory)
-        .where(and(eq(fileCategory.fileId, fileId), eq(fileCategory.categoryId, categoryId)));
-      if (res.changes === 0) {
-        throw new IntegrityError("File not found in category");
-      }
+  await db.transaction().execute(async (trx) => {
+    const res = await trx
+      .deleteFrom("file_category")
+      .where("file_id", "=", fileId)
+      .where("category_id", "=", categoryId)
+      .executeTakeFirst();
+    if (res.numDeletedRows === 0n) {
+      throw new IntegrityError("File not found in category");
+    }
 
-      await tx.insert(fileLog).values({
-        fileId,
+    await trx
+      .insertInto("file_log")
+      .values({
+        file_id: fileId,
         timestamp: new Date(),
-        action: "removeFromCategory",
-        categoryId,
-      });
-    },
-    { behavior: "exclusive" },
-  );
+        action: "remove-from-category",
+        category_id: categoryId,
+      })
+      .execute();
+  });
 };
