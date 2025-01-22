@@ -3,20 +3,6 @@ import { generateDataKey, wrapDataKey, encryptString } from "$lib/modules/crypto
 import type { CategoryCreateRequest } from "$lib/server/schemas";
 import type { MasterKey } from "$lib/stores";
 
-export interface SelectedSubCategory {
-  id: number;
-  dataKey: CryptoKey;
-  dataKeyVersion: Date;
-  name: string;
-}
-
-export interface SelectedFile {
-  id: number;
-  dataKey: CryptoKey;
-  dataKeyVersion: Date;
-  name: string;
-}
-
 export const requestCategoryCreation = async (
   name: string,
   parentId: "root" | number,
