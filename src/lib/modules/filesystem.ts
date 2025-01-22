@@ -66,7 +66,7 @@ export type CategoryInfo =
       dataKeyVersion?: Date;
       name: string;
       subCategoryIds: number[];
-      files: number[];
+      files: { id: number; isRecursive: boolean }[];
     };
 
 const directoryInfoStore = new Map<DirectoryId, Writable<DirectoryInfo | null>>();
@@ -256,7 +256,7 @@ const fetchCategoryInfoFromServer = async (
     const { dataKey } = await unwrapDataKey(metadata!.dek, masterKey);
     const name = await decryptString(metadata!.name, metadata!.nameIv, dataKey);
 
-    res = await callGetApi(`/api/category/${id}/file/list`);
+    res = await callGetApi(`/api/category/${id}/file/list?recursive=true`);
     if (!res.ok) {
       throw new Error("Failed to fetch category files");
     }
@@ -269,7 +269,7 @@ const fetchCategoryInfoFromServer = async (
       dataKeyVersion: new Date(metadata!.dekVersion),
       name,
       subCategoryIds: subCategories,
-      files,
+      files: files.map(({ file, isRecursive }) => ({ id: file, isRecursive })),
     });
   }
 };

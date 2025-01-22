@@ -66,14 +66,14 @@ export const addCategoryFile = async (userId: number, categoryId: number, fileId
   }
 };
 
-export const getCategoryFiles = async (userId: number, categoryId: number) => {
+export const getCategoryFiles = async (userId: number, categoryId: number, recursive: boolean) => {
   const category = await getCategory(userId, categoryId);
   if (!category) {
     error(404, "Invalid category id");
   }
 
-  const files = await getAllFilesByCategory(userId, categoryId);
-  return { files: files.map(({ id }) => id) };
+  const files = await getAllFilesByCategory(userId, categoryId, recursive);
+  return { files };
 };
 
 export const removeCategoryFile = async (userId: number, categoryId: number, fileId: number) => {

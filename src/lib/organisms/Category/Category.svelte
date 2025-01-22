@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
+  import { CheckBox } from "$lib/components/inputs";
   import { getFileInfo, type FileInfo, type CategoryInfo } from "$lib/modules/filesystem";
   import type { SelectedCategory } from "$lib/molecules/Categories";
   import SubCategories from "$lib/molecules/SubCategories.svelte";
@@ -16,6 +17,7 @@
     onSubCategoryClick: (subCategory: SelectedCategory) => void;
     onSubCategoryCreateClick: () => void;
     onSubCategoryMenuClick: (subCategory: SelectedCategory) => void;
+    isFileRecursive: boolean;
   }
 
   let {
@@ -25,12 +27,16 @@
     onSubCategoryClick,
     onSubCategoryCreateClick,
     onSubCategoryMenuClick,
+    isFileRecursive = $bindable(),
   }: Props = $props();
 
   let files: Writable<FileInfo | null>[] = $state([]);
 
   $effect(() => {
-    files = info.files?.map((id) => getFileInfo(id, $masterKeyStore?.get(1)?.key!)) ?? [];
+    files =
+      info.files
+        ?.filter(({ isRecursive }) => isFileRecursive || !isRecursive)
+        .map(({ id }) => getFileInfo(id, $masterKeyStore?.get(1)?.key!)) ?? [];
 
     // TODO: Sorting
   });
@@ -51,7 +57,12 @@
   </div>
   {#if info.id !== "root"}
     <div class="space-y-4 bg-white p-4">
-      <p class="text-lg font-bold text-gray-800">파일</p>
+      <div class="flex items-center justify-between">
+        <p class="text-lg font-bold text-gray-800">파일</p>
+        <CheckBox bind:checked={isFileRecursive}>
+          <p class="font-medium">하위 카테고리의 파일</p>
+        </CheckBox>
+      </div>
       <div class="space-y-1">
         {#key info}
           {#each files as file}

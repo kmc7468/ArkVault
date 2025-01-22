@@ -23,7 +23,12 @@ export const categoryFileAddRequest = z.object({
 export type CategoryFileAddRequest = z.infer<typeof categoryFileAddRequest>;
 
 export const categoryFileListResponse = z.object({
-  files: z.number().int().positive().array(),
+  files: z.array(
+    z.object({
+      file: z.number().int().positive(),
+      isRecursive: z.boolean(),
+    }),
+  ),
 });
 export type CategoryFileListResponse = z.infer<typeof categoryFileListResponse>;
 

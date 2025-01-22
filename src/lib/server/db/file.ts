@@ -1,3 +1,4 @@
+import { sql } from "kysely";
 import pg from "pg";
 import { IntegrityError } from "./error";
 import db from "./kysely";
@@ -290,34 +291,37 @@ export const getAllFilesByParent = async (userId: number, parentId: DirectoryId)
   );
 };
 
-export const getAllFilesByCategory = async (userId: number, categoryId: number) => {
+export const getAllFilesByCategory = async (
+  userId: number,
+  categoryId: number,
+  recursive: boolean,
+) => {
   const files = await db
-    .selectFrom("file")
-    .innerJoin("file_category", "file.id", "file_category.file_id")
-    .selectAll("file")
-    .where("user_id", "=", userId)
-    .where("category_id", "=", categoryId)
+    .withRecursive("cte", (db) =>
+      db
+        .selectFrom("file")
+        .innerJoin("file_category", "file.id", "file_category.file_id")
+        .selectAll("file_category")
+        .select(sql<number>`0`.as("depth"))
+        .where("user_id", "=", userId)
+        .where("category_id", "=", categoryId)
+        .$if(recursive, (qb) =>
+          qb.unionAll((db) =>
+            db
+              .selectFrom("file")
+              .innerJoin("file_category", "file.id", "file_category.file_id")
+              .innerJoin("category", "file_category.category_id", "category.id")
+              .innerJoin("cte", "category.parent_id", "cte.category_id")
+              .selectAll("file_category")
+              .select(sql<number>`cte.depth + 1`.as("depth"))
+              .where("file.user_id", "=", userId),
+          ),
+        ),
+    )
+    .selectFrom("cte")
+    .select(["file_id", "depth"])
     .execute();
-  return files.map(
-    (file) =>
-      ({
-        id: file.id,
-        parentId: file.parent_id ?? "root",
-        userId: file.user_id,
-        path: file.path,
-        mekVersion: file.master_encryption_key_version,
-        encDek: file.encrypted_data_encryption_key,
-        dekVersion: file.data_encryption_key_version,
-        hskVersion: file.hmac_secret_key_version,
-        contentHmac: file.content_hmac,
-        contentType: file.content_type,
-        encContentIv: file.encrypted_content_iv,
-        encContentHash: file.encrypted_content_hash,
-        encName: file.encrypted_name,
-        encCreatedAt: file.encrypted_created_at,
-        encLastModifiedAt: file.encrypted_last_modified_at,
-      }) satisfies File,
-  );
+  return files.map(({ file_id, depth }) => ({ id: file_id, isRecursive: depth > 0 }));
 };
 
 export const getAllFileIdsByContentHmac = async (

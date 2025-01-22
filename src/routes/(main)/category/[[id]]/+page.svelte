@@ -22,6 +22,8 @@
   let info: Writable<CategoryInfo | null> | undefined = $state();
   let selectedSubCategory: SelectedCategory | undefined = $state();
 
+  let isFileRecursive = $state(false);
+
   let isCreateCategoryModalOpen = $state(false);
   let isSubCategoryMenuBottomSheetOpen = $state(false);
   let isRenameCategoryModalOpen = $state(false);
@@ -49,6 +51,7 @@
   <div class="flex-grow bg-gray-100 pb-[5.5em]">
     {#if $info}
       <Category
+        bind:isFileRecursive
         info={$info}
         onFileClick={({ id }) => goto(`/file/${id}`)}
         onFileRemoveClick={({ id }) => {

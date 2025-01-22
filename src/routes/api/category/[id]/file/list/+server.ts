@@ -5,13 +5,23 @@ import { categoryFileListResponse, type CategoryFileListResponse } from "$lib/se
 import { getCategoryFiles } from "$lib/server/services/category";
 import type { RequestHandler } from "./$types";
 
-export const GET: RequestHandler = async ({ locals, params }) => {
+export const GET: RequestHandler = async ({ locals, url, params }) => {
   const { userId } = await authorize(locals, "activeClient");
 
-  const zodRes = z.object({ id: z.coerce.number().int().positive() }).safeParse(params);
-  if (!zodRes.success) error(400, "Invalid path parameters");
-  const { id } = zodRes.data;
+  const paramsZodRes = z.object({ id: z.coerce.number().int().positive() }).safeParse(params);
+  if (!paramsZodRes.success) error(400, "Invalid path parameters");
+  const { id } = paramsZodRes.data;
 
-  const { files } = await getCategoryFiles(userId, id);
-  return json(categoryFileListResponse.parse({ files }) as CategoryFileListResponse);
+  const queryZodRes = z
+    .object({ recursive: z.coerce.boolean().nullable() })
+    .safeParse({ recursive: url.searchParams.get("recursive") });
+  if (!queryZodRes.success) error(400, "Invalid query parameters");
+  const { recursive } = queryZodRes.data;
+
+  const { files } = await getCategoryFiles(userId, id, recursive ?? false);
+  return json(
+    categoryFileListResponse.parse({
+      files: files.map(({ id, isRecursive }) => ({ file: id, isRecursive })),
+    }) as CategoryFileListResponse,
+  );
 };
