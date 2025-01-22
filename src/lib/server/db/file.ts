@@ -1,4 +1,4 @@
-import { sql } from "kysely";
+import { sql, type NotNull } from "kysely";
 import pg from "pg";
 import { IntegrityError } from "./error";
 import db from "./kysely";
@@ -299,27 +299,34 @@ export const getAllFilesByCategory = async (
   const files = await db
     .withRecursive("cte", (db) =>
       db
-        .selectFrom("file")
-        .innerJoin("file_category", "file.id", "file_category.file_id")
-        .selectAll("file_category")
+        .selectFrom("category")
+        .leftJoin("file_category", "category.id", "file_category.category_id")
+        .select(["id", "parent_id", "user_id", "file_category.file_id"])
         .select(sql<number>`0`.as("depth"))
-        .where("user_id", "=", userId)
-        .where("category_id", "=", categoryId)
+        .where("id", "=", categoryId)
         .$if(recursive, (qb) =>
           qb.unionAll((db) =>
             db
-              .selectFrom("file")
-              .innerJoin("file_category", "file.id", "file_category.file_id")
-              .innerJoin("category", "file_category.category_id", "category.id")
-              .innerJoin("cte", "category.parent_id", "cte.category_id")
-              .selectAll("file_category")
-              .select(sql<number>`cte.depth + 1`.as("depth"))
-              .where("file.user_id", "=", userId),
+              .selectFrom("category")
+              .leftJoin("file_category", "category.id", "file_category.category_id")
+              .innerJoin("cte", "category.parent_id", "cte.id")
+              .select([
+                "category.id",
+                "category.parent_id",
+                "category.user_id",
+                "file_category.file_id",
+              ])
+              .select(sql<number>`cte.depth + 1`.as("depth")),
           ),
         ),
     )
     .selectFrom("cte")
     .select(["file_id", "depth"])
+    .distinctOn("file_id")
+    .where("user_id", "=", userId)
+    .where("file_id", "is not", null)
+    .$narrowType<{ file_id: NotNull }>()
+    .orderBy(["file_id", "depth"])
     .execute();
   return files.map(({ file_id, depth }) => ({ id: file_id, isRecursive: depth > 0 }));
 };
