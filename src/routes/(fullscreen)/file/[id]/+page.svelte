@@ -42,14 +42,7 @@
   let viewerType: "image" | "video" | undefined = $state();
   let fileBlobUrl: string | undefined = $state();
 
-  const updateViewer = async (info: FileInfo, buffer: ArrayBuffer) => {
-    const contentType = info.contentType;
-    if (contentType.startsWith("image")) {
-      viewerType = "image";
-    } else if (contentType.startsWith("video")) {
-      viewerType = "video";
-    }
-
+  const updateViewer = async (buffer: ArrayBuffer, contentType: string) => {
     const fileBlob = new Blob([buffer], { type: contentType });
     if (contentType === "image/heic") {
       const { default: heic2any } = await import("heic2any");
@@ -89,11 +82,18 @@
 
   $effect(() => {
     if ($info && $info.dataKey && $info.contentIv) {
+      const contentType = $info.contentType;
+      if (contentType.startsWith("image")) {
+        viewerType = "image";
+      } else if (contentType.startsWith("video")) {
+        viewerType = "video";
+      }
+
       untrack(() => {
         if (!downloadStatus && !isDownloadRequested) {
           isDownloadRequested = true;
           requestFileDownload(data.id, $info.contentIv!, $info.dataKey!).then(async (buffer) => {
-            const blob = await updateViewer($info, buffer);
+            const blob = await updateViewer(buffer, contentType);
             if (!viewerType) {
               FileSaver.saveAs(blob, $info.name);
             }
@@ -105,7 +105,9 @@
 
   $effect(() => {
     if ($info && $downloadStatus?.status === "decrypted") {
-      untrack(() => !isDownloadRequested && updateViewer($info, $downloadStatus.result!));
+      untrack(
+        () => !isDownloadRequested && updateViewer($downloadStatus.result!, $info.contentType),
+      );
     }
   });
 
