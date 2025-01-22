@@ -1,8 +1,8 @@
 import { callPostApi } from "$lib/hooks";
 import { getFileCache, storeFileCache, downloadFile } from "$lib/modules/file";
-import type { CategoryFileAddRequest, CategoryFileRemoveRequest } from "$lib/server/schemas";
+import type { CategoryFileAddRequest } from "$lib/server/schemas";
 
-export { requestCategoryCreation } from "$lib/services/category";
+export { requestCategoryCreation, requestFileRemovalFromCategory } from "$lib/services/category";
 
 export const requestFileDownload = async (
   fileId: number,
@@ -21,13 +21,5 @@ export const requestFileAdditionToCategory = async (fileId: number, categoryId: 
   const res = await callPostApi<CategoryFileAddRequest>(`/api/category/${categoryId}/file/add`, {
     file: fileId,
   });
-  return res.ok;
-};
-
-export const requestFileRemovalFromCategory = async (fileId: number, categoryId: number) => {
-  const res = await callPostApi<CategoryFileRemoveRequest>(
-    `/api/category/${categoryId}/file/remove`,
-    { file: fileId },
-  );
   return res.ok;
 };

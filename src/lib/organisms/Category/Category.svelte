@@ -12,6 +12,7 @@
   interface Props {
     info: CategoryInfo;
     onFileClick: (file: SelectedFile) => void;
+    onFileRemoveClick: (file: SelectedFile) => void;
     onSubCategoryClick: (subCategory: SelectedCategory) => void;
     onSubCategoryCreateClick: () => void;
     onSubCategoryMenuClick: (subCategory: SelectedCategory) => void;
@@ -20,6 +21,7 @@
   let {
     info,
     onFileClick,
+    onFileRemoveClick,
     onSubCategoryClick,
     onSubCategoryCreateClick,
     onSubCategoryMenuClick,
@@ -53,7 +55,7 @@
       <div class="space-y-1">
         {#key info}
           {#each files as file}
-            <File info={file} onclick={onFileClick} />
+            <File info={file} onclick={onFileClick} onRemoveClick={onFileRemoveClick} />
           {:else}
             <p>이 카테고리에 추가된 파일이 없어요.</p>
           {/each}

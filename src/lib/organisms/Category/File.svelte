@@ -4,14 +4,15 @@
   import type { SelectedFile } from "./service";
 
   import IconDraft from "~icons/material-symbols/draft";
-  import IconMoreVert from "~icons/material-symbols/more-vert";
+  import IconClose from "~icons/material-symbols/close";
 
   interface Props {
     info: Writable<FileInfo | null>;
     onclick: (selectedFile: SelectedFile) => void;
+    onRemoveClick: (selectedFile: SelectedFile) => void;
   }
 
-  let { info, onclick }: Props = $props();
+  let { info, onclick, onRemoveClick }: Props = $props();
 
   const openFile = () => {
     const { id, dataKey, dataKeyVersion, name } = $info as FileInfo;
@@ -22,10 +23,15 @@
     }, 100);
   };
 
-  const openMenu = (e: Event) => {
+  const removeFile = (e: Event) => {
     e.stopPropagation();
 
-    // TODO
+    const { id, dataKey, dataKeyVersion, name } = $info as FileInfo;
+    if (!dataKey || !dataKeyVersion) return; // TODO: Error handling
+
+    setTimeout(() => {
+      onRemoveClick({ id, dataKey, dataKeyVersion, name });
+    }, 100);
   };
 </script>
 
@@ -41,21 +47,21 @@
         {$info.name}
       </p>
       <button
-        id="open-menu"
-        onclick={openMenu}
+        id="remove-file"
+        onclick={removeFile}
         class="flex-shrink-0 rounded-full p-1 active:bg-gray-100"
       >
-        <IconMoreVert class="text-lg" />
+        <IconClose class="text-lg" />
       </button>
     </div>
   </div>
 {/if}
 
 <style>
-  #button:active:not(:has(#open-menu:active)) {
+  #button:active:not(:has(#remove-file:active)) {
     @apply bg-gray-100;
   }
-  #button-content:active:not(:has(#open-menu:active)) {
+  #button-content:active:not(:has(#remove-file:active)) {
     @apply scale-95;
   }
 </style>

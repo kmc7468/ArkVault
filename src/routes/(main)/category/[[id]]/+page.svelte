@@ -12,6 +12,7 @@
   import RenameCategoryModal from "./RenameCategoryModal.svelte";
   import {
     requestCategoryCreation,
+    requestFileRemovalFromCategory,
     requestCategoryRename,
     requestCategoryDeletion,
   } from "./service";
@@ -49,13 +50,17 @@
     {#if $info}
       <Category
         info={$info}
+        onFileClick={({ id }) => goto(`/file/${id}`)}
+        onFileRemoveClick={({ id }) => {
+          requestFileRemovalFromCategory(id, data.id as number);
+          info = getCategoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
+        }}
         onSubCategoryClick={({ id }) => goto(`/category/${id}`)}
         onSubCategoryCreateClick={() => (isCreateCategoryModalOpen = true)}
         onSubCategoryMenuClick={(subCategory) => {
           selectedSubCategory = subCategory;
           isSubCategoryMenuBottomSheetOpen = true;
         }}
-        onFileClick={({ id }) => goto(`/file/${id}`)}
       />
     {/if}
   </div>

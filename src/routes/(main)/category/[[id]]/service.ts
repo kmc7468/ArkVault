@@ -3,7 +3,7 @@ import { encryptString } from "$lib/modules/crypto";
 import type { SelectedCategory } from "$lib/molecules/Categories";
 import type { CategoryRenameRequest } from "$lib/server/schemas";
 
-export { requestCategoryCreation } from "$lib/services/category";
+export { requestCategoryCreation, requestFileRemovalFromCategory } from "$lib/services/category";
 
 export const requestCategoryRename = async (category: SelectedCategory, newName: string) => {
   const newNameEncrypted = await encryptString(newName, category.dataKey);

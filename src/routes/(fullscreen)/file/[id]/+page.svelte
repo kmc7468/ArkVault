@@ -16,9 +16,9 @@
   import AddToCategoryBottomSheet from "./AddToCategoryBottomSheet.svelte";
   import DownloadStatus from "./DownloadStatus.svelte";
   import {
+    requestFileRemovalFromCategory,
     requestFileDownload,
     requestFileAdditionToCategory,
-    requestFileRemovalFromCategory,
   } from "./service";
 
   import IconClose from "~icons/material-symbols/close";
