@@ -27,6 +27,18 @@ export const categoryFileListResponse = z.object({
 });
 export type CategoryFileListResponse = z.infer<typeof categoryFileListResponse>;
 
+export const categoryFileRemoveRequest = z.object({
+  file: z.number().int().positive(),
+});
+export type CategoryFileRemoveRequest = z.infer<typeof categoryFileRemoveRequest>;
+
+export const categoryRenameRequest = z.object({
+  dekVersion: z.string().datetime(),
+  name: z.string().base64().nonempty(),
+  nameIv: z.string().base64().nonempty(),
+});
+export type CategoryRenameRequest = z.infer<typeof categoryRenameRequest>;
+
 export const categoryCreateRequest = z.object({
   parent: categoryIdSchema,
   mekVersion: z.number().int().positive(),

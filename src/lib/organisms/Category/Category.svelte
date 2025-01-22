@@ -1,33 +1,33 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
-  import {
-    getFileInfo,
-    getCategoryInfo,
-    type FileInfo,
-    type CategoryInfo,
-  } from "$lib/modules/filesystem";
+  import { getFileInfo, type FileInfo, type CategoryInfo } from "$lib/modules/filesystem";
   import type { SelectedCategory } from "$lib/molecules/Categories";
   import SubCategories from "$lib/molecules/SubCategories.svelte";
   import { masterKeyStore } from "$lib/stores";
   import File from "./File.svelte";
   import type { SelectedFile } from "./service";
 
+  import IconMoreVert from "~icons/material-symbols/more-vert";
+
   interface Props {
     info: CategoryInfo;
     onFileClick: (file: SelectedFile) => void;
     onSubCategoryClick: (subCategory: SelectedCategory) => void;
     onSubCategoryCreateClick: () => void;
+    onSubCategoryMenuClick: (subCategory: SelectedCategory) => void;
   }
 
-  let { info, onFileClick, onSubCategoryClick, onSubCategoryCreateClick }: Props = $props();
+  let {
+    info,
+    onFileClick,
+    onSubCategoryClick,
+    onSubCategoryCreateClick,
+    onSubCategoryMenuClick,
+  }: Props = $props();
 
-  let subCategories: Writable<CategoryInfo | null>[] = $state([]);
   let files: Writable<FileInfo | null>[] = $state([]);
 
   $effect(() => {
-    subCategories = info.subCategoryIds.map((id) =>
-      getCategoryInfo(id, $masterKeyStore?.get(1)?.key!),
-    );
     files = info.files?.map((id) => getFileInfo(id, $masterKeyStore?.get(1)?.key!)) ?? [];
 
     // TODO: Sorting
@@ -39,7 +39,13 @@
     {#if info.id !== "root"}
       <p class="text-lg font-bold text-gray-800">하위 카테고리</p>
     {/if}
-    <SubCategories {info} {onSubCategoryClick} {onSubCategoryCreateClick} />
+    <SubCategories
+      {info}
+      {onSubCategoryClick}
+      {onSubCategoryCreateClick}
+      {onSubCategoryMenuClick}
+      subCategoryMenuIcon={IconMoreVert}
+    />
   </div>
   {#if info.id !== "root"}
     <div class="space-y-4 bg-white p-4">

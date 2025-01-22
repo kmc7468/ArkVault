@@ -15,8 +15,13 @@
   import { fileDownloadStatusStore, isFileDownloading, masterKeyStore } from "$lib/stores";
   import AddToCategoryBottomSheet from "./AddToCategoryBottomSheet.svelte";
   import DownloadStatus from "./DownloadStatus.svelte";
-  import { requestFileDownload, requestFileAdditionToCategory } from "./service";
+  import {
+    requestFileDownload,
+    requestFileAdditionToCategory,
+    requestFileRemovalFromCategory,
+  } from "./service";
 
+  import IconClose from "~icons/material-symbols/close";
   import IconAddCircle from "~icons/material-symbols/add-circle";
 
   let { data } = $props();
@@ -61,6 +66,11 @@
   const addToCategory = async (categoryId: number) => {
     await requestFileAdditionToCategory(data.id, categoryId);
     isAddToCategoryBottomSheetOpen = false;
+    info = getFileInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
+  };
+
+  const removeFromCategory = async (categoryId: number) => {
+    await requestFileRemovalFromCategory(data.id, categoryId);
     info = getFileInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
   };
 
@@ -135,7 +145,12 @@
     <div class="space-y-2">
       <p class="text-lg font-bold">카테고리</p>
       <div class="space-y-1">
-        <Categories {categories} onCategoryClick={({ id }) => goto(`/category/${id}`)} />
+        <Categories
+          {categories}
+          categoryMenuIcon={IconClose}
+          onCategoryClick={({ id }) => goto(`/category/${id}`)}
+          onCategoryMenuClick={({ id }) => removeFromCategory(id)}
+        />
         <EntryButton onclick={() => (isAddToCategoryBottomSheetOpen = true)}>
           <div class="flex h-8 items-center gap-x-4">
             <IconAddCircle class="text-lg text-gray-600" />

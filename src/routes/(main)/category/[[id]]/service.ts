@@ -1,21 +1,22 @@
 import { callPostApi } from "$lib/hooks";
-import { generateDataKey, wrapDataKey, encryptString } from "$lib/modules/crypto";
-import type { CategoryCreateRequest } from "$lib/server/schemas";
-import type { MasterKey } from "$lib/stores";
+import { encryptString } from "$lib/modules/crypto";
+import type { SelectedCategory } from "$lib/molecules/Categories";
+import type { CategoryRenameRequest } from "$lib/server/schemas";
 
-export const requestCategoryCreation = async (
-  name: string,
-  parentId: "root" | number,
-  masterKey: MasterKey,
-) => {
-  const { dataKey, dataKeyVersion } = await generateDataKey();
-  const nameEncrypted = await encryptString(name, dataKey);
-  await callPostApi<CategoryCreateRequest>("/api/category/create", {
-    parent: parentId,
-    mekVersion: masterKey.version,
-    dek: await wrapDataKey(dataKey, masterKey.key),
-    dekVersion: dataKeyVersion.toISOString(),
-    name: nameEncrypted.ciphertext,
-    nameIv: nameEncrypted.iv,
+export { requestCategoryCreation } from "$lib/services/category";
+
+export const requestCategoryRename = async (category: SelectedCategory, newName: string) => {
+  const newNameEncrypted = await encryptString(newName, category.dataKey);
+
+  const res = await callPostApi<CategoryRenameRequest>(`/api/category/${category.id}/rename`, {
+    dekVersion: category.dataKeyVersion.toISOString(),
+    name: newNameEncrypted.ciphertext,
+    nameIv: newNameEncrypted.iv,
   });
+  return res.ok;
+};
+
+export const requestCategoryDeletion = async (category: SelectedCategory) => {
+  const res = await callPostApi(`/api/category/${category.id}/delete`);
+  return res.ok;
 };

@@ -136,9 +136,12 @@ export const setCategoryEncName = async (
 };
 
 export const unregisterCategory = async (userId: number, categoryId: number) => {
-  await db
+  const res = await db
     .deleteFrom("category")
     .where("id", "=", categoryId)
     .where("user_id", "=", userId)
-    .execute();
+    .executeTakeFirst();
+  if (res.numDeletedRows === 0n) {
+    throw new IntegrityError("Category not found");
+  }
 };

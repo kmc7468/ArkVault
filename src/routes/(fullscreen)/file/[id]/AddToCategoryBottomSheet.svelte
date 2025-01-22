@@ -1,12 +1,13 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import type { Writable } from "svelte/store";
   import { BottomSheet } from "$lib/components";
   import { Button } from "$lib/components/buttons";
   import { BottomDiv } from "$lib/components/divs";
   import { getCategoryInfo, type CategoryInfo } from "$lib/modules/filesystem";
   import SubCategories from "$lib/molecules/SubCategories.svelte";
+  import CreateCategoryModal from "$lib/organisms/CreateCategoryModal.svelte";
   import { masterKeyStore } from "$lib/stores";
+  import { requestCategoryCreation } from "./service";
 
   interface Props {
     onAddToCategoryClick: (categoryId: number) => void;
@@ -17,8 +18,20 @@
 
   let category: Writable<CategoryInfo | null> | undefined = $state();
 
-  onMount(() => {
-    category = getCategoryInfo("root", $masterKeyStore?.get(1)?.key!);
+  let isCreateCategoryModalOpen = $state(false);
+
+  const createCategory = async (name: string) => {
+    if (!$category) return; // TODO: Error handling
+
+    await requestCategoryCreation(name, $category.id, $masterKeyStore?.get(1)!);
+    isCreateCategoryModalOpen = false;
+    category = getCategoryInfo($category.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
+  };
+
+  $effect(() => {
+    if (isOpen) {
+      category = getCategoryInfo("root", $masterKeyStore?.get(1)?.key!);
+    }
   });
 </script>
 
@@ -30,6 +43,7 @@
         info={$category}
         onSubCategoryClick={({ id }) =>
           (category = getCategoryInfo(id, $masterKeyStore?.get(1)?.key!))}
+        onSubCategoryCreateClick={() => (isCreateCategoryModalOpen = true)}
         subCategoryCreatePosition="top"
       />
       {#if $category.id !== "root"}
@@ -40,3 +54,5 @@
     {/if}
   </div>
 </BottomSheet>
+
+<CreateCategoryModal bind:isOpen={isCreateCategoryModalOpen} onCreateClick={createCategory} />

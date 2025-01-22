@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { ClassValue } from "svelte/elements";
+  import type { Component } from "svelte";
+  import type { ClassValue, SvelteHTMLElements } from "svelte/elements";
   import type { Writable } from "svelte/store";
   import { EntryButton } from "$lib/components/buttons";
   import { getCategoryInfo, type CategoryInfo } from "$lib/modules/filesystem";
@@ -13,14 +14,18 @@
     info: CategoryInfo;
     onSubCategoryClick: (subCategory: SelectedCategory) => void;
     onSubCategoryCreateClick: () => void;
+    onSubCategoryMenuClick?: (category: SelectedCategory) => void;
     subCategoryCreatePosition?: "top" | "bottom";
+    subCategoryMenuIcon?: Component<SvelteHTMLElements["svg"]>;
   }
 
   let {
     info,
     onSubCategoryClick,
     onSubCategoryCreateClick,
+    onSubCategoryMenuClick,
     subCategoryCreatePosition = "bottom",
+    subCategoryMenuIcon,
     ...props
   }: Props = $props();
 
@@ -49,7 +54,12 @@
     {@render subCategoryCreate()}
   {/if}
   {#key info}
-    <Categories categories={subCategories} onCategoryClick={onSubCategoryClick} />
+    <Categories
+      categories={subCategories}
+      categoryMenuIcon={subCategoryMenuIcon}
+      onCategoryClick={onSubCategoryClick}
+      onCategoryMenuClick={onSubCategoryMenuClick}
+    />
   {/key}
   {#if subCategoryCreatePosition === "bottom"}
     {@render subCategoryCreate()}
