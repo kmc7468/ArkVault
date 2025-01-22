@@ -9,7 +9,12 @@ import {
   getFileInfo as getFileInfoFromIndexedDB,
   storeFileInfo,
   deleteFileInfo,
+  getCategoryInfos as getCategoryInfosFromIndexedDB,
+  getCategoryInfo as getCategoryInfoFromIndexedDB,
+  storeCategoryInfo,
+  deleteCategoryInfo,
   type DirectoryId,
+  type CategoryId,
 } from "$lib/indexedDB";
 import { unwrapDataKey, decryptString } from "$lib/modules/crypto";
 import type {
@@ -48,8 +53,6 @@ export interface FileInfo {
   lastModifiedAt: Date;
   categoryIds: number[];
 }
-
-type CategoryId = "root" | number;
 
 export type CategoryInfo =
   | {
@@ -161,7 +164,7 @@ const fetchFileInfoFromIndexedDB = async (id: number, info: Writable<FileInfo | 
   const file = await getFileInfoFromIndexedDB(id);
   if (!file) return;
 
-  info.set({ ...file, categoryIds: [] });
+  info.set(file);
 };
 
 const decryptDate = async (ciphertext: string, iv: string, dataKey: CryptoKey) => {
@@ -214,6 +217,7 @@ const fetchFileInfoFromServer = async (
     contentType: metadata.contentType,
     createdAt,
     lastModifiedAt,
+    categoryIds: metadata.categories,
   });
 };
 
@@ -235,6 +239,26 @@ export const getFileInfo = (fileId: number, masterKey: CryptoKey) => {
   return info;
 };
 
+const fetchCategoryInfoFromIndexedDB = async (
+  id: CategoryId,
+  info: Writable<CategoryInfo | null>,
+) => {
+  if (get(info)) return;
+
+  const [category, subCategories] = await Promise.all([
+    id !== "root" ? getCategoryInfoFromIndexedDB(id) : undefined,
+    getCategoryInfosFromIndexedDB(id),
+  ]);
+  const subCategoryIds = subCategories.map(({ id }) => id);
+
+  if (id === "root") {
+    info.set({ id, subCategoryIds });
+  } else {
+    if (!category) return;
+    info.set({ id, name: category.name, subCategoryIds, files: category.files });
+  }
+};
+
 const fetchCategoryInfoFromServer = async (
   id: CategoryId,
   info: Writable<CategoryInfo | null>,
@@ -243,6 +267,7 @@ const fetchCategoryInfoFromServer = async (
   let res = await callGetApi(`/api/category/${id}`);
   if (res.status === 404) {
     info.set(null);
+    await deleteCategoryInfo(id as number);
     return;
   } else if (!res.ok) {
     throw new Error("Failed to fetch category information");
@@ -262,6 +287,7 @@ const fetchCategoryInfoFromServer = async (
     }
 
     const { files }: CategoryFileListResponse = await res.json();
+    const filesMapped = files.map(({ file, isRecursive }) => ({ id: file, isRecursive }));
 
     info.set({
       id,
@@ -269,7 +295,13 @@ const fetchCategoryInfoFromServer = async (
       dataKeyVersion: new Date(metadata!.dekVersion),
       name,
       subCategoryIds: subCategories,
-      files: files.map(({ file, isRecursive }) => ({ id: file, isRecursive })),
+      files: filesMapped,
+    });
+    await storeCategoryInfo({
+      id,
+      parentId: metadata!.parent,
+      name,
+      files: filesMapped,
     });
   }
 };
@@ -279,6 +311,7 @@ const fetchCategoryInfo = async (
   info: Writable<CategoryInfo | null>,
   masterKey: CryptoKey,
 ) => {
+  await fetchCategoryInfoFromIndexedDB(id, info);
   await fetchCategoryInfoFromServer(id, info, masterKey);
 };
 
