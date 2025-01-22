@@ -1,7 +1,9 @@
 <script lang="ts">
-  import type { Writable } from "svelte/store";
+  import { untrack } from "svelte";
+  import { get, type Writable } from "svelte/store";
   import { CheckBox } from "$lib/components/inputs";
   import { getFileInfo, type FileInfo, type CategoryInfo } from "$lib/modules/filesystem";
+  import { SortBy, sortEntries } from "$lib/modules/util";
   import type { SelectedCategory } from "$lib/molecules/Categories";
   import SubCategories from "$lib/molecules/SubCategories.svelte";
   import { masterKeyStore } from "$lib/stores";
@@ -17,6 +19,7 @@
     onSubCategoryClick: (subCategory: SelectedCategory) => void;
     onSubCategoryCreateClick: () => void;
     onSubCategoryMenuClick: (subCategory: SelectedCategory) => void;
+    sortBy?: SortBy;
     isFileRecursive: boolean;
   }
 
@@ -27,21 +30,42 @@
     onSubCategoryClick,
     onSubCategoryCreateClick,
     onSubCategoryMenuClick,
+    sortBy = SortBy.NAME_ASC,
     isFileRecursive = $bindable(),
   }: Props = $props();
 
-  let files: { info: Writable<FileInfo | null>; isRecursive: boolean }[] = $state([]);
+  let files: { name?: string; info: Writable<FileInfo | null>; isRecursive: boolean }[] = $state(
+    [],
+  );
 
   $effect(() => {
     files =
       info.files
         ?.filter(({ isRecursive }) => isFileRecursive || !isRecursive)
-        .map(({ id, isRecursive }) => ({
-          info: getFileInfo(id, $masterKeyStore?.get(1)?.key!),
-          isRecursive,
-        })) ?? [];
+        .map(({ id, isRecursive }) => {
+          const info = getFileInfo(id, $masterKeyStore?.get(1)?.key!);
+          return {
+            name: get(info)?.name,
+            info,
+            isRecursive,
+          };
+        }) ?? [];
 
-    // TODO: Sorting
+    const sort = () => {
+      sortEntries(files, sortBy);
+    };
+    return untrack(() => {
+      sort();
+
+      const unsubscribes = files.map((file) =>
+        file.info.subscribe((value) => {
+          if (file.name === value?.name) return;
+          file.name = value?.name;
+          sort();
+        }),
+      );
+      return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
+    });
   });
 </script>
 

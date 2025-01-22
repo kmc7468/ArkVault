@@ -7,6 +7,7 @@
     type DirectoryInfo,
     type FileInfo,
   } from "$lib/modules/filesystem";
+  import { SortBy, sortEntries } from "$lib/modules/util";
   import {
     fileUploadStatusStore,
     isFileUploading,
@@ -15,7 +16,6 @@
   } from "$lib/stores";
   import File from "./File.svelte";
   import SubDirectory from "./SubDirectory.svelte";
-  import { SortBy, sortEntries } from "./service";
   import UploadingFile from "./UploadingFile.svelte";
   import type { SelectedDirectoryEntry } from "../service";
 
