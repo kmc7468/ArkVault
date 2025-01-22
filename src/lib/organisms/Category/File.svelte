@@ -9,7 +9,7 @@
   interface Props {
     info: Writable<FileInfo | null>;
     onclick: (selectedFile: SelectedFile) => void;
-    onRemoveClick: (selectedFile: SelectedFile) => void;
+    onRemoveClick?: (selectedFile: SelectedFile) => void;
   }
 
   let { info, onclick, onRemoveClick }: Props = $props();
@@ -30,7 +30,7 @@
     if (!dataKey || !dataKeyVersion) return; // TODO: Error handling
 
     setTimeout(() => {
-      onRemoveClick({ id, dataKey, dataKeyVersion, name });
+      onRemoveClick!({ id, dataKey, dataKeyVersion, name });
     }, 100);
   };
 </script>
@@ -46,13 +46,15 @@
       <p title={$info.name} class="flex-grow truncate font-medium">
         {$info.name}
       </p>
-      <button
-        id="remove-file"
-        onclick={removeFile}
-        class="flex-shrink-0 rounded-full p-1 active:bg-gray-100"
-      >
-        <IconClose class="text-lg" />
-      </button>
+      {#if onRemoveClick}
+        <button
+          id="remove-file"
+          onclick={removeFile}
+          class="flex-shrink-0 rounded-full p-1 active:bg-gray-100"
+        >
+          <IconClose class="text-lg" />
+        </button>
+      {/if}
     </div>
   </div>
 {/if}

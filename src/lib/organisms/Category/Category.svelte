@@ -30,13 +30,16 @@
     isFileRecursive = $bindable(),
   }: Props = $props();
 
-  let files: Writable<FileInfo | null>[] = $state([]);
+  let files: { info: Writable<FileInfo | null>; isRecursive: boolean }[] = $state([]);
 
   $effect(() => {
     files =
       info.files
         ?.filter(({ isRecursive }) => isFileRecursive || !isRecursive)
-        .map(({ id }) => getFileInfo(id, $masterKeyStore?.get(1)?.key!)) ?? [];
+        .map(({ id, isRecursive }) => ({
+          info: getFileInfo(id, $masterKeyStore?.get(1)?.key!),
+          isRecursive,
+        })) ?? [];
 
     // TODO: Sorting
   });
@@ -65,10 +68,14 @@
       </div>
       <div class="space-y-1">
         {#key info}
-          {#each files as file}
-            <File info={file} onclick={onFileClick} onRemoveClick={onFileRemoveClick} />
+          {#each files as { info, isRecursive }}
+            <File
+              {info}
+              onclick={onFileClick}
+              onRemoveClick={!isRecursive ? onFileRemoveClick : undefined}
+            />
           {:else}
-            <p>이 카테고리에 추가된 파일이 없어요.</p>
+            <p class="text-gray-500 text-center">이 카테고리에 추가된 파일이 없어요.</p>
           {/each}
         {/key}
       </div>
