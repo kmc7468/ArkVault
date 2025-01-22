@@ -1,14 +1,14 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
   import type { CategoryInfo } from "$lib/modules/filesystem";
-  import type { SelectedSubCategory } from "./service";
+  import type { SelectedCategory } from "./service";
 
   import IconCategory from "~icons/material-symbols/category";
   import IconMoreVert from "~icons/material-symbols/more-vert";
 
   interface Props {
     info: Writable<CategoryInfo | null>;
-    onclick: (selectedCategory: SelectedSubCategory) => void;
+    onclick: (category: SelectedCategory) => void;
   }
 
   let { info, onclick }: Props = $props();

@@ -1,4 +1,4 @@
-export interface SelectedFile {
+export interface SelectedCategory {
   id: number;
   dataKey: CryptoKey;
   dataKeyVersion: Date;

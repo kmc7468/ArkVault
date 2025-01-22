@@ -5,12 +5,15 @@
   import { TopBar } from "$lib/components";
   import { getFileInfo, type FileInfo } from "$lib/modules/filesystem";
   import { fileDownloadStatusStore, isFileDownloading, masterKeyStore } from "$lib/stores";
+  import AddToCategoryBottomSheet from "./AddToCategoryBottomSheet.svelte";
   import DownloadStatus from "./DownloadStatus.svelte";
-  import { requestFileDownload } from "./service";
+  import { requestFileDownload, requestFileAdditionToCategory } from "./service";
 
   let { data } = $props();
 
   let info: Writable<FileInfo | null> | undefined = $state();
+
+  let isAddToCategoryBottomSheetOpen = $state(true);
 
   const downloadStatus = $derived(
     $fileDownloadStatusStore.find((statusStore) => {
@@ -42,6 +45,11 @@
     }
 
     return fileBlob;
+  };
+
+  const addToCategory = async (categoryId: number) => {
+    await requestFileAdditionToCategory(data.id, categoryId);
+    isAddToCategoryBottomSheetOpen = false;
   };
 
   $effect(() => {
@@ -105,3 +113,8 @@
     {/if}
   </div>
 </div>
+
+<AddToCategoryBottomSheet
+  bind:isOpen={isAddToCategoryBottomSheetOpen}
+  onAddToCategoryClick={addToCategory}
+/>
