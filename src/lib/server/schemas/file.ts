@@ -18,6 +18,7 @@ export const fileInfoResponse = z.object({
   createdAtIv: z.string().base64().nonempty().optional(),
   lastModifiedAt: z.string().base64().nonempty(),
   lastModifiedAtIv: z.string().base64().nonempty(),
+  categories: z.number().int().positive().array(),
 });
 export type FileInfoResponse = z.infer<typeof fileInfoResponse>;
 

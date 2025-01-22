@@ -46,6 +46,7 @@ export interface FileInfo {
   name: string;
   createdAt?: Date;
   lastModifiedAt: Date;
+  categoryIds: number[];
 }
 
 type CategoryId = "root" | number;
@@ -160,7 +161,7 @@ const fetchFileInfoFromIndexedDB = async (id: number, info: Writable<FileInfo | 
   const file = await getFileInfoFromIndexedDB(id);
   if (!file) return;
 
-  info.set(file);
+  info.set({ ...file, categoryIds: [] });
 };
 
 const decryptDate = async (ciphertext: string, iv: string, dataKey: CryptoKey) => {
@@ -204,6 +205,7 @@ const fetchFileInfoFromServer = async (
     name,
     createdAt,
     lastModifiedAt,
+    categoryIds: metadata.categories,
   });
   await storeFileInfo({
     id,

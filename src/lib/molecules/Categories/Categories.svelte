@@ -12,8 +12,10 @@
   let { categories, onCategoryClick }: Props = $props();
 </script>
 
-<div class="space-y-1">
-  {#each categories as category}
-    <Category info={category} onclick={onCategoryClick} />
-  {/each}
-</div>
+{#if categories.length > 0}
+  <div class="space-y-1">
+    {#each categories as category}
+      <Category info={category} onclick={onCategoryClick} />
+    {/each}
+  </div>
+{/if}

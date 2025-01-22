@@ -441,6 +441,15 @@ export const addFileToCategory = async (fileId: number, categoryId: number) => {
   });
 };
 
+export const getAllFileCategories = async (fileId: number) => {
+  const categories = await db
+    .selectFrom("file_category")
+    .select("category_id")
+    .where("file_id", "=", fileId)
+    .execute();
+  return categories.map(({ category_id }) => ({ id: category_id }));
+};
+
 export const removeFileFromCategory = async (fileId: number, categoryId: number) => {
   await db.transaction().execute(async (trx) => {
     const res = await trx

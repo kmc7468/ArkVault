@@ -13,6 +13,7 @@ import {
   getFile,
   setFileEncName,
   unregisterFile,
+  getAllFileCategories,
   type NewFile,
 } from "$lib/server/db/file";
 import type { Ciphertext } from "$lib/server/db/schema";
@@ -24,6 +25,7 @@ export const getFileInformation = async (userId: number, fileId: number) => {
     error(404, "Invalid file id");
   }
 
+  const categories = await getAllFileCategories(fileId);
   return {
     parentId: file.parentId ?? ("root" as const),
     mekVersion: file.mekVersion,
@@ -34,6 +36,7 @@ export const getFileInformation = async (userId: number, fileId: number) => {
     encName: file.encName,
     encCreatedAt: file.encCreatedAt,
     encLastModifiedAt: file.encLastModifiedAt,
+    categories: categories.map(({ id }) => id),
   };
 };
 
