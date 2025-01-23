@@ -66,13 +66,13 @@ export const addCategoryFile = async (userId: number, categoryId: number, fileId
   }
 };
 
-export const getCategoryFiles = async (userId: number, categoryId: number, recursive: boolean) => {
+export const getCategoryFiles = async (userId: number, categoryId: number, recurse: boolean) => {
   const category = await getCategory(userId, categoryId);
   if (!category) {
     error(404, "Invalid category id");
   }
 
-  const files = await getAllFilesByCategory(userId, categoryId, recursive);
+  const files = await getAllFilesByCategory(userId, categoryId, recurse);
   return { files };
 };
 

@@ -281,7 +281,7 @@ const fetchCategoryInfoFromServer = async (
     const { dataKey } = await unwrapDataKey(metadata!.dek, masterKey);
     const name = await decryptString(metadata!.name, metadata!.nameIv, dataKey);
 
-    res = await callGetApi(`/api/category/${id}/file/list?recursive=true`);
+    res = await callGetApi(`/api/category/${id}/file/list?recurse=true`);
     if (!res.ok) {
       throw new Error("Failed to fetch category files");
     }

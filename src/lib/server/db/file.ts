@@ -294,7 +294,7 @@ export const getAllFilesByParent = async (userId: number, parentId: DirectoryId)
 export const getAllFilesByCategory = async (
   userId: number,
   categoryId: number,
-  recursive: boolean,
+  recurse: boolean,
 ) => {
   const files = await db
     .withRecursive("cte", (db) =>
@@ -304,7 +304,7 @@ export const getAllFilesByCategory = async (
         .select(["id", "parent_id", "user_id", "file_category.file_id"])
         .select(sql<number>`0`.as("depth"))
         .where("id", "=", categoryId)
-        .$if(recursive, (qb) =>
+        .$if(recurse, (qb) =>
           qb.unionAll((db) =>
             db
               .selectFrom("category")

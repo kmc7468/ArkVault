@@ -13,12 +13,17 @@ export const GET: RequestHandler = async ({ locals, url, params }) => {
   const { id } = paramsZodRes.data;
 
   const queryZodRes = z
-    .object({ recursive: z.coerce.boolean().nullable() })
-    .safeParse({ recursive: url.searchParams.get("recursive") });
+    .object({
+      recurse: z
+        .enum(["true", "false"])
+        .transform((value) => value === "true")
+        .nullable(),
+    })
+    .safeParse({ recurse: url.searchParams.get("recurse") });
   if (!queryZodRes.success) error(400, "Invalid query parameters");
-  const { recursive } = queryZodRes.data;
+  const { recurse } = queryZodRes.data;
 
-  const { files } = await getCategoryFiles(userId, id, recursive ?? false);
+  const { files } = await getCategoryFiles(userId, id, recurse ?? false);
   return json(
     categoryFileListResponse.parse({
       files: files.map(({ id, isRecursive }) => ({ file: id, isRecursive })),
