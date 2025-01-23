@@ -35,8 +35,6 @@
     subCategories = info.subCategoryIds.map((id) =>
       getCategoryInfo(id, $masterKeyStore?.get(1)?.key!),
     );
-
-    // TODO: Sorting
   });
 </script>
 

@@ -76,8 +76,6 @@
   $effect(() => {
     categories =
       $info?.categoryIds.map((id) => getCategoryInfo(id, $masterKeyStore?.get(1)?.key!)) ?? [];
-
-    // TODO: Sorting
   });
 
   $effect(() => {

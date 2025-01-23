@@ -18,8 +18,8 @@ import {
 } from "$lib/indexedDB";
 import { unwrapDataKey, decryptString } from "$lib/modules/crypto";
 import type {
-  CategoryFileListResponse,
   CategoryInfoResponse,
+  CategoryFileListResponse,
   DirectoryInfoResponse,
   FileInfoResponse,
 } from "$lib/server/schemas";

@@ -12,7 +12,7 @@
   let { children, checked = $bindable(false) }: Props = $props();
 </script>
 
-<label class="flex items-center justify-center gap-x-1">
+<label class="flex items-center gap-x-1">
   <input bind:checked type="checkbox" class="hidden" />
   {@render children?.()}
   {#if checked}

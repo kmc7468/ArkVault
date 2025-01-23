@@ -8,7 +8,11 @@ import type { RequestHandler } from "./$types";
 export const GET: RequestHandler = async ({ locals, url, params }) => {
   const { userId } = await authorize(locals, "activeClient");
 
-  const paramsZodRes = z.object({ id: z.coerce.number().int().positive() }).safeParse(params);
+  const paramsZodRes = z
+    .object({
+      id: z.coerce.number().int().positive(),
+    })
+    .safeParse(params);
   if (!paramsZodRes.success) error(400, "Invalid path parameters");
   const { id } = paramsZodRes.data;
 
@@ -27,6 +31,6 @@ export const GET: RequestHandler = async ({ locals, url, params }) => {
   return json(
     categoryFileListResponse.parse({
       files: files.map(({ id, isRecursive }) => ({ file: id, isRecursive })),
-    }) as CategoryFileListResponse,
+    }) satisfies CategoryFileListResponse,
   );
 };

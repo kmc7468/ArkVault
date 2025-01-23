@@ -40,14 +40,7 @@
         </p>
       </div>
       <div class="flex gap-2">
-        <Button
-          color="gray"
-          onclick={() => {
-            isOpen = false;
-          }}
-        >
-          아니요
-        </Button>
+        <Button color="gray" onclick={closeModal}>아니요</Button>
         <Button onclick={deleteEntry}>삭제할게요</Button>
       </div>
     </div>
