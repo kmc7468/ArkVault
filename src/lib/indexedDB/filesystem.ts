@@ -15,16 +15,28 @@ interface FileInfo {
   contentType: string;
   createdAt?: Date;
   lastModifiedAt: Date;
+  categoryIds: number[];
+}
+
+export type CategoryId = "root" | number;
+
+interface CategoryInfo {
+  id: number;
+  parentId: CategoryId;
+  name: string;
+  files: { id: number; isRecursive: boolean }[];
 }
 
 const filesystem = new Dexie("filesystem") as Dexie & {
   directory: EntityTable<DirectoryInfo, "id">;
   file: EntityTable<FileInfo, "id">;
+  category: EntityTable<CategoryInfo, "id">;
 };
 
-filesystem.version(1).stores({
+filesystem.version(2).stores({
   directory: "id, parentId",
   file: "id, parentId",
+  category: "id, parentId",
 });
 
 export const getDirectoryInfos = async (parentId: DirectoryId) => {
@@ -59,13 +71,29 @@ export const deleteFileInfo = async (id: number) => {
   await filesystem.file.delete(id);
 };
 
+export const getCategoryInfos = async (parentId: CategoryId) => {
+  return await filesystem.category.where({ parentId }).toArray();
+};
+
+export const getCategoryInfo = async (id: number) => {
+  return await filesystem.category.get(id);
+};
+
+export const storeCategoryInfo = async (categoryInfo: CategoryInfo) => {
+  await filesystem.category.put(categoryInfo);
+};
+
+export const deleteCategoryInfo = async (id: number) => {
+  await filesystem.category.delete(id);
+};
+
 export const cleanupDanglingInfos = async () => {
   const validDirectoryIds: number[] = [];
   const validFileIds: number[] = [];
-  const queue: DirectoryId[] = ["root"];
+  const directoryQueue: DirectoryId[] = ["root"];
 
   while (true) {
-    const directoryId = queue.shift();
+    const directoryId = directoryQueue.shift();
     if (!directoryId) break;
 
     const [subDirectories, files] = await Promise.all([
@@ -74,13 +102,28 @@ export const cleanupDanglingInfos = async () => {
     ]);
     subDirectories.forEach(({ id }) => {
       validDirectoryIds.push(id);
-      queue.push(id);
+      directoryQueue.push(id);
     });
     files.forEach(({ id }) => validFileIds.push(id));
+  }
+
+  const validCategoryIds: number[] = [];
+  const categoryQueue: CategoryId[] = ["root"];
+
+  while (true) {
+    const categoryId = categoryQueue.shift();
+    if (!categoryId) break;
+
+    const subCategories = await filesystem.category.where({ parentId: categoryId }).toArray();
+    subCategories.forEach(({ id }) => {
+      validCategoryIds.push(id);
+      categoryQueue.push(id);
+    });
   }
 
   await Promise.all([
     filesystem.directory.where("id").noneOf(validDirectoryIds).delete(),
     filesystem.file.where("id").noneOf(validFileIds).delete(),
+    filesystem.category.where("id").noneOf(validCategoryIds).delete(),
   ]);
 };

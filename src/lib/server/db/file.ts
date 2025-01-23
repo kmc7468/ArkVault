@@ -1,8 +1,10 @@
+import { sql, type NotNull } from "kysely";
+import pg from "pg";
 import { IntegrityError } from "./error";
 import db from "./kysely";
 import type { Ciphertext } from "./schema";
 
-type DirectoryId = "root" | number;
+export type DirectoryId = "root" | number;
 
 interface Directory {
   id: number;
@@ -289,6 +291,46 @@ export const getAllFilesByParent = async (userId: number, parentId: DirectoryId)
   );
 };
 
+export const getAllFilesByCategory = async (
+  userId: number,
+  categoryId: number,
+  recurse: boolean,
+) => {
+  const files = await db
+    .withRecursive("cte", (db) =>
+      db
+        .selectFrom("category")
+        .leftJoin("file_category", "category.id", "file_category.category_id")
+        .select(["id", "parent_id", "user_id", "file_category.file_id"])
+        .select(sql<number>`0`.as("depth"))
+        .where("id", "=", categoryId)
+        .$if(recurse, (qb) =>
+          qb.unionAll((db) =>
+            db
+              .selectFrom("category")
+              .leftJoin("file_category", "category.id", "file_category.category_id")
+              .innerJoin("cte", "category.parent_id", "cte.id")
+              .select([
+                "category.id",
+                "category.parent_id",
+                "category.user_id",
+                "file_category.file_id",
+              ])
+              .select(sql<number>`cte.depth + 1`.as("depth")),
+          ),
+        ),
+    )
+    .selectFrom("cte")
+    .select(["file_id", "depth"])
+    .distinctOn("file_id")
+    .where("user_id", "=", userId)
+    .where("file_id", "is not", null)
+    .$narrowType<{ file_id: NotNull }>()
+    .orderBy(["file_id", "depth"])
+    .execute();
+  return files.map(({ file_id, depth }) => ({ id: file_id, isRecursive: depth > 0 }));
+};
+
 export const getAllFileIdsByContentHmac = async (
   userId: number,
   hskVersion: number,
@@ -383,4 +425,61 @@ export const unregisterFile = async (userId: number, fileId: number) => {
     throw new IntegrityError("File not found");
   }
   return { path: file.path };
+};
+
+export const addFileToCategory = async (fileId: number, categoryId: number) => {
+  await db.transaction().execute(async (trx) => {
+    try {
+      await trx
+        .insertInto("file_category")
+        .values({ file_id: fileId, category_id: categoryId })
+        .execute();
+      await trx
+        .insertInto("file_log")
+        .values({
+          file_id: fileId,
+          timestamp: new Date(),
+          action: "add-to-category",
+          category_id: categoryId,
+        })
+        .execute();
+    } catch (e) {
+      if (e instanceof pg.DatabaseError && e.code === "23505") {
+        throw new IntegrityError("File already added to category");
+      }
+      throw e;
+    }
+  });
+};
+
+export const getAllFileCategories = async (fileId: number) => {
+  const categories = await db
+    .selectFrom("file_category")
+    .select("category_id")
+    .where("file_id", "=", fileId)
+    .execute();
+  return categories.map(({ category_id }) => ({ id: category_id }));
+};
+
+export const removeFileFromCategory = async (fileId: number, categoryId: number) => {
+  await db.transaction().execute(async (trx) => {
+    const res = await trx
+      .deleteFrom("file_category")
+      .where("file_id", "=", fileId)
+      .where("category_id", "=", categoryId)
+      .executeTakeFirst();
+    if (res.numDeletedRows === 0n) {
+      throw new IntegrityError("File not found in category");
+    }
+
+    await trx
+      .insertInto("file_log")
+      .values({
+        file_id: fileId,
+        timestamp: new Date(),
+        action: "remove-from-category",
+        category_id: categoryId,
+      })
+      .execute();
+  });
 };

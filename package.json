@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "dev:db": "docker compose -f docker-compose.dev.yaml -p arkvault-dev up -d",
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "format": "prettier --write .",
     "lint": "prettier --check . && eslint .",
+    "db:up": "docker compose -f docker-compose.dev.yaml -p arkvault-dev up -d",
+    "db:down": "docker compose -f docker-compose.dev.yaml -p arkvault-dev down",
     "db:migrate": "kysely migrate"
   },
   "devDependencies": {
@@ -20,7 +21,6 @@
     "@sveltejs/adapter-node": "^5.2.11",
     "@sveltejs/kit": "^2.15.2",
     "@sveltejs/vite-plugin-svelte": "^4.0.4",
-    "@types/better-sqlite3": "^7.6.12",
     "@types/file-saver": "^2.0.7",
     "@types/ms": "^0.7.34",
     "@types/node-schedule": "^2.1.7",
@@ -42,7 +42,7 @@
     "prettier": "^3.4.2",
     "prettier-plugin-svelte": "^3.3.2",
     "prettier-plugin-tailwindcss": "^0.6.9",
-    "svelte": "^5.17.1",
+    "svelte": "^5.19.1",
     "svelte-check": "^4.1.3",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3",

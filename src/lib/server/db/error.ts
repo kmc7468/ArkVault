@@ -1,4 +1,6 @@
 type IntegrityErrorMessages =
+  // Category
+  | "Category not found"
   // Challenge
   | "Challenge already registered"
   // Client
@@ -7,6 +9,8 @@ type IntegrityErrorMessages =
   // File
   | "Directory not found"
   | "File not found"
+  | "File not found in category"
+  | "File already added to category"
   | "Invalid DEK version"
   // HSK
   | "HSK already registered"

@@ -7,16 +7,20 @@
     children?: Snippet;
     onback?: () => void;
     title?: string;
+    xPadding?: boolean;
   }
 
-  let { children, onback, title }: Props = $props();
+  let { children, onback, title, xPadding = false }: Props = $props();
 
   const back = $derived(() => {
     setTimeout(onback || (() => history.back()), 100);
   });
 </script>
 
-<div class="sticky top-0 z-10 flex flex-shrink-0 items-center justify-between bg-white py-4">
+<div
+  class="sticky top-0 z-10 flex flex-shrink-0 items-center justify-between bg-white py-4
+  {xPadding ? 'px-4' : ''}"
+>
   <button onclick={back} class="w-[2.3rem] flex-shrink-0 rounded-full p-1 active:bg-gray-100">
     <IconArrowBack class="text-2xl" />
   </button>

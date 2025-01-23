@@ -9,10 +9,20 @@ import {
   getFileInfo as getFileInfoFromIndexedDB,
   storeFileInfo,
   deleteFileInfo,
+  getCategoryInfos as getCategoryInfosFromIndexedDB,
+  getCategoryInfo as getCategoryInfoFromIndexedDB,
+  storeCategoryInfo,
+  deleteCategoryInfo,
   type DirectoryId,
+  type CategoryId,
 } from "$lib/indexedDB";
 import { unwrapDataKey, decryptString } from "$lib/modules/crypto";
-import type { DirectoryInfoResponse, FileInfoResponse } from "$lib/server/schemas";
+import type {
+  CategoryInfoResponse,
+  CategoryFileListResponse,
+  DirectoryInfoResponse,
+  FileInfoResponse,
+} from "$lib/server/schemas";
 
 export type DirectoryInfo =
   | {
@@ -41,10 +51,30 @@ export interface FileInfo {
   name: string;
   createdAt?: Date;
   lastModifiedAt: Date;
+  categoryIds: number[];
 }
+
+export type CategoryInfo =
+  | {
+      id: "root";
+      dataKey?: undefined;
+      dataKeyVersion?: undefined;
+      name?: undefined;
+      subCategoryIds: number[];
+      files?: undefined;
+    }
+  | {
+      id: number;
+      dataKey?: CryptoKey;
+      dataKeyVersion?: Date;
+      name: string;
+      subCategoryIds: number[];
+      files: { id: number; isRecursive: boolean }[];
+    };
 
 const directoryInfoStore = new Map<DirectoryId, Writable<DirectoryInfo | null>>();
 const fileInfoStore = new Map<number, Writable<FileInfo | null>>();
+const categoryInfoStore = new Map<CategoryId, Writable<CategoryInfo | null>>();
 
 const fetchDirectoryInfoFromIndexedDB = async (
   id: DirectoryId,
@@ -124,7 +154,7 @@ export const getDirectoryInfo = (id: DirectoryId, masterKey: CryptoKey) => {
     directoryInfoStore.set(id, info);
   }
 
-  fetchDirectoryInfo(id, info, masterKey);
+  fetchDirectoryInfo(id, info, masterKey); // Intended
   return info;
 };
 
@@ -178,6 +208,7 @@ const fetchFileInfoFromServer = async (
     name,
     createdAt,
     lastModifiedAt,
+    categoryIds: metadata.categories,
   });
   await storeFileInfo({
     id,
@@ -186,6 +217,7 @@ const fetchFileInfoFromServer = async (
     contentType: metadata.contentType,
     createdAt,
     lastModifiedAt,
+    categoryIds: metadata.categories,
   });
 };
 
@@ -203,6 +235,95 @@ export const getFileInfo = (fileId: number, masterKey: CryptoKey) => {
     fileInfoStore.set(fileId, info);
   }
 
-  fetchFileInfo(fileId, info, masterKey);
+  fetchFileInfo(fileId, info, masterKey); // Intended
+  return info;
+};
+
+const fetchCategoryInfoFromIndexedDB = async (
+  id: CategoryId,
+  info: Writable<CategoryInfo | null>,
+) => {
+  if (get(info)) return;
+
+  const [category, subCategories] = await Promise.all([
+    id !== "root" ? getCategoryInfoFromIndexedDB(id) : undefined,
+    getCategoryInfosFromIndexedDB(id),
+  ]);
+  const subCategoryIds = subCategories.map(({ id }) => id);
+
+  if (id === "root") {
+    info.set({ id, subCategoryIds });
+  } else {
+    if (!category) return;
+    info.set({ id, name: category.name, subCategoryIds, files: category.files });
+  }
+};
+
+const fetchCategoryInfoFromServer = async (
+  id: CategoryId,
+  info: Writable<CategoryInfo | null>,
+  masterKey: CryptoKey,
+) => {
+  let res = await callGetApi(`/api/category/${id}`);
+  if (res.status === 404) {
+    info.set(null);
+    await deleteCategoryInfo(id as number);
+    return;
+  } else if (!res.ok) {
+    throw new Error("Failed to fetch category information");
+  }
+
+  const { metadata, subCategories }: CategoryInfoResponse = await res.json();
+
+  if (id === "root") {
+    info.set({ id, subCategoryIds: subCategories });
+  } else {
+    const { dataKey } = await unwrapDataKey(metadata!.dek, masterKey);
+    const name = await decryptString(metadata!.name, metadata!.nameIv, dataKey);
+
+    res = await callGetApi(`/api/category/${id}/file/list?recurse=true`);
+    if (!res.ok) {
+      throw new Error("Failed to fetch category files");
+    }
+
+    const { files }: CategoryFileListResponse = await res.json();
+    const filesMapped = files.map(({ file, isRecursive }) => ({ id: file, isRecursive }));
+
+    info.set({
+      id,
+      dataKey,
+      dataKeyVersion: new Date(metadata!.dekVersion),
+      name,
+      subCategoryIds: subCategories,
+      files: filesMapped,
+    });
+    await storeCategoryInfo({
+      id,
+      parentId: metadata!.parent,
+      name,
+      files: filesMapped,
+    });
+  }
+};
+
+const fetchCategoryInfo = async (
+  id: CategoryId,
+  info: Writable<CategoryInfo | null>,
+  masterKey: CryptoKey,
+) => {
+  await fetchCategoryInfoFromIndexedDB(id, info);
+  await fetchCategoryInfoFromServer(id, info, masterKey);
+};
+
+export const getCategoryInfo = (categoryId: CategoryId, masterKey: CryptoKey) => {
+  // TODO: MEK rotation
+
+  let info = categoryInfoStore.get(categoryId);
+  if (!info) {
+    info = writable(null);
+    categoryInfoStore.set(categoryId, info);
+  }
+
+  fetchCategoryInfo(categoryId, info, masterKey); // Intended
   return info;
 };

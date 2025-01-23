@@ -8,11 +8,12 @@ import {
   setDirectoryEncName,
   unregisterDirectory,
   getAllFilesByParent,
+  type DirectoryId,
   type NewDirectory,
 } from "$lib/server/db/file";
 import type { Ciphertext } from "$lib/server/db/schema";
 
-export const getDirectoryInformation = async (userId: number, directoryId: "root" | number) => {
+export const getDirectoryInformation = async (userId: number, directoryId: DirectoryId) => {
   const directory = directoryId !== "root" ? await getDirectory(userId, directoryId) : undefined;
   if (directory === null) {
     error(404, "Invalid directory id");

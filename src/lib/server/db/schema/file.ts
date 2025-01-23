@@ -1,9 +1,5 @@
 import type { ColumnType, Generated } from "kysely";
-
-export type Ciphertext = {
-  ciphertext: string; // Base64
-  iv: string; // Base64
-};
+import type { Ciphertext } from "./util";
 
 interface DirectoryTable {
   id: Generated<number>;
@@ -45,8 +41,14 @@ interface FileLogTable {
   id: Generated<number>;
   file_id: number;
   timestamp: ColumnType<Date, Date, never>;
-  action: "create" | "rename";
+  action: "create" | "rename" | "add-to-category" | "remove-from-category";
   new_name: Ciphertext | null;
+  category_id: number | null;
+}
+
+interface FileCategoryTable {
+  file_id: number;
+  category_id: number;
 }
 
 declare module "./index" {
@@ -55,5 +57,6 @@ declare module "./index" {
     directory_log: DirectoryLogTable;
     file: FileTable;
     file_log: FileLogTable;
+    file_category: FileCategoryTable;
   }
 }
