@@ -12,7 +12,7 @@
     confirmText: string;
     isOpen: boolean;
     onbeforeclose?: () => void;
-    onconfirm: ConfirmHandler;
+    onConfirmClick: ConfirmHandler;
     title: string;
   }
 
@@ -22,7 +22,7 @@
     confirmText,
     isOpen = $bindable(),
     onbeforeclose,
-    onconfirm,
+    onConfirmClick,
     title,
   }: Props = $props();
 
@@ -32,15 +32,17 @@
   };
 
   const confirmAction = async () => {
-    if ((await onconfirm()) !== false) {
+    if ((await onConfirmClick()) !== false) {
       closeModal();
     }
   };
 </script>
 
-<Modal bind:isOpen onclose={closeModal} class="flex flex-col gap-y-2">
-  <p class="text-xl font-bold">{title}</p>
-  {@render children?.()}
+<Modal bind:isOpen onclose={closeModal} class="space-y-4">
+  <div class="flex flex-col gap-y-2 break-keep">
+    <p class="text-xl font-bold">{title}</p>
+    {@render children?.()}
+  </div>
   <div class="flex gap-x-2">
     <Button color="gray" onclick={closeModal} class="flex-1">{cancelText}</Button>
     <Button onclick={confirmAction} class="flex-1">{confirmText}</Button>

@@ -14,5 +14,5 @@
   title="새 카테고리"
   placeholder="카테고리 이름"
   submitText="만들기"
-  onsubmit={oncreate}
+  onSubmitClick={oncreate}
 />

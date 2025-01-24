@@ -4,11 +4,11 @@
   interface Props {
     isOpen: boolean;
     onbeforeclose?: () => void;
-    onrename: (newName: string) => Promise<boolean>;
+    onRenameClick: (newName: string) => Promise<boolean>;
     originalName: string | undefined;
   }
 
-  let { isOpen = $bindable(), onbeforeclose, onrename, originalName }: Props = $props();
+  let { isOpen = $bindable(), onbeforeclose, onRenameClick, originalName }: Props = $props();
 </script>
 
 <TextInputModal
@@ -18,5 +18,5 @@
   placeholder="이름"
   defaultValue={originalName}
   submitText="바꾸기"
-  onsubmit={onrename}
+  onSubmitClick={onRenameClick}
 />

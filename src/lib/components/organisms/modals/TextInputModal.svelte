@@ -6,7 +6,7 @@
     defaultValue?: string;
     isOpen: boolean;
     onbeforeclose?: () => void;
-    onsubmit: (value: string) => ReturnType<ConfirmHandler>;
+    onSubmitClick: (value: string) => ReturnType<ConfirmHandler>;
     placeholder: string;
     submitText: string;
     title: string;
@@ -16,7 +16,7 @@
     defaultValue = "",
     isOpen = $bindable(),
     onbeforeclose,
-    onsubmit,
+    onSubmitClick,
     placeholder,
     submitText,
     title,
@@ -36,7 +36,7 @@
   {onbeforeclose}
   {title}
   confirmText={submitText}
-  onconfirm={() => onsubmit(value)}
+  onConfirmClick={() => onSubmitClick(value)}
 >
-  <TextInput bind:value {placeholder} class="mb-5" />
+  <TextInput bind:value {placeholder} class="mb-3" />
 </ActionModal>

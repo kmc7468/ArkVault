@@ -89,7 +89,7 @@
   bind:isOpen={isCategoryRenameModalOpen}
   onbeforeclose={() => (selectedSubCategory = undefined)}
   originalName={selectedSubCategory?.name}
-  onrename={async (newName: string) => {
+  onRenameClick={async (newName: string) => {
     if (await requestCategoryRename(selectedSubCategory!, newName)) {
       info = getCategoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
       return true;

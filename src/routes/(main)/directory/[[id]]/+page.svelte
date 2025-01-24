@@ -170,7 +170,7 @@
   bind:isOpen={isDirectoryEntryRenameModalOpen}
   onbeforeclose={() => (selectedEntry = undefined)}
   originalName={selectedEntry?.name}
-  onrename={async (newName: string) => {
+  onRenameClick={async (newName: string) => {
     if (await requestDirectoryEntryRename(selectedEntry!, newName)) {
       info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
       return true;
