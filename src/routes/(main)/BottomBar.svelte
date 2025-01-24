@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import { AdaptiveDiv } from "$lib/components/divs";
+  import { AdaptiveDiv } from "$lib/components/atoms";
 
   import IconHome from "~icons/material-symbols/home";
   import IconFolder from "~icons/material-symbols/folder";

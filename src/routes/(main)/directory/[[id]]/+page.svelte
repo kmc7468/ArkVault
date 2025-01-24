@@ -4,6 +4,7 @@
   import { goto } from "$app/navigation";
   import { TopBar } from "$lib/components";
   import { FloatingButton } from "$lib/components/atoms";
+  import { RenameModal } from "$lib/components/organisms";
   import { getDirectoryInfo, type DirectoryInfo } from "$lib/modules/filesystem";
   import { masterKeyStore, hmacSecretStore } from "$lib/stores";
   import CreateBottomSheet from "./CreateBottomSheet.svelte";
@@ -13,7 +14,6 @@
   import DirectoryEntryMenuBottomSheet from "./DirectoryEntryMenuBottomSheet.svelte";
   import DownloadStatusCard from "./DownloadStatusCard.svelte";
   import DuplicateFileModal from "./DuplicateFileModal.svelte";
-  import RenameDirectoryEntryModal from "./RenameDirectoryEntryModal.svelte";
   import UploadStatusCard from "./UploadStatusCard.svelte";
   import {
     requestHmacSecretDownload,
@@ -39,7 +39,7 @@
   let isDuplicateFileModalOpen = $state(false);
 
   let isDirectoryEntryMenuBottomSheetOpen = $state(false);
-  let isRenameDirectoryEntryModalOpen = $state(false);
+  let isDirectoryEntryRenameModalOpen = $state(false);
   let isDeleteDirectoryEntryModalOpen = $state(false);
 
   const createDirectory = async (name: string) => {
@@ -159,20 +159,23 @@
   bind:selectedEntry
   onRenameClick={() => {
     isDirectoryEntryMenuBottomSheetOpen = false;
-    isRenameDirectoryEntryModalOpen = true;
+    isDirectoryEntryRenameModalOpen = true;
   }}
   onDeleteClick={() => {
     isDirectoryEntryMenuBottomSheetOpen = false;
     isDeleteDirectoryEntryModalOpen = true;
   }}
 />
-<RenameDirectoryEntryModal
-  bind:isOpen={isRenameDirectoryEntryModalOpen}
-  bind:selectedEntry
-  onRenameClick={async (newName) => {
-    await requestDirectoryEntryRename(selectedEntry!, newName);
-    info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
-    return true;
+<RenameModal
+  bind:isOpen={isDirectoryEntryRenameModalOpen}
+  onbeforeclose={() => (selectedEntry = undefined)}
+  originalName={selectedEntry?.name}
+  onrename={async (newName: string) => {
+    if (await requestDirectoryEntryRename(selectedEntry!, newName)) {
+      info = getDirectoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
+      return true;
+    }
+    return false;
   }}
 />
 <DeleteDirectoryEntryModal

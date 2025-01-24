@@ -2,14 +2,13 @@
   import type { Writable } from "svelte/store";
   import { goto } from "$app/navigation";
   import { TopBar } from "$lib/components";
+  import { CategoryCreateModal, RenameModal } from "$lib/components/organisms";
   import { getCategoryInfo, type CategoryInfo } from "$lib/modules/filesystem";
   import type { SelectedCategory } from "$lib/molecules/Categories";
   import Category from "$lib/organisms/Category";
-  import CreateCategoryModal from "$lib/organisms/CreateCategoryModal.svelte";
   import { masterKeyStore } from "$lib/stores";
   import CategoryMenuBottomSheet from "./CategoryMenuBottomSheet.svelte";
   import DeleteCategoryModal from "./DeleteCategoryModal.svelte";
-  import RenameCategoryModal from "./RenameCategoryModal.svelte";
   import {
     requestCategoryCreation,
     requestFileRemovalFromCategory,
@@ -24,16 +23,10 @@
 
   let isFileRecursive = $state(false);
 
-  let isCreateCategoryModalOpen = $state(false);
+  let isCategoryCreateModalOpen = $state(false);
   let isSubCategoryMenuBottomSheetOpen = $state(false);
-  let isRenameCategoryModalOpen = $state(false);
+  let isCategoryRenameModalOpen = $state(false);
   let isDeleteCategoryModalOpen = $state(false);
-
-  const createCategory = async (name: string) => {
-    await requestCategoryCreation(name, data.id, $masterKeyStore?.get(1)!);
-    isCreateCategoryModalOpen = false;
-    info = getCategoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
-  };
 
   $effect(() => {
     info = getCategoryInfo(data.id, $masterKeyStore?.get(1)?.key!);
@@ -59,7 +52,7 @@
           info = getCategoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
         }}
         onSubCategoryClick={({ id }) => goto(`/category/${id}`)}
-        onSubCategoryCreateClick={() => (isCreateCategoryModalOpen = true)}
+        onSubCategoryCreateClick={() => (isCategoryCreateModalOpen = true)}
         onSubCategoryMenuClick={(subCategory) => {
           selectedSubCategory = subCategory;
           isSubCategoryMenuBottomSheetOpen = true;
@@ -69,26 +62,35 @@
   </div>
 </div>
 
-<CreateCategoryModal bind:isOpen={isCreateCategoryModalOpen} onCreateClick={createCategory} />
+<CategoryCreateModal
+  bind:isOpen={isCategoryCreateModalOpen}
+  oncreate={async (name: string) => {
+    if (await requestCategoryCreation(name, data.id, $masterKeyStore?.get(1)!)) {
+      info = getCategoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
+      return true;
+    }
+    return false;
+  }}
+/>
 
 <CategoryMenuBottomSheet
   bind:isOpen={isSubCategoryMenuBottomSheetOpen}
   bind:selectedCategory={selectedSubCategory}
   onRenameClick={() => {
     isSubCategoryMenuBottomSheetOpen = false;
-    isRenameCategoryModalOpen = true;
+    isCategoryRenameModalOpen = true;
   }}
   onDeleteClick={() => {
     isSubCategoryMenuBottomSheetOpen = false;
     isDeleteCategoryModalOpen = true;
   }}
 />
-<RenameCategoryModal
-  bind:isOpen={isRenameCategoryModalOpen}
-  bind:selectedCategory={selectedSubCategory}
-  onRenameClick={async (newName) => {
-    if (selectedSubCategory) {
-      await requestCategoryRename(selectedSubCategory, newName);
+<RenameModal
+  bind:isOpen={isCategoryRenameModalOpen}
+  onbeforeclose={() => (selectedSubCategory = undefined)}
+  originalName={selectedSubCategory?.name}
+  onrename={async (newName: string) => {
+    if (await requestCategoryRename(selectedSubCategory!, newName)) {
       info = getCategoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
       return true;
     }

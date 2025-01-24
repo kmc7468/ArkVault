@@ -1,8 +1,8 @@
 <script lang="ts">
   import FileSaver from "file-saver";
   import { goto } from "$app/navigation";
-  import { Button, TextButton } from "$lib/components/atoms";
-  import { TitleDiv, BottomDiv } from "$lib/components/divs";
+  import { Button, TextButton, BottomDiv } from "$lib/components/atoms";
+  import { TitleDiv } from "$lib/components/divs";
   import { clientKeyStore } from "$lib/stores";
   import BeforeContinueBottomSheet from "./BeforeContinueBottomSheet.svelte";
   import BeforeContinueModal from "./BeforeContinueModal.svelte";
@@ -100,7 +100,7 @@
     </div>
   </div>
 </TitleDiv>
-<BottomDiv>
+<BottomDiv class="flex flex-col items-center gap-y-2">
   <Button onclick={exportClientKeys} class="w-full">암호 키 내보내기</Button>
   <TextButton onclick={() => (isBeforeContinueModalOpen = true)}>내보내지 않을래요</TextButton>
 </BottomDiv>

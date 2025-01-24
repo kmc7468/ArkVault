@@ -1,35 +1,30 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import type { ClassValue } from "svelte/elements";
   import { fade } from "svelte/transition";
-  import { AdaptiveDiv } from "$lib/components/divs";
+  import { AdaptiveDiv } from "$lib/components/atoms";
 
   interface Props {
-    children: Snippet;
-    onclose?: () => void;
+    children?: Snippet;
+    class?: ClassValue;
     isOpen: boolean;
+    onclose?: () => void;
   }
 
-  let { children, onclose, isOpen = $bindable() }: Props = $props();
-
-  const closeModal = $derived(
-    onclose ||
-      (() => {
-        isOpen = false;
-      }),
-  );
+  let { children, isOpen = $bindable(), onclose, ...props }: Props = $props();
 </script>
 
 {#if isOpen}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
-    onclick={closeModal}
+    onclick={onclose || (() => (isOpen = false))}
     class="fixed inset-0 z-10 bg-black bg-opacity-50"
     transition:fade={{ duration: 100 }}
   >
-    <AdaptiveDiv>
+    <AdaptiveDiv class="h-full">
       <div class="flex h-full items-center justify-center px-4">
-        <div onclick={(e) => e.stopPropagation()} class="rounded-2xl bg-white p-4">
+        <div onclick={(e) => e.stopPropagation()} class={["rounded-2xl bg-white p-4", props.class]}>
           {@render children?.()}
         </div>
       </div>

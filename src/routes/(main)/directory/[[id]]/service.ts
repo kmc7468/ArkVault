@@ -72,19 +72,21 @@ export const requestDirectoryEntryRename = async (
 ) => {
   const newNameEncrypted = await encryptString(newName, entry.dataKey);
 
+  let res;
   if (entry.type === "directory") {
-    await callPostApi<DirectoryRenameRequest>(`/api/directory/${entry.id}/rename`, {
+    res = await callPostApi<DirectoryRenameRequest>(`/api/directory/${entry.id}/rename`, {
       dekVersion: entry.dataKeyVersion.toISOString(),
       name: newNameEncrypted.ciphertext,
       nameIv: newNameEncrypted.iv,
     });
   } else {
-    await callPostApi<FileRenameRequest>(`/api/file/${entry.id}/rename`, {
+    res = await callPostApi<FileRenameRequest>(`/api/file/${entry.id}/rename`, {
       dekVersion: entry.dataKeyVersion.toISOString(),
       name: newNameEncrypted.ciphertext,
       nameIv: newNameEncrypted.iv,
     });
   }
+  return res.ok;
 };
 
 export const requestDirectoryEntryDeletion = async (entry: SelectedDirectoryEntry) => {

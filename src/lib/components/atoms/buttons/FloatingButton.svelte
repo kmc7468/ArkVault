@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Component } from "svelte";
   import type { ClassValue, SvelteHTMLElements } from "svelte/elements";
-  import { AdaptiveDiv } from "$lib/components/divs";
+  import { AdaptiveDiv } from "$lib/components/atoms";
 
   interface Props {
     icon: Component<SvelteHTMLElements["svg"]>;

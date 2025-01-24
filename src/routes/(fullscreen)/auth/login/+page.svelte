@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { Button, TextButton, TextInput } from "$lib/components/atoms";
-  import { TitleDiv, BottomDiv } from "$lib/components/divs";
+  import { Button, TextButton, BottomDiv, TextInput } from "$lib/components/atoms";
+  import { TitleDiv } from "$lib/components/divs";
   import { clientKeyStore, masterKeyStore } from "$lib/stores";
   import { requestLogin, requestSessionUpgrade, requestMasterKeyDownload } from "./service";
 
@@ -56,7 +56,7 @@
     <TextInput bind:value={password} placeholder="비밀번호" type="password" />
   </div>
 </TitleDiv>
-<BottomDiv>
+<BottomDiv class="flex flex-col items-center gap-y-2">
   <Button onclick={login} class="w-full">로그인</Button>
   <TextButton>계정이 없어요</TextButton>
 </BottomDiv>

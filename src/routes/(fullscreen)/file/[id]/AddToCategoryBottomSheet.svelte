@@ -1,11 +1,10 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
   import { BottomSheet } from "$lib/components";
-  import { Button } from "$lib/components/atoms";
-  import { BottomDiv } from "$lib/components/divs";
+  import { Button, BottomDiv } from "$lib/components/atoms";
+  import { CategoryCreateModal } from "$lib/components/organisms/modals";
   import { getCategoryInfo, type CategoryInfo } from "$lib/modules/filesystem";
   import SubCategories from "$lib/molecules/SubCategories.svelte";
-  import CreateCategoryModal from "$lib/organisms/CreateCategoryModal.svelte";
   import { masterKeyStore } from "$lib/stores";
   import { requestCategoryCreation } from "./service";
 
@@ -18,15 +17,7 @@
 
   let category: Writable<CategoryInfo | null> | undefined = $state();
 
-  let isCreateCategoryModalOpen = $state(false);
-
-  const createCategory = async (name: string) => {
-    if (!$category) return; // TODO: Error handling
-
-    await requestCategoryCreation(name, $category.id, $masterKeyStore?.get(1)!);
-    isCreateCategoryModalOpen = false;
-    category = getCategoryInfo($category.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
-  };
+  let isCategoryCreateModalOpen = $state(false);
 
   $effect(() => {
     if (isOpen) {
@@ -43,7 +34,7 @@
         info={$category}
         onSubCategoryClick={({ id }) =>
           (category = getCategoryInfo(id, $masterKeyStore?.get(1)?.key!))}
-        onSubCategoryCreateClick={() => (isCreateCategoryModalOpen = true)}
+        onSubCategoryCreateClick={() => (isCategoryCreateModalOpen = true)}
         subCategoryCreatePosition="top"
       />
       {#if $category.id !== "root"}
@@ -57,4 +48,13 @@
   </div>
 </BottomSheet>
 
-<CreateCategoryModal bind:isOpen={isCreateCategoryModalOpen} onCreateClick={createCategory} />
+<CategoryCreateModal
+  bind:isOpen={isCategoryCreateModalOpen}
+  oncreate={async (name: string) => {
+    if (await requestCategoryCreation(name, $category!.id, $masterKeyStore?.get(1)!)) {
+      category = getCategoryInfo($category!.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
+      return true;
+    }
+    return false;
+  }}
+/>

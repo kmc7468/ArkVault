@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
-  import { Button, TextButton } from "$lib/components/atoms";
-  import { TitleDiv, BottomDiv } from "$lib/components/divs";
+  import { Button, TextButton, BottomDiv } from "$lib/components/atoms";
+  import { TitleDiv } from "$lib/components/divs";
   import { gotoStateful } from "$lib/hooks";
   import { clientKeyStore } from "$lib/stores";
   import Order from "./Order.svelte";
@@ -79,7 +79,7 @@
     </div>
   </div>
 </TitleDiv>
-<BottomDiv>
+<BottomDiv class="flex flex-col items-center gap-y-2">
   <Button onclick={generateKeys} class="w-full">새 암호 키 생성하기</Button>
   <TextButton>키를 갖고 있어요</TextButton>
 </BottomDiv>

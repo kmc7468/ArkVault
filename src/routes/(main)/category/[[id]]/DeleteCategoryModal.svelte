@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { Modal } from "$lib/components";
-  import { Button } from "$lib/components/atoms";
+  import { Button, Modal } from "$lib/components/atoms";
   import type { SelectedCategory } from "$lib/molecules/Categories";
 
   interface Props {

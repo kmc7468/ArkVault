@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { Modal } from "$lib/components";
-  import { Button, TextInput } from "$lib/components/atoms";
+  import { Button, Modal, TextInput } from "$lib/components/atoms";
 
   interface Props {
     onCreateClick: (name: string) => void;

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { TopBar } from "$lib/components";
-  import { Button, TextInput } from "$lib/components/atoms";
-  import { TitleDiv, BottomDiv } from "$lib/components/divs";
+  import { Button, BottomDiv, TextInput } from "$lib/components/atoms";
+  import { TitleDiv } from "$lib/components/divs";
   import { requestPasswordChange } from "./service";
 
   let oldPassword = $state("");

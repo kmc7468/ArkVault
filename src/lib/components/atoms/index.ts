@@ -1,2 +1,4 @@
 export * from "./buttons";
+export * from "./divs";
 export * from "./inputs";
+export { default as Modal } from "./Modal.svelte";

@@ -1,0 +1,18 @@
+<script lang="ts">
+  import { TextInputModal } from "$lib/components/organisms";
+
+  interface Props {
+    isOpen: boolean;
+    oncreate: (name: string) => Promise<boolean>;
+  }
+
+  let { isOpen = $bindable(), oncreate }: Props = $props();
+</script>
+
+<TextInputModal
+  bind:isOpen
+  title="새 카테고리"
+  placeholder="카테고리 이름"
+  submitText="만들기"
+  onsubmit={oncreate}
+/>
