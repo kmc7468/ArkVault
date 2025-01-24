@@ -203,7 +203,7 @@ export const registerFile = async (params: NewFile) => {
     throw new Error("Invalid arguments");
   }
 
-  await db.transaction().execute(async (trx) => {
+  return await db.transaction().execute(async (trx) => {
     const mek = await trx
       .selectFrom("master_encryption_key")
       .select("version")
@@ -259,6 +259,7 @@ export const registerFile = async (params: NewFile) => {
         new_name: params.encName,
       })
       .execute();
+    return { id: fileId };
   });
 };
 
