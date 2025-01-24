@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
   import { BottomSheet } from "$lib/components";
-  import { Button } from "$lib/components/buttons";
+  import { Button } from "$lib/components/atoms";
   import { BottomDiv } from "$lib/components/divs";
   import { getCategoryInfo, type CategoryInfo } from "$lib/modules/filesystem";
   import SubCategories from "$lib/molecules/SubCategories.svelte";
@@ -48,7 +48,9 @@
       />
       {#if $category.id !== "root"}
         <BottomDiv>
-          <Button onclick={() => onAddToCategoryClick($category.id)}>이 카테고리에 추가하기</Button>
+          <Button onclick={() => onAddToCategoryClick($category.id)} class="w-full">
+            이 카테고리에 추가하기
+          </Button>
         </BottomDiv>
       {/if}
     {/if}

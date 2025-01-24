@@ -17,7 +17,7 @@
   />
   <!-- svelte-ignore a11y_label_has_associated_control -->
   <label
-    class="absolute left-0 top-1/2 -translate-y-1/2 transform text-xl text-gray-400 transition-all duration-300 ease-in-out"
+    class="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 transform text-xl text-gray-400 transition-all duration-300 ease-in-out"
   >
     {placeholder}
   </label>

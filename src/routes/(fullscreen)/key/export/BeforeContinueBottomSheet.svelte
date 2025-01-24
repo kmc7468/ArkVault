@@ -1,6 +1,6 @@
 <script lang="ts">
   import { BottomSheet } from "$lib/components";
-  import { Button } from "$lib/components/buttons";
+  import { Button } from "$lib/components/atoms";
   import { BottomDiv } from "$lib/components/divs";
 
   interface Props {
@@ -22,9 +22,9 @@
       </p>
     </div>
     <BottomDiv>
-      <div class="flex w-full gap-2">
-        <Button color="gray" onclick={onRetryClick}>다시 저장할래요</Button>
-        <Button onclick={onContinueClick}>잘 저장되었어요</Button>
+      <div class="flex w-full gap-x-2">
+        <Button color="gray" onclick={onRetryClick} class="flex-1">다시 저장할래요</Button>
+        <Button onclick={onContinueClick} class="flex-1">잘 저장되었어요</Button>
       </div>
     </BottomDiv>
   </div>

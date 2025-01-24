@@ -4,7 +4,7 @@
   import { get, type Writable } from "svelte/store";
   import { goto } from "$app/navigation";
   import { TopBar } from "$lib/components";
-  import { EntryButton } from "$lib/components/buttons";
+  import { EntryButton } from "$lib/components/atoms";
   import {
     getFileInfo,
     getCategoryInfo,
@@ -151,7 +151,7 @@
           onCategoryClick={({ id }) => goto(`/category/${id}`)}
           onCategoryMenuClick={({ id }) => removeFromCategory(id)}
         />
-        <EntryButton onclick={() => (isAddToCategoryBottomSheetOpen = true)}>
+        <EntryButton onclick={() => (isAddToCategoryBottomSheetOpen = true)} class="w-full">
           <div class="flex h-8 items-center gap-x-4">
             <IconAddCircle class="text-lg text-gray-600" />
             <p class="font-medium text-gray-700">카테고리에 추가하기</p>

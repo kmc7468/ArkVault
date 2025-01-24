@@ -1,0 +1,28 @@
+<script lang="ts">
+  import type { Snippet } from "svelte";
+  import type { ClassValue } from "svelte/elements";
+
+  import IconChevronRight from "~icons/material-symbols/chevron-right";
+
+  interface Props {
+    children?: Snippet;
+    class?: ClassValue;
+    onclick?: () => void;
+  }
+
+  let { children, onclick, ...props }: Props = $props();
+</script>
+
+<button
+  onclick={onclick && (() => setTimeout(onclick, 100))}
+  class={["rounded-xl active:bg-gray-100", props.class]}
+>
+  <div class="flex h-full p-2 transition active:scale-95">
+    <div class="flex-grow">
+      {@render children?.()}
+    </div>
+    <div class="flex flex-shrink-0 items-center">
+      <IconChevronRight class="text-xl text-gray-800" />
+    </div>
+  </div>
+</button>

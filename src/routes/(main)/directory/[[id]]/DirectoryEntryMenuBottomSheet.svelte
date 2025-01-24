@@ -1,6 +1,6 @@
 <script lang="ts">
   import { BottomSheet } from "$lib/components";
-  import { EntryButton } from "$lib/components/buttons";
+  import { EntryButton } from "$lib/components/atoms";
   import type { SelectedDirectoryEntry } from "./service";
 
   import IconFolder from "~icons/material-symbols/folder";
@@ -46,13 +46,13 @@
       </div>
       <div class="my-2 h-px w-full bg-gray-200"></div>
     {/if}
-    <EntryButton onclick={onRenameClick}>
+    <EntryButton onclick={onRenameClick} class="w-full">
       <div class="flex h-8 items-center gap-x-4">
         <IconEdit class="text-lg" />
         <p class="font-medium">이름 바꾸기</p>
       </div>
     </EntryButton>
-    <EntryButton onclick={onDeleteClick}>
+    <EntryButton onclick={onDeleteClick} class="w-full">
       <div class="flex h-8 items-center gap-x-4 text-red-500">
         <IconDelete class="text-lg" />
         <p class="font-medium">삭제하기</p>

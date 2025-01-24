@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Modal } from "$lib/components";
-  import { Button } from "$lib/components/buttons";
+  import { Button } from "$lib/components/atoms";
   import type { SelectedDirectoryEntry } from "./service";
 
   interface Props {
@@ -47,9 +47,9 @@
           {/if}
         </p>
       </div>
-      <div class="flex gap-2">
-        <Button color="gray" onclick={closeModal}>아니요</Button>
-        <Button onclick={deleteEntry}>삭제할게요</Button>
+      <div class="flex gap-x-2">
+        <Button color="gray" onclick={closeModal} class="flex-1">아니요</Button>
+        <Button onclick={deleteEntry} class="flex-1">삭제할게요</Button>
       </div>
     </div>
   {/if}

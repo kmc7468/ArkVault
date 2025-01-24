@@ -1,9 +1,8 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { TopBar } from "$lib/components";
-  import { Button } from "$lib/components/buttons";
+  import { Button, TextInput } from "$lib/components/atoms";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
-  import { TextInput } from "$lib/components/inputs";
   import { requestPasswordChange } from "./service";
 
   let oldPassword = $state("");
@@ -34,5 +33,5 @@
   </TitleDiv>
 </div>
 <BottomDiv>
-  <Button onclick={changePassword}>비밀번호 바꾸기</Button>
+  <Button onclick={changePassword} class="w-full">비밀번호 바꾸기</Button>
 </BottomDiv>

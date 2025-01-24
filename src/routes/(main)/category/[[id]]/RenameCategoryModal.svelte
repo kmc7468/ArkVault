@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Modal } from "$lib/components";
-  import { Button } from "$lib/components/buttons";
-  import { TextInput } from "$lib/components/inputs";
+  import { Button, TextInput } from "$lib/components/atoms";
   import type { SelectedCategory } from "$lib/molecules/Categories";
 
   interface Props {
@@ -20,7 +19,7 @@
     selectedCategory = undefined;
   };
 
-  const renameEntry = async () => {
+  const renameCategory = async () => {
     // TODO: Validation
 
     if (await onRenameClick(name)) {
@@ -40,8 +39,8 @@
   <div class="mt-2 flex w-full">
     <TextInput bind:value={name} placeholder="이름" />
   </div>
-  <div class="mt-7 flex gap-2">
-    <Button color="gray" onclick={closeModal}>닫기</Button>
-    <Button onclick={renameEntry}>바꾸기</Button>
+  <div class="mt-7 flex gap-x-2">
+    <Button color="gray" onclick={closeModal} class="flex-1">닫기</Button>
+    <Button onclick={renameCategory} class="flex-1">바꾸기</Button>
   </div>
 </Modal>

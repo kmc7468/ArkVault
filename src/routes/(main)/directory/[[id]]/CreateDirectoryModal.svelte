@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Modal } from "$lib/components";
-  import { Button } from "$lib/components/buttons";
-  import { TextInput } from "$lib/components/inputs";
+  import { Button, TextInput } from "$lib/components/atoms";
 
   interface Props {
     onCreateClick: (name: string) => void;
@@ -23,8 +22,8 @@
   <div class="mt-2 flex w-full">
     <TextInput bind:value={name} placeholder="폴더 이름" />
   </div>
-  <div class="mt-7 flex gap-2">
-    <Button color="gray" onclick={closeModal}>닫기</Button>
-    <Button onclick={() => onCreateClick(name)}>만들기</Button>
+  <div class="mt-7 flex gap-x-2">
+    <Button color="gray" onclick={closeModal} class="flex-1">닫기</Button>
+    <Button onclick={() => onCreateClick(name)} class="flex-1">만들기</Button>
   </div>
 </Modal>

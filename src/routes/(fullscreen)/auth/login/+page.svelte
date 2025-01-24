@@ -1,8 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { Button, TextButton } from "$lib/components/buttons";
+  import { Button, TextButton, TextInput } from "$lib/components/atoms";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
-  import { TextInput } from "$lib/components/inputs";
   import { clientKeyStore, masterKeyStore } from "$lib/stores";
   import { requestLogin, requestSessionUpgrade, requestMasterKeyDownload } from "./service";
 
@@ -58,6 +57,6 @@
   </div>
 </TitleDiv>
 <BottomDiv>
-  <Button onclick={login}>로그인</Button>
+  <Button onclick={login} class="w-full">로그인</Button>
   <TextButton>계정이 없어요</TextButton>
 </BottomDiv>

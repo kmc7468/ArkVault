@@ -1,7 +1,7 @@
 <script lang="ts">
   import { untrack } from "svelte";
   import { get, type Writable } from "svelte/store";
-  import { CheckBox } from "$lib/components/inputs";
+  import { CheckBox } from "$lib/components/atoms";
   import { getFileInfo, type FileInfo, type CategoryInfo } from "$lib/modules/filesystem";
   import { SortBy, sortEntries } from "$lib/modules/util";
   import type { SelectedCategory } from "$lib/molecules/Categories";

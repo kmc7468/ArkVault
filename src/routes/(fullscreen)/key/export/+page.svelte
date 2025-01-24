@@ -1,7 +1,7 @@
 <script lang="ts">
   import FileSaver from "file-saver";
   import { goto } from "$app/navigation";
-  import { Button, TextButton } from "$lib/components/buttons";
+  import { Button, TextButton } from "$lib/components/atoms";
   import { TitleDiv, BottomDiv } from "$lib/components/divs";
   import { clientKeyStore } from "$lib/stores";
   import BeforeContinueBottomSheet from "./BeforeContinueBottomSheet.svelte";
@@ -101,14 +101,8 @@
   </div>
 </TitleDiv>
 <BottomDiv>
-  <Button onclick={exportClientKeys}>암호 키 내보내기</Button>
-  <TextButton
-    onclick={() => {
-      isBeforeContinueModalOpen = true;
-    }}
-  >
-    내보내지 않을래요
-  </TextButton>
+  <Button onclick={exportClientKeys} class="w-full">암호 키 내보내기</Button>
+  <TextButton onclick={() => (isBeforeContinueModalOpen = true)}>내보내지 않을래요</TextButton>
 </BottomDiv>
 
 <BeforeContinueModal bind:isOpen={isBeforeContinueModalOpen} onContinueClick={registerPubKeys} />

@@ -3,7 +3,7 @@
   import type { Writable } from "svelte/store";
   import { goto } from "$app/navigation";
   import { TopBar } from "$lib/components";
-  import { FloatingButton } from "$lib/components/buttons";
+  import { FloatingButton } from "$lib/components/atoms";
   import { getDirectoryInfo, type DirectoryInfo } from "$lib/modules/filesystem";
   import { masterKeyStore, hmacSecretStore } from "$lib/stores";
   import CreateBottomSheet from "./CreateBottomSheet.svelte";

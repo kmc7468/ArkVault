@@ -5,16 +5,18 @@
   import IconCheckCircleOutline from "~icons/material-symbols/check-circle-outline";
 
   interface Props {
-    children: Snippet;
     checked?: boolean;
+    children?: Snippet;
   }
 
-  let { children, checked = $bindable(false) }: Props = $props();
+  let { checked = $bindable(false), children }: Props = $props();
 </script>
 
 <label class="flex items-center gap-x-1">
   <input bind:checked type="checkbox" class="hidden" />
-  {@render children?.()}
+  <div>
+    {@render children?.()}
+  </div>
   {#if checked}
     <IconCheckCircle class="text-primary-600" />
   {:else}

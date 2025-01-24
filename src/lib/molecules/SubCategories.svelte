@@ -2,7 +2,7 @@
   import type { Component } from "svelte";
   import type { ClassValue, SvelteHTMLElements } from "svelte/elements";
   import type { Writable } from "svelte/store";
-  import { EntryButton } from "$lib/components/buttons";
+  import { EntryButton } from "$lib/components/atoms";
   import { getCategoryInfo, type CategoryInfo } from "$lib/modules/filesystem";
   import Categories, { type SelectedCategory } from "$lib/molecules/Categories";
   import { masterKeyStore } from "$lib/stores";
@@ -40,7 +40,7 @@
 
 <div class={["space-y-1", props.class]}>
   {#snippet subCategoryCreate()}
-    <EntryButton onclick={onSubCategoryCreateClick}>
+    <EntryButton onclick={onSubCategoryCreateClick} class="w-full">
       <div class="flex h-8 items-center gap-x-4">
         <IconAddCircle class="text-lg text-gray-600" />
         <p class="font-medium text-gray-700">카테고리 추가하기</p>
