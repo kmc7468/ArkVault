@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
   import { goto } from "$app/navigation";
-  import { TopBar } from "$lib/components";
+  import { TopBar } from "$lib/components/molecules";
   import { CategoryCreateModal } from "$lib/components/organisms";
   import { getCategoryInfo, type CategoryInfo } from "$lib/modules/filesystem";
   import Category from "$lib/organisms/Category";
@@ -38,29 +38,27 @@
   <title>카테고리</title>
 </svelte:head>
 
-<div class="flex min-h-full flex-col">
-  {#if data.id !== "root"}
-    <TopBar title={$info?.name} xPadding />
+{#if data.id !== "root"}
+  <TopBar title={$info?.name} />
+{/if}
+<div class="min-h-full bg-gray-100 pb-[5.5em]">
+  {#if $info}
+    <Category
+      bind:isFileRecursive
+      info={$info}
+      onFileClick={({ id }) => goto(`/file/${id}`)}
+      onFileRemoveClick={async ({ id }) => {
+        await requestFileRemovalFromCategory(id, data.id as number);
+        info = getCategoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
+      }}
+      onSubCategoryClick={({ id }) => goto(`/category/${id}`)}
+      onSubCategoryCreateClick={() => (isCategoryCreateModalOpen = true)}
+      onSubCategoryMenuClick={(subCategory) => {
+        context.selectedCategory = subCategory;
+        isCategoryMenuBottomSheetOpen = true;
+      }}
+    />
   {/if}
-  <div class="flex-grow bg-gray-100 pb-[5.5em]">
-    {#if $info}
-      <Category
-        bind:isFileRecursive
-        info={$info}
-        onFileClick={({ id }) => goto(`/file/${id}`)}
-        onFileRemoveClick={async ({ id }) => {
-          await requestFileRemovalFromCategory(id, data.id as number);
-          info = getCategoryInfo(data.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
-        }}
-        onSubCategoryClick={({ id }) => goto(`/category/${id}`)}
-        onSubCategoryCreateClick={() => (isCategoryCreateModalOpen = true)}
-        onSubCategoryMenuClick={(subCategory) => {
-          context.selectedCategory = subCategory;
-          isCategoryMenuBottomSheetOpen = true;
-        }}
-      />
-    {/if}
-  </div>
 </div>
 
 <CategoryCreateModal

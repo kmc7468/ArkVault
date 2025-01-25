@@ -10,6 +10,6 @@
   let { children, ...props }: Props = $props();
 </script>
 
-<div class={["mx-auto w-full max-w-screen-md", props.class]}>
+<div class={["mx-auto max-w-screen-md", props.class]}>
   {@render children?.()}
 </div>

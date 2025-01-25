@@ -1,8 +1,8 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { TopBar } from "$lib/components";
-  import { Button, BottomDiv, TextInput } from "$lib/components/atoms";
+  import { Button, BottomDiv, FullscreenDiv, TextInput } from "$lib/components/atoms";
   import { TitleDiv } from "$lib/components/divs";
+  import { TopBar } from "$lib/components/molecules";
   import { requestPasswordChange } from "./service";
 
   let oldPassword = $state("");
@@ -19,8 +19,8 @@
   <title>비밀번호 바꾸기</title>
 </svelte:head>
 
-<div>
-  <TopBar />
+<TopBar class="flex-shrink-0" />
+<FullscreenDiv>
   <TitleDiv topPadding={false}>
     <div class="space-y-2 break-keep">
       <p class="text-2xl font-bold">기존 비밀번호와 새 비밀번호를 입력해 주세요.</p>
@@ -31,7 +31,7 @@
       <TextInput bind:value={newPassword} placeholder="새 비밀번호" type="password" />
     </div>
   </TitleDiv>
-</div>
-<BottomDiv>
-  <Button onclick={changePassword} class="w-full">비밀번호 바꾸기</Button>
-</BottomDiv>
+  <BottomDiv>
+    <Button onclick={changePassword} class="w-full">비밀번호 바꾸기</Button>
+  </BottomDiv>
+</FullscreenDiv>

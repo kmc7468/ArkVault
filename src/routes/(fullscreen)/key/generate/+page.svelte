@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
-  import { Button, TextButton, BottomDiv } from "$lib/components/atoms";
+  import { Button, TextButton, BottomDiv, FullscreenDiv } from "$lib/components/atoms";
   import { TitleDiv } from "$lib/components/divs";
   import { gotoStateful } from "$lib/hooks";
   import { clientKeyStore } from "$lib/stores";
@@ -62,24 +62,26 @@
   <title>암호 키 생성하기</title>
 </svelte:head>
 
-<TitleDiv>
-  <div class="space-y-2 break-keep">
-    <p class="text-3xl font-bold">암호 키 생성하기</p>
-    <p>회원님의 디바이스 간의 안전한 데이터 동기화를 위해 암호 키를 생성해야 해요.</p>
-  </div>
-  <div class="my-4 space-y-4">
-    <div>
-      <IconKey class="mx-auto text-7xl" />
-      <p class="text-center text-xl font-bold text-primary-500">왜 암호 키가 필요한가요?</p>
+<FullscreenDiv>
+  <TitleDiv>
+    <div class="space-y-2 break-keep">
+      <p class="text-3xl font-bold">암호 키 생성하기</p>
+      <p>회원님의 디바이스 간의 안전한 데이터 동기화를 위해 암호 키를 생성해야 해요.</p>
     </div>
-    <div class="space-y-2">
-      {#each orders as { title, description }, i}
-        <Order order={i + 1} isLast={i === orders.length - 1} {title} {description} />
-      {/each}
+    <div class="my-4 space-y-4">
+      <div>
+        <IconKey class="mx-auto text-7xl" />
+        <p class="text-center text-xl font-bold text-primary-500">왜 암호 키가 필요한가요?</p>
+      </div>
+      <div class="space-y-2">
+        {#each orders as { title, description }, i}
+          <Order order={i + 1} isLast={i === orders.length - 1} {title} {description} />
+        {/each}
+      </div>
     </div>
-  </div>
-</TitleDiv>
-<BottomDiv class="flex flex-col items-center gap-y-2">
-  <Button onclick={generateKeys} class="w-full">새 암호 키 생성하기</Button>
-  <TextButton>키를 갖고 있어요</TextButton>
-</BottomDiv>
+  </TitleDiv>
+  <BottomDiv class="flex flex-col items-center gap-y-2">
+    <Button onclick={generateKeys} class="w-full">새 암호 키 생성하기</Button>
+    <TextButton>키를 갖고 있어요</TextButton>
+  </BottomDiv>
+</FullscreenDiv>

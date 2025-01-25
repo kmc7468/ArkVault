@@ -3,8 +3,8 @@
   import { untrack } from "svelte";
   import { get, type Writable } from "svelte/store";
   import { goto } from "$app/navigation";
-  import { TopBar } from "$lib/components";
-  import { EntryButton } from "$lib/components/atoms";
+  import { EntryButton, FullscreenDiv } from "$lib/components/atoms";
+  import { TopBar } from "$lib/components/molecules";
   import {
     getFileInfo,
     getCategoryInfo,
@@ -116,8 +116,8 @@
   <title>파일</title>
 </svelte:head>
 
-<div class="flex h-full flex-col">
-  <TopBar title={$info?.name} />
+<TopBar title={$info?.name} />
+<FullscreenDiv>
   <div class="space-y-4 pb-4">
     <DownloadStatus status={downloadStatus} />
     {#if $info && viewerType}
@@ -160,7 +160,7 @@
       </div>
     </div>
   </div>
-</div>
+</FullscreenDiv>
 
 <AddToCategoryBottomSheet
   bind:isOpen={isAddToCategoryBottomSheetOpen}

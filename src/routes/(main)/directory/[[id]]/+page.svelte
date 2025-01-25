@@ -2,8 +2,8 @@
   import { onMount } from "svelte";
   import type { Writable } from "svelte/store";
   import { goto } from "$app/navigation";
-  import { TopBar } from "$lib/components";
   import { FloatingButton } from "$lib/components/atoms";
+  import { TopBar } from "$lib/components/molecules";
   import { getDirectoryInfo, type DirectoryInfo } from "$lib/modules/filesystem";
   import { masterKeyStore, hmacSecretStore } from "$lib/stores";
   import DirectoryCreateModal from "./DirectoryCreateModal.svelte";
@@ -85,13 +85,12 @@
 
 <input bind:this={fileInput} onchange={uploadFile} type="file" multiple class="hidden" />
 
-<div class="flex min-h-full flex-col px-4">
+<div class="flex h-full flex-col">
   {#if data.id !== "root"}
-    <TopBar title={$info?.name} />
+    <TopBar title={$info?.name} class="flex-shrink-0" />
   {/if}
   {#if $info}
-    {@const topMargin = data.id === "root" ? "mt-4" : ""}
-    <div class="mb-4 flex flex-grow flex-col {topMargin}">
+    <div class={["flex flex-grow flex-col px-4 pb-4", data.id === "root" && "pt-4"]}>
       <div class="flex gap-x-2">
         <UploadStatusCard onclick={() => goto("/file/uploads")} />
         <DownloadStatusCard onclick={() => goto("/file/downloads")} />

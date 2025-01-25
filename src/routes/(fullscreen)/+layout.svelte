@@ -4,8 +4,6 @@
   let { children } = $props();
 </script>
 
-<AdaptiveDiv>
-  <div class="flex h-screen flex-col justify-between px-4">
-    {@render children()}
-  </div>
+<AdaptiveDiv class="flex h-screen flex-col">
+  {@render children()}
 </AdaptiveDiv>
