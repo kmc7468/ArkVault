@@ -27,9 +27,12 @@
 
 <button
   onclick={onclick && (() => setTimeout(onclick, 100))}
-  class={["h-12 min-w-fit rounded-xl font-medium", bgColor, textColor, props.class]}
+  class={[
+    "h-12 min-w-fit rounded-xl p-3 font-medium transition active:scale-95",
+    bgColor,
+    textColor,
+    props.class,
+  ]}
 >
-  <div class="h-full p-3 transition active:scale-95">
-    {@render children?.()}
-  </div>
+  {@render children?.()}
 </button>
