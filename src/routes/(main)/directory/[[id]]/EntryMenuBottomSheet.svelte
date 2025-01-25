@@ -3,7 +3,8 @@
   import { EntryButton } from "$lib/components/atoms";
   import { useContext } from "./service.svelte";
 
-  import IconCategory from "~icons/material-symbols/category";
+  import IconFolder from "~icons/material-symbols/folder";
+  import IconDraft from "~icons/material-symbols/draft";
   import IconEdit from "~icons/material-symbols/edit";
   import IconDelete from "~icons/material-symbols/delete";
 
@@ -17,13 +18,17 @@
   let context = useContext();
 </script>
 
-{#if context.selectedCategory}
-  {@const { name } = context.selectedCategory}
+{#if context.selectedEntry}
+  {@const { name, type } = context.selectedEntry}
   <BottomSheet bind:isOpen>
     <div class="w-full py-4">
       <div class="flex h-12 items-center gap-x-4 p-2">
         <div class="flex-shrink-0 text-lg">
-          <IconCategory />
+          {#if type === "directory"}
+            <IconFolder />
+          {:else}
+            <IconDraft class="text-blue-400" />
+          {/if}
         </div>
         <p title={name} class="flex-grow truncate font-semibold">
           {name}

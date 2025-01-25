@@ -6,12 +6,12 @@
   import IconUploadFile from "~icons/material-symbols/upload-file";
 
   interface Props {
+    isOpen: boolean;
     onDirectoryCreateClick: () => void;
     onFileUploadClick: () => void;
-    isOpen: boolean;
   }
 
-  let { onDirectoryCreateClick, onFileUploadClick, isOpen = $bindable() }: Props = $props();
+  let { isOpen = $bindable(), onDirectoryCreateClick, onFileUploadClick }: Props = $props();
 </script>
 
 <BottomSheet bind:isOpen>

@@ -23,13 +23,16 @@
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div onclick={closeBottomSheet} class="fixed inset-0 z-10 flex items-end justify-center">
-    <div class="absolute inset-0 bg-black bg-opacity-50" transition:fade={{ duration: 100 }}></div>
+    <div
+      class="absolute inset-0 bg-black bg-opacity-50"
+      transition:fade|global={{ duration: 100 }}
+    ></div>
     <div class="z-20 w-full">
       <AdaptiveDiv>
         <div
           onclick={(e) => e.stopPropagation()}
           class="flex max-h-[70vh] min-h-[30vh] overflow-y-auto rounded-t-2xl bg-white px-4"
-          transition:fly={{ y: 100, duration: 200 }}
+          transition:fly|global={{ y: 100, duration: 200 }}
         >
           {@render children?.()}
         </div>

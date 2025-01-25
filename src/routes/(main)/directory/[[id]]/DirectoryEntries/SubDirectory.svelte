@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
   import type { DirectoryInfo } from "$lib/modules/filesystem";
-  import type { SelectedDirectoryEntry } from "../service";
+  import type { SelectedEntry } from "../service.svelte";
 
   import IconFolder from "~icons/material-symbols/folder";
   import IconMoreVert from "~icons/material-symbols/more-vert";
@@ -10,8 +10,8 @@
 
   interface Props {
     info: Writable<DirectoryInfo | null>;
-    onclick: (selectedEntry: SelectedDirectoryEntry) => void;
-    onOpenMenuClick: (selectedEntry: SelectedDirectoryEntry) => void;
+    onclick: (selectedEntry: SelectedEntry) => void;
+    onOpenMenuClick: (selectedEntry: SelectedEntry) => void;
   }
 
   let { info, onclick, onOpenMenuClick }: Props = $props();

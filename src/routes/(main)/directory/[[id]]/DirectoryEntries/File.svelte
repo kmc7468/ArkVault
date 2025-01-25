@@ -2,15 +2,15 @@
   import type { Writable } from "svelte/store";
   import type { FileInfo } from "$lib/modules/filesystem";
   import { formatDateTime } from "$lib/modules/util";
-  import type { SelectedDirectoryEntry } from "../service";
+  import type { SelectedEntry } from "../service.svelte";
 
   import IconDraft from "~icons/material-symbols/draft";
   import IconMoreVert from "~icons/material-symbols/more-vert";
 
   interface Props {
     info: Writable<FileInfo | null>;
-    onclick: (selectedEntry: SelectedDirectoryEntry) => void;
-    onOpenMenuClick: (selectedEntry: SelectedDirectoryEntry) => void;
+    onclick: (selectedEntry: SelectedEntry) => void;
+    onOpenMenuClick: (selectedEntry: SelectedEntry) => void;
   }
 
   let { info, onclick, onOpenMenuClick }: Props = $props();

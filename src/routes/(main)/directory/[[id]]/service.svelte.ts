@@ -1,3 +1,4 @@
+import { getContext, setContext } from "svelte";
 import { callGetApi, callPostApi } from "$lib/hooks";
 import { storeHmacSecrets } from "$lib/indexedDB";
 import { generateDataKey, wrapDataKey, unwrapHmacSecret, encryptString } from "$lib/modules/crypto";
@@ -11,13 +12,24 @@ import type {
 } from "$lib/server/schemas";
 import { hmacSecretStore, type MasterKey, type HmacSecret } from "$lib/stores";
 
-export interface SelectedDirectoryEntry {
+export interface SelectedEntry {
   type: "directory" | "file";
   id: number;
   dataKey: CryptoKey;
   dataKeyVersion: Date;
   name: string;
 }
+
+export const createContext = () => {
+  const context = $state({
+    selectedEntry: undefined as SelectedEntry | undefined,
+  });
+  return setContext("context", context);
+};
+
+export const useContext = () => {
+  return getContext<ReturnType<typeof createContext>>("context");
+};
 
 export const requestHmacSecretDownload = async (masterKey: CryptoKey) => {
   // TODO: MEK rotation
@@ -46,7 +58,8 @@ export const requestDirectoryCreation = async (
 ) => {
   const { dataKey, dataKeyVersion } = await generateDataKey();
   const nameEncrypted = await encryptString(name, dataKey);
-  await callPostApi<DirectoryCreateRequest>("/api/directory/create", {
+
+  const res = await callPostApi<DirectoryCreateRequest>("/api/directory/create", {
     parent: parentId,
     mekVersion: masterKey.version,
     dek: await wrapDataKey(dataKey, masterKey.key),
@@ -54,6 +67,7 @@ export const requestDirectoryCreation = async (
     name: nameEncrypted.ciphertext,
     nameIv: nameEncrypted.iv,
   });
+  return res.ok;
 };
 
 export const requestFileUpload = async (
@@ -66,10 +80,7 @@ export const requestFileUpload = async (
   return await uploadFile(file, parentId, hmacSecret, masterKey, onDuplicate);
 };
 
-export const requestDirectoryEntryRename = async (
-  entry: SelectedDirectoryEntry,
-  newName: string,
-) => {
+export const requestEntryRename = async (entry: SelectedEntry, newName: string) => {
   const newNameEncrypted = await encryptString(newName, entry.dataKey);
 
   let res;
@@ -89,7 +100,7 @@ export const requestDirectoryEntryRename = async (
   return res.ok;
 };
 
-export const requestDirectoryEntryDeletion = async (entry: SelectedDirectoryEntry) => {
+export const requestEntryDeletion = async (entry: SelectedEntry) => {
   const res = await callPostApi(`/api/${entry.type}/${entry.id}/delete`);
   if (!res.ok) return false;
 

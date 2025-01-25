@@ -11,8 +11,8 @@
 
 <TextInputModal
   bind:isOpen
-  title="새 카테고리"
-  placeholder="카테고리 이름"
+  title="새 폴더"
+  placeholder="폴더 이름"
   submitText="만들기"
   onSubmitClick={onCreateClick}
 />

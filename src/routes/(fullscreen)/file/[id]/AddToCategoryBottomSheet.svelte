@@ -50,7 +50,7 @@
 
 <CategoryCreateModal
   bind:isOpen={isCategoryCreateModalOpen}
-  oncreate={async (name: string) => {
+  onCreateClick={async (name: string) => {
     if (await requestCategoryCreation(name, $category!.id, $masterKeyStore?.get(1)!)) {
       category = getCategoryInfo($category!.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
       return true;

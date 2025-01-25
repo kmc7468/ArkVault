@@ -20,7 +20,7 @@
   <div
     onclick={onclose || (() => (isOpen = false))}
     class="fixed inset-0 z-10 bg-black bg-opacity-50"
-    transition:fade={{ duration: 100 }}
+    transition:fade|global={{ duration: 100 }}
   >
     <AdaptiveDiv class="h-full">
       <div class="flex h-full items-center justify-center px-4">
