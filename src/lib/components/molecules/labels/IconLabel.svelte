@@ -18,12 +18,12 @@
   <div class={["flex-shrink-0 text-lg", props.iconClass]}>
     <Icon />
   </div>
-  <div class="flex flex-grow flex-col gap-y-1 truncate text-left">
-    <p class={["font-medium", props.textClass]}>
+  <div class="flex flex-grow flex-col overflow-x-hidden text-left">
+    <p class={["truncate font-medium", props.textClass]}>
       {@render children?.()}
     </p>
     {#if subtext}
-      <p class="text-xs text-gray-800">
+      <p class="truncate text-xs text-gray-800">
         {@render subtext()}
       </p>
     {/if}

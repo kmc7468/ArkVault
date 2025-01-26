@@ -1,3 +1,4 @@
+export { default as ActionEntryButton } from "./ActionEntryButton.svelte";
 export { default as Button } from "./Button.svelte";
 export { default as EntryButton } from "./EntryButton.svelte";
 export { default as FloatingButton } from "./FloatingButton.svelte";
