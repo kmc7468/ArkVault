@@ -1,25 +1,23 @@
 <script lang="ts">
   import type { Component, Snippet } from "svelte";
-  import type { SvelteHTMLElements } from "svelte/elements";
-  import { EntryButton } from "$lib/components/atoms";
+  import type { ClassValue, SvelteHTMLElements } from "svelte/elements";
+  import { IconEntryButton } from "$lib/components/molecules";
 
   interface Props {
     children: Snippet;
     icon: Component<SvelteHTMLElements["svg"]>;
-    iconColor: string;
+    iconColor: ClassValue;
     onclick: () => void;
   }
 
-  let { children, icon: Icon, iconColor, onclick }: Props = $props();
+  let { children, icon, iconColor, onclick }: Props = $props();
 </script>
 
-<EntryButton {onclick} class="w-full">
-  <div class="flex items-center gap-x-4">
-    <div class="rounded-lg bg-gray-200 p-1 {iconColor}">
-      <Icon />
-    </div>
-    <p class="font-medium">
-      {@render children?.()}
-    </p>
-  </div>
-</EntryButton>
+<IconEntryButton
+  {icon}
+  {onclick}
+  class="w-full"
+  iconClass={["rounded-lg bg-gray-200 p-1 !text-base", iconColor]}
+>
+  {@render children?.()}
+</IconEntryButton>

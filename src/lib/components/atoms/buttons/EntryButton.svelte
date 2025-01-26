@@ -17,8 +17,8 @@
   onclick={onclick && (() => setTimeout(onclick, 100))}
   class={["rounded-xl active:bg-gray-100", props.class]}
 >
-  <div class="flex h-full p-2 transition active:scale-95">
-    <div class="flex-grow">
+  <div class="flex h-full gap-x-4 p-2 transition active:scale-95">
+    <div class="h-full flex-grow">
       {@render children?.()}
     </div>
     <div class="flex flex-shrink-0 items-center">
