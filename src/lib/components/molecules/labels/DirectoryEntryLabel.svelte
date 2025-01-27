@@ -13,7 +13,7 @@
     type: "directory" | "file";
   }
 
-  let { name, subtext, type, ...props }: Props = $props();
+  let { class: className, name, subtext, textClass: textClassName, type }: Props = $props();
 </script>
 
 {#snippet subtextSnippet()}
@@ -24,8 +24,8 @@
   icon={type === "directory" ? IconFolder : IconDraft}
   iconClass={type === "file" ? "text-blue-400" : undefined}
   subtext={subtext ? subtextSnippet : undefined}
-  class={props.class}
-  textClass={props.textClass}
+  class={className}
+  textClass={textClassName}
 >
   {name}
 </IconLabel>

@@ -11,7 +11,7 @@
     onclose?: () => void;
   }
 
-  let { children, isOpen = $bindable(), onclose, ...props }: Props = $props();
+  let { children, class: className, isOpen = $bindable(), onclose }: Props = $props();
 </script>
 
 {#if isOpen}
@@ -32,7 +32,7 @@
           class="flex max-h-[70vh] min-h-[30vh] flex-col rounded-t-2xl bg-white"
           transition:fly|global={{ y: 100, duration: 200 }}
         >
-          <div class={["flex-grow overflow-y-auto", props.class]}>
+          <div class={["flex-grow overflow-y-auto", className]}>
             {@render children?.()}
           </div>
         </div>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { Button, TextButton, BottomDiv, FullscreenDiv, TextInput } from "$lib/components/atoms";
+  import { BottomDiv, Button, FullscreenDiv, TextButton, TextInput } from "$lib/components/atoms";
   import { TitledDiv } from "$lib/components/molecules";
   import { clientKeyStore, masterKeyStore } from "$lib/stores";
   import { requestLogin, requestSessionUpgrade, requestMasterKeyDownload } from "./service";

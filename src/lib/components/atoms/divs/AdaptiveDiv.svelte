@@ -7,9 +7,9 @@
     class?: ClassValue;
   }
 
-  let { children, ...props }: Props = $props();
+  let { children, class: className }: Props = $props();
 </script>
 
-<div class={["mx-auto max-w-screen-md", props.class]}>
+<div class={["mx-auto max-w-screen-md", className]}>
   {@render children?.()}
 </div>

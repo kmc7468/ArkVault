@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
-  import { Button, TextButton, BottomDiv, FullscreenDiv } from "$lib/components/atoms";
+  import { BottomDiv, Button, FullscreenDiv, TextButton } from "$lib/components/atoms";
   import { TitledDiv } from "$lib/components/molecules";
   import { gotoStateful } from "$lib/hooks";
   import { clientKeyStore } from "$lib/stores";

@@ -9,7 +9,7 @@
     onclick?: () => void;
   }
 
-  let { children, color = "primary", onclick, ...props }: Props = $props();
+  let { children, class: className, color = "primary", onclick }: Props = $props();
 
   let bgColor = $derived(
     {
@@ -31,7 +31,7 @@
     "h-12 min-w-fit rounded-xl p-3 font-medium transition active:scale-95",
     bgColor,
     textColor,
-    props.class,
+    className,
   ]}
 >
   {@render children?.()}

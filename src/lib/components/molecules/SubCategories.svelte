@@ -19,13 +19,13 @@
   }
 
   let {
+    class: className,
     info,
     onSubCategoryClick,
     onSubCategoryCreateClick,
     onSubCategoryMenuClick,
     subCategoryCreatePosition = "bottom",
     subCategoryMenuIcon,
-    ...props
   }: Props = $props();
 
   let subCategories: Writable<CategoryInfo | null>[] = $state([]);
@@ -37,7 +37,7 @@
   });
 </script>
 
-<div class={["space-y-1", props.class]}>
+<div class={["space-y-1", className]}>
   {#snippet subCategoryCreate()}
     <IconEntryButton
       icon={IconAddCircle}

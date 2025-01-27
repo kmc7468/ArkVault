@@ -9,16 +9,16 @@
     textClass?: ClassValue;
   }
 
-  let { children, icon: Icon, ...props }: Props = $props();
+  let { children, class: className, icon: Icon, textClass: textClassName }: Props = $props();
 </script>
 
-<div class={props.class}>
+<div class={className}>
   <div class="flex min-h-[10vh] items-center">
     {#if Icon}
       <Icon class="text-5xl text-gray-600" />
     {/if}
   </div>
-  <p class={["text-3xl font-bold", props.textClass]}>
+  <p class={["text-3xl font-bold", textClassName]}>
     {@render children?.()}
   </p>
 </div>

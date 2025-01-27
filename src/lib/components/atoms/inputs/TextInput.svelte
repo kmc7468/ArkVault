@@ -8,10 +8,10 @@
     value?: string;
   }
 
-  let { placeholder, type = "text", value = $bindable(""), ...props }: Props = $props();
+  let { class: className, placeholder, type = "text", value = $bindable("") }: Props = $props();
 </script>
 
-<div class={props.class}>
+<div class={className}>
   <div class="relative mt-5">
     <input
       bind:value

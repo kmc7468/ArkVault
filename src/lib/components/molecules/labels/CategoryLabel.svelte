@@ -11,7 +11,7 @@
     textClass?: ClassValue;
   }
 
-  let { name, subtext, ...props }: Props = $props();
+  let { class: className, name, subtext, textClass: textClassName }: Props = $props();
 </script>
 
 {#snippet subtextSnippet()}
@@ -21,8 +21,8 @@
 <IconLabel
   icon={IconCategory}
   subtext={subtext ? subtextSnippet : undefined}
-  class={props.class}
-  textClass={props.textClass}
+  class={className}
+  textClass={textClassName}
 >
   {name}
 </IconLabel>

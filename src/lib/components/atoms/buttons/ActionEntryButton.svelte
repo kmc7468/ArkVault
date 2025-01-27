@@ -13,10 +13,11 @@
 
   let {
     actionButtonIcon: ActionButtonIcon,
+    actionButtonClass: actionButtonClassName,
     children,
+    class: className,
     onActionButtonClick,
     onclick,
-    ...props
   }: Props = $props();
 </script>
 
@@ -25,7 +26,7 @@
 <div
   id="container"
   onclick={onclick && (() => setTimeout(onclick, 100))}
-  class={["rounded-xl", props.class]}
+  class={["rounded-xl", className]}
 >
   <div id="children" class="flex h-full items-center justify-between gap-x-4 p-2 transition">
     <div class="flex-grow overflow-x-hidden">
@@ -40,10 +41,7 @@
             setTimeout(onActionButtonClick, 100);
           }
         }}
-        class={[
-          "flex-shrink-0 rounded-full p-1 text-lg active:bg-gray-100",
-          props.actionButtonClass,
-        ]}
+        class={["flex-shrink-0 rounded-full p-1 text-lg active:bg-gray-100", actionButtonClassName]}
       >
         <ActionButtonIcon />
       </button>

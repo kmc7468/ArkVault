@@ -13,11 +13,18 @@
     textClass?: ClassValue;
   }
 
-  let { children, icon, onclick, ...props }: Props = $props();
+  let {
+    children,
+    class: className,
+    icon,
+    iconClass: iconClassName,
+    onclick,
+    textClass: textClassName,
+  }: Props = $props();
 </script>
 
-<EntryButton {onclick} class={props.class}>
-  <IconLabel {icon} class="h-full" iconClass={props.iconClass} textClass={props.textClass}>
+<EntryButton {onclick} class={className}>
+  <IconLabel {icon} class="h-full" iconClass={iconClassName} textClass={textClassName}>
     {@render children?.()}
   </IconLabel>
 </EntryButton>

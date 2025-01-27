@@ -11,7 +11,7 @@
     onclose?: () => void;
   }
 
-  let { children, isOpen = $bindable(), onclose, ...props }: Props = $props();
+  let { children, class: className, isOpen = $bindable(), onclose }: Props = $props();
 </script>
 
 {#if isOpen}
@@ -24,7 +24,7 @@
   >
     <AdaptiveDiv class="h-full">
       <div class="flex h-full items-center justify-center px-4">
-        <div onclick={(e) => e.stopPropagation()} class={["rounded-2xl bg-white p-4", props.class]}>
+        <div onclick={(e) => e.stopPropagation()} class={["rounded-2xl bg-white p-4", className]}>
           {@render children?.()}
         </div>
       </div>

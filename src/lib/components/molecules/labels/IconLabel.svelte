@@ -11,15 +11,22 @@
     textClass?: ClassValue;
   }
 
-  let { children, icon: Icon, subtext, ...props }: Props = $props();
+  let {
+    children,
+    class: className,
+    icon: Icon,
+    iconClass: iconClassName,
+    subtext,
+    textClass: textClassName,
+  }: Props = $props();
 </script>
 
-<div class={["flex items-center gap-x-4", props.class]}>
-  <div class={["flex-shrink-0 text-lg", props.iconClass]}>
+<div class={["flex items-center gap-x-4", className]}>
+  <div class={["flex-shrink-0 text-lg", iconClassName]}>
     <Icon />
   </div>
   <div class="flex flex-grow flex-col overflow-x-hidden text-left">
-    <p class={["truncate font-medium", props.textClass]}>
+    <p class={["truncate font-medium", textClassName]}>
       {@render children?.()}
     </p>
     {#if subtext}

@@ -13,12 +13,20 @@
     titleClass?: ClassValue;
   }
 
-  let { children, description, icon, title, ...props }: Props = $props();
+  let {
+    children,
+    childrenClass: childrenClassName,
+    class: className,
+    description,
+    icon,
+    title,
+    titleClass: titleClassName,
+  }: Props = $props();
 </script>
 
-<div class={["space-y-4 py-4", props.class]}>
+<div class={["space-y-4 py-4", className]}>
   <div class="space-y-2 break-keep">
-    <TitleLabel {icon} textClass={props.titleClass}>
+    <TitleLabel {icon} textClass={titleClassName}>
       {@render title?.()}
     </TitleLabel>
     {#if description}
@@ -28,7 +36,7 @@
     {/if}
   </div>
   {#if children}
-    <div class={props.childrenClass}>
+    <div class={childrenClassName}>
       {@render children()}
     </div>
   {/if}

@@ -11,13 +11,13 @@
     title?: string;
   }
 
-  let { children, onBackClick, title, ...props }: Props = $props();
+  let { children, class: className, onBackClick, title }: Props = $props();
 </script>
 
 <div
   class={[
     "sticky top-0 z-10 flex items-center justify-between gap-x-2 px-2 py-3 backdrop-blur-2xl",
-    props.class,
+    className,
   ]}
 >
   <button
