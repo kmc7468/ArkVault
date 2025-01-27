@@ -2,7 +2,7 @@
   import FileSaver from "file-saver";
   import { goto } from "$app/navigation";
   import { Button, TextButton, BottomDiv, FullscreenDiv } from "$lib/components/atoms";
-  import { TitleDiv } from "$lib/components/divs";
+  import { TitledDiv } from "$lib/components/molecules";
   import { clientKeyStore } from "$lib/stores";
   import BeforeContinueBottomSheet from "./BeforeContinueBottomSheet.svelte";
   import BeforeContinueModal from "./BeforeContinueModal.svelte";
@@ -90,17 +90,18 @@
 </svelte:head>
 
 <FullscreenDiv>
-  <TitleDiv icon={IconKey}>
-    <div class="space-y-4 break-keep">
-      <p class="text-3xl font-bold">암호 키를 파일로 내보낼까요?</p>
-      <div class="space-y-2 text-lg text-gray-800">
-        <p>
-          모든 디바이스의 암호 키가 유실되면, 서버에 저장된 데이터를 영원히 복호화할 수 없게 돼요.
-        </p>
-        <p>만약의 상황을 위해 암호 키를 파일로 내보낼 수 있어요.</p>
-      </div>
+  <TitledDiv icon={IconKey}>
+    {#snippet title()}
+      암호 키를 파일로 내보낼까요?
+    {/snippet}
+
+    <div class="space-y-2 break-keep text-lg text-gray-800">
+      <p>
+        모든 디바이스의 암호 키가 유실되면, 서버에 저장된 데이터를 영원히 복호화할 수 없게 돼요.
+      </p>
+      <p>만약의 상황을 위해 암호 키를 파일로 내보낼 수 있어요.</p>
     </div>
-  </TitleDiv>
+  </TitledDiv>
   <BottomDiv class="flex flex-col items-center gap-y-2">
     <Button onclick={exportClientKeys} class="w-full">암호 키 내보내기</Button>
     <TextButton onclick={() => (isBeforeContinueModalOpen = true)}>내보내지 않을래요</TextButton>

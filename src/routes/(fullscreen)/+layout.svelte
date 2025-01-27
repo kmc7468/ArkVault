@@ -4,6 +4,6 @@
   let { children } = $props();
 </script>
 
-<AdaptiveDiv class="flex h-screen flex-col">
+<AdaptiveDiv class="flex min-h-screen flex-grow flex-col">
   {@render children()}
 </AdaptiveDiv>
