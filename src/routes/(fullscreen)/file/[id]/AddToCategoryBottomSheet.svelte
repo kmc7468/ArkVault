@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
   import { BottomSheet, Button, BottomDiv, FullscreenDiv } from "$lib/components/atoms";
-  import { CategoryCreateModal } from "$lib/components/organisms/modals";
+  import { SubCategories } from "$lib/components/molecules";
+  import { CategoryCreateModal } from "$lib/components/organisms";
   import { getCategoryInfo, type CategoryInfo } from "$lib/modules/filesystem";
-  import SubCategories from "$lib/molecules/SubCategories.svelte";
   import { masterKeyStore } from "$lib/stores";
   import { requestCategoryCreation } from "./service";
 

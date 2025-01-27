@@ -4,14 +4,13 @@
   import { get, type Writable } from "svelte/store";
   import { goto } from "$app/navigation";
   import { FullscreenDiv } from "$lib/components/atoms";
-  import { IconEntryButton, TopBar } from "$lib/components/molecules";
+  import { Categories, IconEntryButton, TopBar } from "$lib/components/molecules";
   import {
     getFileInfo,
     getCategoryInfo,
     type FileInfo,
     type CategoryInfo,
   } from "$lib/modules/filesystem";
-  import Categories from "$lib/molecules/Categories";
   import { fileDownloadStatusStore, isFileDownloading, masterKeyStore } from "$lib/stores";
   import AddToCategoryBottomSheet from "./AddToCategoryBottomSheet.svelte";
   import DownloadStatus from "./DownloadStatus.svelte";

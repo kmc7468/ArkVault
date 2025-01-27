@@ -2,9 +2,8 @@
   import type { Writable } from "svelte/store";
   import { goto } from "$app/navigation";
   import { TopBar } from "$lib/components/molecules";
-  import { CategoryCreateModal } from "$lib/components/organisms";
+  import { Category, CategoryCreateModal } from "$lib/components/organisms";
   import { getCategoryInfo, type CategoryInfo } from "$lib/modules/filesystem";
-  import Category from "$lib/organisms/Category";
   import { masterKeyStore } from "$lib/stores";
   import CategoryDeleteModal from "./CategoryDeleteModal.svelte";
   import CategoryMenuBottomSheet from "./CategoryMenuBottomSheet.svelte";

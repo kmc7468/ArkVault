@@ -2,10 +2,9 @@
   import { untrack } from "svelte";
   import { get, type Writable } from "svelte/store";
   import { CheckBox } from "$lib/components/atoms";
+  import { SubCategories, type SelectedCategory } from "$lib/components/molecules";
   import { getFileInfo, type FileInfo, type CategoryInfo } from "$lib/modules/filesystem";
   import { SortBy, sortEntries } from "$lib/modules/util";
-  import type { SelectedCategory } from "$lib/molecules/Categories";
-  import SubCategories from "$lib/molecules/SubCategories.svelte";
   import { masterKeyStore } from "$lib/stores";
   import File from "./File.svelte";
   import type { SelectedFile } from "./service";

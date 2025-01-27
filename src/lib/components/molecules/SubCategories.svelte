@@ -2,9 +2,8 @@
   import type { Component } from "svelte";
   import type { ClassValue, SvelteHTMLElements } from "svelte/elements";
   import type { Writable } from "svelte/store";
-  import { IconEntryButton } from "$lib/components/molecules";
+  import { Categories, IconEntryButton, type SelectedCategory } from "$lib/components/molecules";
   import { getCategoryInfo, type CategoryInfo } from "$lib/modules/filesystem";
-  import Categories, { type SelectedCategory } from "$lib/molecules/Categories";
   import { masterKeyStore } from "$lib/stores";
 
   import IconAddCircle from "~icons/material-symbols/add-circle";

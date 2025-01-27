@@ -1,7 +1,7 @@
 import { getContext, setContext } from "svelte";
 import { callPostApi } from "$lib/hooks";
 import { encryptString } from "$lib/modules/crypto";
-import type { SelectedCategory } from "$lib/molecules/Categories";
+import type { SelectedCategory } from "$lib/components/molecules";
 import type { CategoryRenameRequest } from "$lib/server/schemas";
 
 export { requestCategoryCreation, requestFileRemovalFromCategory } from "$lib/services/category";
