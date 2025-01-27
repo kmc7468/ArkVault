@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
-  import { BottomSheet } from "$lib/components";
-  import { Button, BottomDiv } from "$lib/components/atoms";
+  import { BottomSheet, Button, BottomDiv, FullscreenDiv } from "$lib/components/atoms";
   import { CategoryCreateModal } from "$lib/components/organisms/modals";
   import { getCategoryInfo, type CategoryInfo } from "$lib/modules/filesystem";
   import SubCategories from "$lib/molecules/SubCategories.svelte";
@@ -26,11 +25,11 @@
   });
 </script>
 
-<BottomSheet bind:isOpen>
-  <div class="flex w-full flex-col justify-between">
-    {#if $category}
+{#if $category}
+  <BottomSheet bind:isOpen class="flex flex-col">
+    <FullscreenDiv>
       <SubCategories
-        class="h-fit py-4"
+        class="py-4"
         info={$category}
         onSubCategoryClick={({ id }) =>
           (category = getCategoryInfo(id, $masterKeyStore?.get(1)?.key!))}
@@ -44,9 +43,9 @@
           </Button>
         </BottomDiv>
       {/if}
-    {/if}
-  </div>
-</BottomSheet>
+    </FullscreenDiv>
+  </BottomSheet>
+{/if}
 
 <CategoryCreateModal
   bind:isOpen={isCategoryCreateModalOpen}

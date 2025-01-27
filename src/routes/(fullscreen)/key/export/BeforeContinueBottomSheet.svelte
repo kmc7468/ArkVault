@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { BottomSheet } from "$lib/components";
-  import { Button, BottomDiv } from "$lib/components/atoms";
+  import { BottomSheet, Button, BottomDiv, FullscreenDiv } from "$lib/components/atoms";
 
   interface Props {
     onRetryClick: () => void;
@@ -11,9 +10,9 @@
   let { onRetryClick, onContinueClick, isOpen = $bindable() }: Props = $props();
 </script>
 
-<BottomSheet bind:isOpen>
-  <div class="flex flex-col justify-between gap-y-4 pt-4">
-    <div class="space-y-2 break-keep">
+<BottomSheet bind:isOpen class="flex flex-col">
+  <FullscreenDiv>
+    <div class="space-y-2 break-keep py-4">
       <p class="text-xl font-bold">암호 키 파일을 저장하셨나요?</p>
       <p>
         암호 키 파일은 유출 방지를 위해 이 화면에서만 저장할 수 있어요. 파일이 잘 저장되었는지 다시
@@ -24,5 +23,5 @@
       <Button color="gray" onclick={onRetryClick} class="flex-1">다시 저장할래요</Button>
       <Button onclick={onContinueClick} class="flex-1">잘 저장되었어요</Button>
     </BottomDiv>
-  </div>
+  </FullscreenDiv>
 </BottomSheet>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { BottomSheet } from "$lib/components";
+  import { BottomSheet } from "$lib/components/atoms";
   import { DirectoryEntryLabel, IconEntryButton } from "$lib/components/molecules";
   import { useContext } from "./service.svelte";
 
@@ -18,16 +18,14 @@
 
 {#if context.selectedEntry}
   {@const { name, type } = context.selectedEntry}
-  <BottomSheet bind:isOpen>
-    <div class="w-full py-4">
-      <DirectoryEntryLabel {type} {name} class="h-12 p-2" textClass="!font-semibold" />
-      <div class="my-2 h-px w-full bg-gray-200"></div>
-      <IconEntryButton icon={IconEdit} onclick={onRenameClick} class="h-12 w-full">
-        이름 바꾸기
-      </IconEntryButton>
-      <IconEntryButton icon={IconDelete} onclick={onDeleteClick} class="h-12 w-full text-red-500">
-        삭제하기
-      </IconEntryButton>
-    </div>
+  <BottomSheet bind:isOpen class="p-4">
+    <DirectoryEntryLabel {type} {name} class="h-12 p-2" textClass="!font-semibold" />
+    <div class="my-2 h-px w-full bg-gray-200"></div>
+    <IconEntryButton icon={IconEdit} onclick={onRenameClick} class="h-12 w-full">
+      이름 바꾸기
+    </IconEntryButton>
+    <IconEntryButton icon={IconDelete} onclick={onDeleteClick} class="h-12 w-full text-red-500">
+      삭제하기
+    </IconEntryButton>
   </BottomSheet>
 {/if}
