@@ -22,7 +22,7 @@
     title,
   }: Props = $props();
 
-  let value = $state(defaultValue);
+  let value = $state("");
 
   $effect.pre(() => {
     if (isOpen) {

@@ -6,10 +6,8 @@
 </script>
 
 <div class="flex h-screen flex-col justify-between">
-  <div class="flex-grow">
-    <AdaptiveDiv class="h-full">
-      {@render children()}
-    </AdaptiveDiv>
-  </div>
+  <AdaptiveDiv class="w-full flex-grow">
+    {@render children()}
+  </AdaptiveDiv>
   <BottomBar />
 </div>
