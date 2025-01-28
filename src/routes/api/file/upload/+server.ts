@@ -1,8 +1,12 @@
 import Busboy from "@fastify/busboy";
-import { error, text } from "@sveltejs/kit";
+import { error, json } from "@sveltejs/kit";
 import { Readable, Writable } from "stream";
 import { authorize } from "$lib/server/modules/auth";
-import { fileUploadRequest } from "$lib/server/schemas";
+import {
+  fileUploadRequest,
+  fileUploadResponse,
+  type FileUploadResponse,
+} from "$lib/server/schemas";
 import { uploadFile } from "$lib/server/services/file";
 import type { RequestHandler } from "./$types";
 
@@ -87,8 +91,8 @@ export const POST: RequestHandler = async ({ locals, request }) => {
           if (!metadata || content) error(400, "Invalid request body");
           content = file;
 
-          await uploadFile(metadata, content, checksum);
-          resolve(text("File uploaded", { headers: { "Content-Type": "text/plain" } }));
+          const { fileId } = await uploadFile(metadata, content, checksum);
+          resolve(json(fileUploadResponse.parse({ file: fileId } satisfies FileUploadResponse)));
         }),
       );
       bb.on("finish", () => rejectChecksum(new Error("Invalid request body")));

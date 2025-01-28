@@ -50,7 +50,7 @@ export const createClient = async (encPubKey: string, sigPubKey: string, userId:
         .insertInto("user_client")
         .values({ user_id: userId, client_id: clientId })
         .execute();
-      return { clientId };
+      return { id: clientId };
     });
 };
 

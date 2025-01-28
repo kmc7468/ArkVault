@@ -2,7 +2,7 @@ import { getContext, setContext } from "svelte";
 import { callGetApi, callPostApi } from "$lib/hooks";
 import { storeHmacSecrets } from "$lib/indexedDB";
 import { generateDataKey, wrapDataKey, unwrapHmacSecret, encryptString } from "$lib/modules/crypto";
-import { deleteFileCache, uploadFile } from "$lib/modules/file";
+import { storeFileCache, deleteFileCache, uploadFile } from "$lib/modules/file";
 import type {
   DirectoryRenameRequest,
   DirectoryCreateRequest,
@@ -77,7 +77,11 @@ export const requestFileUpload = async (
   masterKey: MasterKey,
   onDuplicate: () => Promise<boolean>,
 ) => {
-  return await uploadFile(file, parentId, hmacSecret, masterKey, onDuplicate);
+  const res = await uploadFile(file, parentId, hmacSecret, masterKey, onDuplicate);
+  if (!res) return false;
+
+  storeFileCache(res.fileId, res.fileBuffer); // Intended
+  return true;
 };
 
 export const requestEntryRename = async (entry: SelectedEntry, newName: string) => {

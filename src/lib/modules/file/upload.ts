@@ -15,6 +15,7 @@ import type {
   DuplicateFileScanRequest,
   DuplicateFileScanResponse,
   FileUploadRequest,
+  FileUploadResponse,
 } from "$lib/server/schemas";
 import {
   fileUploadStatusStore,
@@ -131,7 +132,7 @@ const requestFileUpload = limitFunction(
       return value;
     });
 
-    await axios.post("/api/file/upload", form, {
+    const res = await axios.post("/api/file/upload", form, {
       onUploadProgress: ({ progress, rate, estimated }) => {
         status.update((value) => {
           value.progress = progress;
@@ -141,11 +142,14 @@ const requestFileUpload = limitFunction(
         });
       },
     });
+    const { file }: FileUploadResponse = res.data;
 
     status.update((value) => {
       value.status = "uploaded";
       return value;
     });
+
+    return { fileId: file };
   },
   { concurrency: 1 },
 );
@@ -156,7 +160,7 @@ export const uploadFile = async (
   hmacSecret: HmacSecret,
   masterKey: MasterKey,
   onDuplicate: () => Promise<boolean>,
-) => {
+): Promise<{ fileId: number; fileBuffer: ArrayBuffer } | undefined> => {
   const status = writable<FileUploadStatus>({
     name: file.name,
     parentId,
@@ -182,7 +186,7 @@ export const uploadFile = async (
         value = value.filter((v) => v !== status);
         return value;
       });
-      return false;
+      return undefined;
     }
 
     const {
@@ -219,8 +223,8 @@ export const uploadFile = async (
     form.set("content", new Blob([fileEncrypted.ciphertext]));
     form.set("checksum", fileEncryptedHash);
 
-    await requestFileUpload(status, form);
-    return true;
+    const { fileId } = await requestFileUpload(status, form);
+    return { fileId, fileBuffer };
   } catch (e) {
     status.update((value) => {
       value.status = "error";

@@ -131,11 +131,12 @@ export const uploadFile = async (
       throw new Error("Invalid checksum");
     }
 
-    await registerFile({
+    const { id: fileId } = await registerFile({
       ...params,
       path,
       encContentHash: hash,
     });
+    return { fileId };
   } catch (e) {
     await safeUnlink(path);
 

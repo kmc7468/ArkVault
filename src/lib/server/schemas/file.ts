@@ -60,3 +60,8 @@ export const fileUploadRequest = z.object({
   lastModifiedAtIv: z.string().base64().nonempty(),
 });
 export type FileUploadRequest = z.infer<typeof fileUploadRequest>;
+
+export const fileUploadResponse = z.object({
+  file: z.number().int().positive(),
+});
+export type FileUploadResponse = z.infer<typeof fileUploadResponse>;
