@@ -110,11 +110,11 @@
 </div>
 
 <FloatingButton
-  offset="bottom-24 right-4"
   icon={IconAdd}
   onclick={() => {
     isEntryCreateBottomSheetOpen = true;
   }}
+  class="bottom-24 right-4"
 />
 <EntryCreateBottomSheet
   bind:isOpen={isEntryCreateBottomSheetOpen}
