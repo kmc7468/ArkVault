@@ -8,7 +8,7 @@
 
   interface Props {
     cancelText?: string;
-    children?: Snippet;
+    children: Snippet;
     confirmText: string;
     isOpen: boolean;
     onbeforeclose?: () => void;
@@ -41,7 +41,7 @@
 <Modal bind:isOpen onclose={closeModal} class="space-y-4">
   <div class="flex flex-col gap-y-2 break-keep">
     <p class="text-xl font-bold">{title}</p>
-    {@render children?.()}
+    {@render children()}
   </div>
   <div class="flex gap-x-2">
     <Button color="gray" onclick={closeModal} class="flex-1">{cancelText}</Button>

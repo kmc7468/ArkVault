@@ -9,7 +9,7 @@
     class?: ClassValue;
     description?: Snippet;
     icon?: Component<SvelteHTMLElements["svg"]>;
-    title?: Snippet;
+    title: Snippet;
     titleClass?: ClassValue;
   }
 
@@ -27,7 +27,7 @@
 <div class={["space-y-4 py-4", className]}>
   <div class="space-y-2 break-keep">
     <TitleLabel {icon} textClass={titleClassName}>
-      {@render title?.()}
+      {@render title()}
     </TitleLabel>
     {#if description}
       <p>

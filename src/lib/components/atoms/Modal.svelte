@@ -5,7 +5,7 @@
   import { AdaptiveDiv } from "$lib/components/atoms";
 
   interface Props {
-    children?: Snippet;
+    children: Snippet;
     class?: ClassValue;
     isOpen: boolean;
     onclose?: () => void;
@@ -25,7 +25,7 @@
     <AdaptiveDiv class="h-full">
       <div class="flex h-full items-center justify-center px-4">
         <div onclick={(e) => e.stopPropagation()} class={["rounded-2xl bg-white p-4", className]}>
-          {@render children?.()}
+          {@render children()}
         </div>
       </div>
     </AdaptiveDiv>

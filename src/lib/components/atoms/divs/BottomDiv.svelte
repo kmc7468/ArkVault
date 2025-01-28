@@ -3,7 +3,7 @@
   import type { ClassValue } from "svelte/elements";
 
   interface Props {
-    children?: Snippet;
+    children: Snippet;
     class?: ClassValue;
   }
 
@@ -11,5 +11,5 @@
 </script>
 
 <div class={["sticky bottom-0 bg-white pb-4", className]}>
-  {@render children?.()}
+  {@render children()}
 </div>

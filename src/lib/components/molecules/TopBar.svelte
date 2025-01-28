@@ -31,7 +31,7 @@
   {/if}
   <div class="w-[2.3rem] flex-shrink-0">
     {#if children}
-      {@render children?.()}
+      {@render children()}
     {/if}
   </div>
 </div>

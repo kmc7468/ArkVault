@@ -3,7 +3,7 @@
   import type { ClassValue } from "svelte/elements";
 
   interface Props {
-    children?: Snippet;
+    children: Snippet;
     class?: ClassValue;
     color?: "primary" | "gray";
     onclick?: () => void;
@@ -34,5 +34,5 @@
     className,
   ]}
 >
-  {@render children?.()}
+  {@render children()}
 </button>

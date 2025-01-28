@@ -6,7 +6,7 @@
 
   interface Props {
     checked?: boolean;
-    children?: Snippet;
+    children: Snippet;
   }
 
   let { checked = $bindable(false), children }: Props = $props();
@@ -14,9 +14,7 @@
 
 <label class="flex items-center gap-x-1">
   <input bind:checked type="checkbox" class="hidden" />
-  <div>
-    {@render children?.()}
-  </div>
+  {@render children()}
   {#if checked}
     <IconCheckCircle class="text-primary-600" />
   {:else}

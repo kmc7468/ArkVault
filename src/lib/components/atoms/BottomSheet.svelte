@@ -5,7 +5,7 @@
   import { AdaptiveDiv } from "$lib/components/atoms";
 
   interface Props {
-    children?: Snippet;
+    children: Snippet;
     class?: ClassValue;
     isOpen: boolean;
     onclose?: () => void;
@@ -33,7 +33,7 @@
           transition:fly|global={{ y: 100, duration: 200 }}
         >
           <div class={["flex-grow overflow-y-auto", className]}>
-            {@render children?.()}
+            {@render children()}
           </div>
         </div>
       </AdaptiveDiv>

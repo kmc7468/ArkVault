@@ -5,7 +5,7 @@
   interface Props {
     actionButtonClass?: ClassValue;
     actionButtonIcon?: Component<SvelteHTMLElements["svg"]>;
-    children?: Snippet;
+    children: Snippet;
     class?: ClassValue;
     onActionButtonClick?: () => void;
     onclick?: () => void;
@@ -28,9 +28,9 @@
   onclick={onclick && (() => setTimeout(onclick, 100))}
   class={["rounded-xl", className]}
 >
-  <div id="children" class="flex h-full items-center justify-between gap-x-4 p-2 transition">
+  <div id="children" class="flex h-full items-center gap-x-4 p-2 transition">
     <div class="flex-grow overflow-x-hidden">
-      {@render children?.()}
+      {@render children()}
     </div>
     {#if ActionButtonIcon}
       <button

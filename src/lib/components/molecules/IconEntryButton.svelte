@@ -5,7 +5,7 @@
   import { IconLabel } from "$lib/components/molecules";
 
   interface Props {
-    children?: Snippet;
+    children: Snippet;
     class?: ClassValue;
     icon: Component<SvelteHTMLElements["svg"]>;
     iconClass?: ClassValue;
@@ -25,6 +25,6 @@
 
 <EntryButton {onclick} class={className}>
   <IconLabel {icon} class="h-full" iconClass={iconClassName} textClass={textClassName}>
-    {@render children?.()}
+    {@render children()}
   </IconLabel>
 </EntryButton>

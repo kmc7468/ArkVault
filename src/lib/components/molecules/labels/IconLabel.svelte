@@ -3,7 +3,7 @@
   import type { ClassValue, SvelteHTMLElements } from "svelte/elements";
 
   interface Props {
-    children?: Snippet;
+    children: Snippet;
     class?: ClassValue;
     icon: Component<SvelteHTMLElements["svg"]>;
     iconClass?: ClassValue;
@@ -27,7 +27,7 @@
   </div>
   <div class="flex flex-grow flex-col overflow-x-hidden text-left">
     <p class={["truncate font-medium", textClassName]}>
-      {@render children?.()}
+      {@render children()}
     </p>
     {#if subtext}
       <p class="truncate text-xs text-gray-800">

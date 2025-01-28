@@ -19,5 +19,5 @@
   class="w-full"
   iconClass={["rounded-lg bg-gray-200 p-1 !text-base", iconColor]}
 >
-  {@render children?.()}
+  {@render children()}
 </IconEntryButton>

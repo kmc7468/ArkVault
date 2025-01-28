@@ -3,7 +3,7 @@
   import type { ClassValue, SvelteHTMLElements } from "svelte/elements";
 
   interface Props {
-    children?: Snippet;
+    children: Snippet;
     class?: ClassValue;
     icon?: Component<SvelteHTMLElements["svg"]>;
     textClass?: ClassValue;
@@ -19,6 +19,6 @@
     {/if}
   </div>
   <p class={["text-3xl font-bold", textClassName]}>
-    {@render children?.()}
+    {@render children()}
   </p>
 </div>
