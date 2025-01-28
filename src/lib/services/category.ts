@@ -10,7 +10,8 @@ export const requestCategoryCreation = async (
 ) => {
   const { dataKey, dataKeyVersion } = await generateDataKey();
   const nameEncrypted = await encryptString(name, dataKey);
-  await callPostApi<CategoryCreateRequest>("/api/category/create", {
+
+  const res = await callPostApi<CategoryCreateRequest>("/api/category/create", {
     parent: parentId,
     mekVersion: masterKey.version,
     dek: await wrapDataKey(dataKey, masterKey.key),
@@ -18,6 +19,7 @@ export const requestCategoryCreation = async (
     name: nameEncrypted.ciphertext,
     nameIv: nameEncrypted.iv,
   });
+  return res.ok;
 };
 
 export const requestFileRemovalFromCategory = async (fileId: number, categoryId: number) => {

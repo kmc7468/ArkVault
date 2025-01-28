@@ -3,15 +3,14 @@
   import { untrack } from "svelte";
   import { get, type Writable } from "svelte/store";
   import { goto } from "$app/navigation";
-  import { TopBar } from "$lib/components";
-  import { EntryButton } from "$lib/components/buttons";
+  import { FullscreenDiv } from "$lib/components/atoms";
+  import { Categories, IconEntryButton, TopBar } from "$lib/components/molecules";
   import {
     getFileInfo,
     getCategoryInfo,
     type FileInfo,
     type CategoryInfo,
   } from "$lib/modules/filesystem";
-  import Categories from "$lib/molecules/Categories";
   import { fileDownloadStatusStore, isFileDownloading, masterKeyStore } from "$lib/stores";
   import AddToCategoryBottomSheet from "./AddToCategoryBottomSheet.svelte";
   import DownloadStatus from "./DownloadStatus.svelte";
@@ -31,7 +30,7 @@
 
   let isAddToCategoryBottomSheetOpen = $state(false);
 
-  const downloadStatus = $derived(
+  let downloadStatus = $derived(
     $fileDownloadStatusStore.find((statusStore) => {
       const { id, status } = get(statusStore);
       return id === data.id && isFileDownloading(status);
@@ -116,8 +115,8 @@
   <title>파일</title>
 </svelte:head>
 
-<div class="flex h-full flex-col">
-  <TopBar title={$info?.name} />
+<TopBar title={$info?.name} />
+<FullscreenDiv>
   <div class="space-y-4 pb-4">
     <DownloadStatus status={downloadStatus} />
     {#if $info && viewerType}
@@ -151,16 +150,19 @@
           onCategoryClick={({ id }) => goto(`/category/${id}`)}
           onCategoryMenuClick={({ id }) => removeFromCategory(id)}
         />
-        <EntryButton onclick={() => (isAddToCategoryBottomSheetOpen = true)}>
-          <div class="flex h-8 items-center gap-x-4">
-            <IconAddCircle class="text-lg text-gray-600" />
-            <p class="font-medium text-gray-700">카테고리에 추가하기</p>
-          </div>
-        </EntryButton>
+        <IconEntryButton
+          icon={IconAddCircle}
+          onclick={() => (isAddToCategoryBottomSheetOpen = true)}
+          class="h-12 w-full"
+          iconClass="text-gray-600"
+          textClass="text-gray-700"
+        >
+          카테고리에 추가하기
+        </IconEntryButton>
       </div>
     </div>
   </div>
-</div>
+</FullscreenDiv>
 
 <AddToCategoryBottomSheet
   bind:isOpen={isAddToCategoryBottomSheetOpen}

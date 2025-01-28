@@ -17,12 +17,12 @@
   import File from "./File.svelte";
   import SubDirectory from "./SubDirectory.svelte";
   import UploadingFile from "./UploadingFile.svelte";
-  import type { SelectedDirectoryEntry } from "../service";
+  import type { SelectedEntry } from "../service.svelte";
 
   interface Props {
     info: DirectoryInfo;
-    onEntryClick: (entry: SelectedDirectoryEntry) => void;
-    onEntryMenuClick: (entry: SelectedDirectoryEntry) => void;
+    onEntryClick: (entry: SelectedEntry) => void;
+    onEntryMenuClick: (entry: SelectedEntry) => void;
     sortBy?: SortBy;
   }
 

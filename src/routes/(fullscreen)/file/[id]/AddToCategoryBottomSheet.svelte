@@ -1,11 +1,9 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
-  import { BottomSheet } from "$lib/components";
-  import { Button } from "$lib/components/buttons";
-  import { BottomDiv } from "$lib/components/divs";
+  import { BottomDiv, BottomSheet, Button, FullscreenDiv } from "$lib/components/atoms";
+  import { SubCategories } from "$lib/components/molecules";
+  import { CategoryCreateModal } from "$lib/components/organisms";
   import { getCategoryInfo, type CategoryInfo } from "$lib/modules/filesystem";
-  import SubCategories from "$lib/molecules/SubCategories.svelte";
-  import CreateCategoryModal from "$lib/organisms/CreateCategoryModal.svelte";
   import { masterKeyStore } from "$lib/stores";
   import { requestCategoryCreation } from "./service";
 
@@ -18,15 +16,7 @@
 
   let category: Writable<CategoryInfo | null> | undefined = $state();
 
-  let isCreateCategoryModalOpen = $state(false);
-
-  const createCategory = async (name: string) => {
-    if (!$category) return; // TODO: Error handling
-
-    await requestCategoryCreation(name, $category.id, $masterKeyStore?.get(1)!);
-    isCreateCategoryModalOpen = false;
-    category = getCategoryInfo($category.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
-  };
+  let isCategoryCreateModalOpen = $state(false);
 
   $effect(() => {
     if (isOpen) {
@@ -35,24 +25,35 @@
   });
 </script>
 
-<BottomSheet bind:isOpen>
-  <div class="flex w-full flex-col justify-between">
-    {#if $category}
+{#if $category}
+  <BottomSheet bind:isOpen class="flex flex-col">
+    <FullscreenDiv>
       <SubCategories
-        class="h-fit py-4"
+        class="py-4"
         info={$category}
         onSubCategoryClick={({ id }) =>
           (category = getCategoryInfo(id, $masterKeyStore?.get(1)?.key!))}
-        onSubCategoryCreateClick={() => (isCreateCategoryModalOpen = true)}
+        onSubCategoryCreateClick={() => (isCategoryCreateModalOpen = true)}
         subCategoryCreatePosition="top"
       />
       {#if $category.id !== "root"}
         <BottomDiv>
-          <Button onclick={() => onAddToCategoryClick($category.id)}>이 카테고리에 추가하기</Button>
+          <Button onclick={() => onAddToCategoryClick($category.id)} class="w-full">
+            이 카테고리에 추가하기
+          </Button>
         </BottomDiv>
       {/if}
-    {/if}
-  </div>
-</BottomSheet>
+    </FullscreenDiv>
+  </BottomSheet>
+{/if}
 
-<CreateCategoryModal bind:isOpen={isCreateCategoryModalOpen} onCreateClick={createCategory} />
+<CategoryCreateModal
+  bind:isOpen={isCategoryCreateModalOpen}
+  onCreateClick={async (name: string) => {
+    if (await requestCategoryCreation(name, $category!.id, $masterKeyStore?.get(1)!)) {
+      category = getCategoryInfo($category!.id, $masterKeyStore?.get(1)?.key!); // TODO: FIXME
+      return true;
+    }
+    return false;
+  }}
+/>

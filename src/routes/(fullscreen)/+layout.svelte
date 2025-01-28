@@ -1,11 +1,9 @@
 <script lang="ts">
-  import { AdaptiveDiv } from "$lib/components/divs";
+  import { AdaptiveDiv } from "$lib/components/atoms";
 
   let { children } = $props();
 </script>
 
-<AdaptiveDiv>
-  <div class="flex h-screen flex-col justify-between px-4">
-    {@render children()}
-  </div>
+<AdaptiveDiv class="flex min-h-screen flex-grow flex-col">
+  {@render children()}
 </AdaptiveDiv>

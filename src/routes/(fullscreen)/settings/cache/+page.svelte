@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { Writable } from "svelte/store";
-  import { TopBar } from "$lib/components";
+  import { FullscreenDiv } from "$lib/components/atoms";
+  import { TopBar } from "$lib/components/molecules";
   import type { FileCacheIndex } from "$lib/indexedDB";
   import { getFileCacheIndex } from "$lib/modules/file";
   import { getFileInfo, type FileInfo } from "$lib/modules/filesystem";
@@ -43,8 +44,8 @@
   <title>캐시 설정</title>
 </svelte:head>
 
-<div class="flex h-full flex-col">
-  <TopBar title="캐시" />
+<TopBar title="캐시" />
+<FullscreenDiv>
   {#if fileCache && fileCache.length > 0}
     <div class="space-y-4 pb-4">
       <div class="space-y-1 break-keep text-gray-800">
@@ -71,4 +72,4 @@
       </p>
     </div>
   {/if}
-</div>
+</FullscreenDiv>

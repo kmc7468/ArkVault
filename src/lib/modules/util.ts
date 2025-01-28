@@ -28,6 +28,11 @@ export const formatNetworkSpeed = (speed: number) => {
   return `${(speed / 1000 / 1000 / 1000).toFixed(1)} Gbps`;
 };
 
+export const truncateString = (str: string, maxLength = 20) => {
+  if (str.length <= maxLength) return str;
+  return `${str.slice(0, maxLength)}...`;
+};
+
 export enum SortBy {
   NAME_ASC,
   NAME_DESC,
