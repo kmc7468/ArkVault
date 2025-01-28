@@ -10,7 +10,7 @@
 
   let { data } = $props();
 
-  const fingerprint = $derived(
+  let fingerprint = $derived(
     $clientKeyStore
       ? generatePublicKeyFingerprint($clientKeyStore.encryptKey, $clientKeyStore.verifyKey)
       : undefined,

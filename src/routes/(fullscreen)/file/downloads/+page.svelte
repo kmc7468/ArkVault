@@ -5,7 +5,7 @@
   import { fileDownloadStatusStore, isFileDownloading } from "$lib/stores";
   import File from "./File.svelte";
 
-  const downloadingFiles = $derived(
+  let downloadingFiles = $derived(
     $fileDownloadStatusStore.filter((status) => isFileDownloading(get(status).status)),
   );
 

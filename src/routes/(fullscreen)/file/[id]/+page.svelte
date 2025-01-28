@@ -30,7 +30,7 @@
 
   let isAddToCategoryBottomSheetOpen = $state(false);
 
-  const downloadStatus = $derived(
+  let downloadStatus = $derived(
     $fileDownloadStatusStore.find((statusStore) => {
       const { id, status } = get(statusStore);
       return id === data.id && isFileDownloading(status);
