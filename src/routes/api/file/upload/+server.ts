@@ -73,12 +73,13 @@ export const POST: RequestHandler = async ({ locals, request }) => {
         "field",
         handler(async (fieldname, val) => {
           if (fieldname === "metadata") {
+            // Ignore subsequent metadata fields
             if (!metadata) {
-              // Ignore subsequent metadata fields
               metadata = parseFileMetadata(userId, val);
             }
           } else if (fieldname === "checksum") {
-            resolveChecksum(val); // Ignore subsequent checksum fields
+            // Ignore subsequent checksum fields
+            resolveChecksum(val);
           } else {
             error(400, "Invalid request body");
           }

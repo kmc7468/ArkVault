@@ -31,6 +31,6 @@ export const GET: RequestHandler = async ({ locals, url, params }) => {
   return json(
     categoryFileListResponse.parse({
       files: files.map(({ id, isRecursive }) => ({ file: id, isRecursive })),
-    }) satisfies CategoryFileListResponse,
+    } satisfies CategoryFileListResponse),
   );
 };

@@ -9,6 +9,7 @@ export const fileInfoResponse = z.object({
   dekVersion: z.string().datetime(),
   contentType: z
     .string()
+    .trim()
     .nonempty()
     .refine((value) => mime.getExtension(value) !== null), // MIME type
   contentIv: z.string().base64().nonempty(),
@@ -49,6 +50,7 @@ export const fileUploadRequest = z.object({
   contentHmac: z.string().base64().nonempty(),
   contentType: z
     .string()
+    .trim()
     .nonempty()
     .refine((value) => mime.getExtension(value) !== null), // MIME type
   contentIv: z.string().base64().nonempty(),

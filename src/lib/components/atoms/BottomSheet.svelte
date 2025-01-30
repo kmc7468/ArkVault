@@ -25,18 +25,16 @@
       class="absolute inset-0 bg-black bg-opacity-50"
       transition:fade|global={{ duration: 100 }}
     ></div>
-    <div class="z-20 w-full">
-      <AdaptiveDiv>
-        <div
-          onclick={(e) => e.stopPropagation()}
-          class="flex max-h-[70vh] min-h-[30vh] flex-col rounded-t-2xl bg-white"
-          transition:fly|global={{ y: 100, duration: 200 }}
-        >
-          <div class={["flex-grow overflow-y-auto", className]}>
-            {@render children()}
-          </div>
+    <AdaptiveDiv class="z-10 w-full">
+      <div
+        onclick={(e) => e.stopPropagation()}
+        class="flex max-h-[70vh] min-h-[30vh] flex-col rounded-t-2xl bg-white"
+        transition:fly|global={{ y: 100, duration: 200 }}
+      >
+        <div class={["flex-grow overflow-y-auto", className]}>
+          {@render children()}
         </div>
-      </AdaptiveDiv>
-    </div>
+      </div>
+    </AdaptiveDiv>
   </div>
 {/if}

@@ -22,11 +22,9 @@
     class="fixed inset-0 z-10 bg-black bg-opacity-50"
     transition:fade|global={{ duration: 100 }}
   >
-    <AdaptiveDiv class="h-full">
-      <div class="flex h-full items-center justify-center px-4">
-        <div onclick={(e) => e.stopPropagation()} class={["rounded-2xl bg-white p-4", className]}>
-          {@render children()}
-        </div>
+    <AdaptiveDiv class="flex h-full items-center justify-center px-4">
+      <div onclick={(e) => e.stopPropagation()} class={["rounded-2xl bg-white p-4", className]}>
+        {@render children()}
       </div>
     </AdaptiveDiv>
   </div>
