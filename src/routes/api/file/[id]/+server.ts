@@ -26,6 +26,7 @@ export const GET: RequestHandler = async ({ locals, params }) => {
     encName,
     encCreatedAt,
     encLastModifiedAt,
+    categories,
   } = await getFileInformation(userId, id);
   return json(
     fileInfoResponse.parse({
@@ -41,6 +42,7 @@ export const GET: RequestHandler = async ({ locals, params }) => {
       createdAtIv: encCreatedAt?.iv,
       lastModifiedAt: encLastModifiedAt.ciphertext,
       lastModifiedAtIv: encLastModifiedAt.iv,
+      categories,
     } satisfies FileInfoResponse),
   );
 };

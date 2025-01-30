@@ -1,15 +1,13 @@
 <script lang="ts">
-  import { AdaptiveDiv } from "$lib/components/divs";
+  import { AdaptiveDiv } from "$lib/components/atoms";
   import BottomBar from "./BottomBar.svelte";
 
   let { children } = $props();
 </script>
 
 <div class="flex h-screen flex-col justify-between">
-  <div class="flex-grow">
-    <AdaptiveDiv>
-      {@render children()}
-    </AdaptiveDiv>
-  </div>
+  <AdaptiveDiv class="w-full flex-grow">
+    {@render children()}
+  </AdaptiveDiv>
   <BottomBar />
 </div>

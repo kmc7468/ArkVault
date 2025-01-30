@@ -17,8 +17,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
     mekVersion,
     encDek: dek,
     dekVersion: new Date(dekVersion),
-    encName: name,
-    encNameIv: nameIv,
+    encName: { ciphertext: name, iv: nameIv },
   });
   return text("Directory created", { headers: { "Content-Type": "text/plain" } });
 };

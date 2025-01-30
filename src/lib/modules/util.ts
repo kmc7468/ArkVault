@@ -27,3 +27,37 @@ export const formatNetworkSpeed = (speed: number) => {
   if (speed < 1000 * 1000 * 1000) return `${(speed / 1000 / 1000).toFixed(1)} Mbps`;
   return `${(speed / 1000 / 1000 / 1000).toFixed(1)} Gbps`;
 };
+
+export const truncateString = (str: string, maxLength = 20) => {
+  if (str.length <= maxLength) return str;
+  return `${str.slice(0, maxLength)}...`;
+};
+
+export enum SortBy {
+  NAME_ASC,
+  NAME_DESC,
+}
+
+type SortFunc = (a?: string, b?: string) => number;
+
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+
+const sortByNameAsc: SortFunc = (a, b) => {
+  if (a && b) return collator.compare(a, b);
+  if (a) return -1;
+  if (b) return 1;
+  return 0;
+};
+
+const sortByNameDesc: SortFunc = (a, b) => -sortByNameAsc(a, b);
+
+export const sortEntries = <T extends { name?: string }>(entries: T[], sortBy: SortBy) => {
+  let sortFunc: SortFunc;
+  if (sortBy === SortBy.NAME_ASC) {
+    sortFunc = sortByNameAsc;
+  } else {
+    sortFunc = sortByNameDesc;
+  }
+
+  entries.sort((a, b) => sortFunc(a.name, b.name));
+};

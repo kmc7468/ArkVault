@@ -8,12 +8,14 @@ import {
   wrapDataKey,
   encryptData,
   encryptString,
+  digestMessage,
   signMessageHmac,
 } from "$lib/modules/crypto";
 import type {
   DuplicateFileScanRequest,
   DuplicateFileScanResponse,
   FileUploadRequest,
+  FileUploadResponse,
 } from "$lib/server/schemas";
 import {
   fileUploadStatusStore,
@@ -97,6 +99,8 @@ const encryptFile = limitFunction(
     const dataKeyWrapped = await wrapDataKey(dataKey, masterKey.key);
 
     const fileEncrypted = await encryptData(fileBuffer, dataKey);
+    const fileEncryptedHash = encodeToBase64(await digestMessage(fileEncrypted.ciphertext));
+
     const nameEncrypted = await encryptString(file.name, dataKey);
     const createdAtEncrypted =
       createdAt && (await encryptString(createdAt.getTime().toString(), dataKey));
@@ -110,8 +114,9 @@ const encryptFile = limitFunction(
     return {
       dataKeyWrapped,
       dataKeyVersion,
-      fileEncrypted,
       fileType,
+      fileEncrypted,
+      fileEncryptedHash,
       nameEncrypted,
       createdAtEncrypted,
       lastModifiedAtEncrypted,
@@ -127,7 +132,7 @@ const requestFileUpload = limitFunction(
       return value;
     });
 
-    await axios.post("/api/file/upload", form, {
+    const res = await axios.post("/api/file/upload", form, {
       onUploadProgress: ({ progress, rate, estimated }) => {
         status.update((value) => {
           value.progress = progress;
@@ -137,11 +142,14 @@ const requestFileUpload = limitFunction(
         });
       },
     });
+    const { file }: FileUploadResponse = res.data;
 
     status.update((value) => {
       value.status = "uploaded";
       return value;
     });
+
+    return { fileId: file };
   },
   { concurrency: 1 },
 );
@@ -152,7 +160,7 @@ export const uploadFile = async (
   hmacSecret: HmacSecret,
   masterKey: MasterKey,
   onDuplicate: () => Promise<boolean>,
-) => {
+): Promise<{ fileId: number; fileBuffer: ArrayBuffer } | undefined> => {
   const status = writable<FileUploadStatus>({
     name: file.name,
     parentId,
@@ -178,14 +186,15 @@ export const uploadFile = async (
         value = value.filter((v) => v !== status);
         return value;
       });
-      return false;
+      return undefined;
     }
 
     const {
       dataKeyWrapped,
       dataKeyVersion,
-      fileEncrypted,
       fileType,
+      fileEncrypted,
+      fileEncryptedHash,
       nameEncrypted,
       createdAtEncrypted,
       lastModifiedAtEncrypted,
@@ -212,9 +221,10 @@ export const uploadFile = async (
       } as FileUploadRequest),
     );
     form.set("content", new Blob([fileEncrypted.ciphertext]));
+    form.set("checksum", fileEncryptedHash);
 
-    await requestFileUpload(status, form);
-    return true;
+    const { fileId } = await requestFileUpload(status, form);
+    return { fileId, fileBuffer };
   } catch (e) {
     status.update((value) => {
       value.status = "error";

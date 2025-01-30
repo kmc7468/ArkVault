@@ -7,6 +7,7 @@
     type DirectoryInfo,
     type FileInfo,
   } from "$lib/modules/filesystem";
+  import { SortBy, sortEntries } from "$lib/modules/util";
   import {
     fileUploadStatusStore,
     isFileUploading,
@@ -15,14 +16,13 @@
   } from "$lib/stores";
   import File from "./File.svelte";
   import SubDirectory from "./SubDirectory.svelte";
-  import { SortBy, sortEntries } from "./service";
   import UploadingFile from "./UploadingFile.svelte";
-  import type { SelectedDirectoryEntry } from "../service";
+  import type { SelectedEntry } from "../service.svelte";
 
   interface Props {
     info: DirectoryInfo;
-    onEntryClick: (entry: SelectedDirectoryEntry) => void;
-    onEntryMenuClick: (entry: SelectedDirectoryEntry) => void;
+    onEntryClick: (entry: SelectedEntry) => void;
+    onEntryMenuClick: (entry: SelectedEntry) => void;
     sortBy?: SortBy;
   }
 
@@ -68,7 +68,7 @@
         $fileUploadStatusStore
           .filter((statusStore) => {
             const { parentId, status } = get(statusStore);
-            return parentId === info.id && !isFileUploading(status);
+            return parentId === info.id && isFileUploading(status);
           })
           .map((status) => ({
             type: "uploading-file",

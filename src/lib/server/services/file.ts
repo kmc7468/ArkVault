@@ -1,4 +1,5 @@
 import { error } from "@sveltejs/kit";
+import { createHash } from "crypto";
 import { createReadStream, createWriteStream } from "fs";
 import { mkdir, stat, unlink } from "fs/promises";
 import { dirname } from "path";
@@ -12,8 +13,10 @@ import {
   getFile,
   setFileEncName,
   unregisterFile,
-  type NewFileParams,
+  getAllFileCategories,
+  type NewFile,
 } from "$lib/server/db/file";
+import type { Ciphertext } from "$lib/server/db/schema";
 import env from "$lib/server/loadenv";
 
 export const getFileInformation = async (userId: number, fileId: number) => {
@@ -22,6 +25,7 @@ export const getFileInformation = async (userId: number, fileId: number) => {
     error(404, "Invalid file id");
   }
 
+  const categories = await getAllFileCategories(fileId);
   return {
     parentId: file.parentId ?? ("root" as const),
     mekVersion: file.mekVersion,
@@ -32,13 +36,14 @@ export const getFileInformation = async (userId: number, fileId: number) => {
     encName: file.encName,
     encCreatedAt: file.encCreatedAt,
     encLastModifiedAt: file.encLastModifiedAt,
+    categories: categories.map(({ id }) => id),
   };
 };
 
 export const deleteFile = async (userId: number, fileId: number) => {
   try {
-    const filePath = await unregisterFile(userId, fileId);
-    unlink(filePath); // Intended
+    const { path } = await unregisterFile(userId, fileId);
+    unlink(path); // Intended
   } catch (e) {
     if (e instanceof IntegrityError && e.message === "File not found") {
       error(404, "Invalid file id");
@@ -64,11 +69,10 @@ export const renameFile = async (
   userId: number,
   fileId: number,
   dekVersion: Date,
-  newEncName: string,
-  newEncNameIv: string,
+  newEncName: Ciphertext,
 ) => {
   try {
-    await setFileEncName(userId, fileId, dekVersion, newEncName, newEncNameIv);
+    await setFileEncName(userId, fileId, dekVersion, newEncName);
   } catch (e) {
     if (e instanceof IntegrityError) {
       if (e.message === "File not found") {
@@ -95,8 +99,9 @@ const safeUnlink = async (path: string) => {
 };
 
 export const uploadFile = async (
-  params: Omit<NewFileParams, "path">,
+  params: Omit<NewFile, "path" | "encContentHash">,
   encContentStream: Readable,
+  encContentHash: Promise<string>,
 ) => {
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const oneMinuteLater = new Date(Date.now() + 60 * 1000);
@@ -108,16 +113,40 @@ export const uploadFile = async (
   await mkdir(dirname(path), { recursive: true });
 
   try {
-    await pipeline(encContentStream, createWriteStream(path, { flags: "wx", mode: 0o600 }));
-    await registerFile({
+    const hashStream = createHash("sha256");
+    const [, hash] = await Promise.all([
+      pipeline(
+        encContentStream,
+        async function* (source) {
+          for await (const chunk of source) {
+            hashStream.update(chunk);
+            yield chunk;
+          }
+        },
+        createWriteStream(path, { flags: "wx", mode: 0o600 }),
+      ),
+      encContentHash,
+    ]);
+    if (hashStream.digest("base64") !== hash) {
+      throw new Error("Invalid checksum");
+    }
+
+    const { id: fileId } = await registerFile({
       ...params,
       path,
+      encContentHash: hash,
     });
+    return { fileId };
   } catch (e) {
     await safeUnlink(path);
 
     if (e instanceof IntegrityError && e.message === "Inactive MEK version") {
       error(400, "Invalid MEK version");
+    } else if (
+      e instanceof Error &&
+      (e.message === "Invalid request body" || e.message === "Invalid checksum")
+    ) {
+      error(400, "Invalid request body");
     }
     throw e;
   }

@@ -23,7 +23,7 @@ vim .env # 아래를 참고하여 환경 변수를 설정해 주세요.
 docker compose up --build -d
 ```
 
-모든 데이터는 `./data` 디렉터리에 저장될 거예요.
+모든 데이터는 `./data` 디렉터리에 아래에 저장될 거예요.
 
 ### Environment Variables
 
@@ -31,7 +31,8 @@ docker compose up --build -d
 
 |이름|필수|기본값|설명|
 |:-|:-:|:-:|:-|
-|`SESSION_SECRET`|Y||Session ID의 서명을 위해 사용돼요. 안전한 값으로 설정해 주세요.|
+|`DATABASE_PASSWORD`|Y||데이터베이스에 접근하기 위해 필요한 비밀번호예요. 안전한 값으로 설정해 주세요.|
+|`SESSION_SECRET`|Y||Session ID의 서명에 사용되는 비밀번호예요. 안전한 값으로 설정해 주세요.|
 |`SESSION_EXPIRES`||`14d`|Session의 유효 시간이에요. Session은 마지막으로 사용된 후 설정된 유효 시간이 지나면 자동으로 삭제돼요.|
 |`USER_CLIENT_CHALLENGE_EXPIRES`||`5m`|암호 키를 서버에 처음 등록할 때 사용되는 챌린지의 유효 시간이에요.|
 |`SESSION_UPGRADE_CHALLENGE_EXPIRES`||`5m`|암호 키와 함께 로그인할 때 사용되는 챌린지의 유효 시간이에요.|

@@ -7,7 +7,7 @@ export const passwordChangeRequest = z.object({
 export type PasswordChangeRequest = z.infer<typeof passwordChangeRequest>;
 
 export const loginRequest = z.object({
-  email: z.string().email().nonempty(),
+  email: z.string().email(),
   password: z.string().trim().nonempty(),
 });
 export type LoginRequest = z.infer<typeof loginRequest>;

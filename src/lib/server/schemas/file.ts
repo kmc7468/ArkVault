@@ -1,13 +1,15 @@
 import mime from "mime";
 import { z } from "zod";
+import { directoryIdSchema } from "./directory";
 
 export const fileInfoResponse = z.object({
-  parent: z.union([z.enum(["root"]), z.number().int().positive()]),
+  parent: directoryIdSchema,
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
   dekVersion: z.string().datetime(),
   contentType: z
     .string()
+    .trim()
     .nonempty()
     .refine((value) => mime.getExtension(value) !== null), // MIME type
   contentIv: z.string().base64().nonempty(),
@@ -17,6 +19,7 @@ export const fileInfoResponse = z.object({
   createdAtIv: z.string().base64().nonempty().optional(),
   lastModifiedAt: z.string().base64().nonempty(),
   lastModifiedAtIv: z.string().base64().nonempty(),
+  categories: z.number().int().positive().array(),
 });
 export type FileInfoResponse = z.infer<typeof fileInfoResponse>;
 
@@ -39,7 +42,7 @@ export const duplicateFileScanResponse = z.object({
 export type DuplicateFileScanResponse = z.infer<typeof duplicateFileScanResponse>;
 
 export const fileUploadRequest = z.object({
-  parent: z.union([z.enum(["root"]), z.number().int().positive()]),
+  parent: directoryIdSchema,
   mekVersion: z.number().int().positive(),
   dek: z.string().base64().nonempty(),
   dekVersion: z.string().datetime(),
@@ -47,6 +50,7 @@ export const fileUploadRequest = z.object({
   contentHmac: z.string().base64().nonempty(),
   contentType: z
     .string()
+    .trim()
     .nonempty()
     .refine((value) => mime.getExtension(value) !== null), // MIME type
   contentIv: z.string().base64().nonempty(),
@@ -58,3 +62,8 @@ export const fileUploadRequest = z.object({
   lastModifiedAtIv: z.string().base64().nonempty(),
 });
 export type FileUploadRequest = z.infer<typeof fileUploadRequest>;
+
+export const fileUploadResponse = z.object({
+  file: z.number().int().positive(),
+});
+export type FileUploadResponse = z.infer<typeof fileUploadResponse>;

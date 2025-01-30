@@ -1,8 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { Button, TextButton } from "$lib/components/buttons";
-  import { TitleDiv, BottomDiv } from "$lib/components/divs";
-  import { TextInput } from "$lib/components/inputs";
+  import { BottomDiv, Button, FullscreenDiv, TextButton, TextInput } from "$lib/components/atoms";
+  import { TitledDiv } from "$lib/components/molecules";
   import { clientKeyStore, masterKeyStore } from "$lib/stores";
   import { requestLogin, requestSessionUpgrade, requestMasterKeyDownload } from "./service";
 
@@ -47,17 +46,20 @@
   <title>로그인</title>
 </svelte:head>
 
-<TitleDiv>
-  <div class="space-y-2 break-keep">
-    <p class="text-3xl font-bold">환영합니다!</p>
-    <p>서비스를 이용하려면 로그인을 해야해요.</p>
-  </div>
-  <div class="my-4 flex flex-col gap-y-2">
+<FullscreenDiv>
+  <TitledDiv childrenClass="flex flex-col gap-y-2">
+    {#snippet title()}
+      환영합니다!
+    {/snippet}
+    {#snippet description()}
+      서비스를 이용하려면 로그인을 해야해요.
+    {/snippet}
+
     <TextInput bind:value={email} placeholder="이메일" />
     <TextInput bind:value={password} placeholder="비밀번호" type="password" />
-  </div>
-</TitleDiv>
-<BottomDiv>
-  <Button onclick={login}>로그인</Button>
-  <TextButton>계정이 없어요</TextButton>
-</BottomDiv>
+  </TitledDiv>
+  <BottomDiv class="flex flex-col items-center gap-y-2">
+    <Button onclick={login} class="w-full">로그인</Button>
+    <TextButton>계정이 없어요</TextButton>
+  </BottomDiv>
+</FullscreenDiv>

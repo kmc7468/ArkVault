@@ -1,10 +1,11 @@
 <script lang="ts">
   import { get } from "svelte/store";
-  import { TopBar } from "$lib/components";
+  import { FullscreenDiv } from "$lib/components/atoms";
+  import { TopBar } from "$lib/components/molecules";
   import { fileUploadStatusStore, isFileUploading } from "$lib/stores";
   import File from "./File.svelte";
 
-  const uploadingFiles = $derived(
+  let uploadingFiles = $derived(
     $fileUploadStatusStore.filter((status) => isFileUploading(get(status).status)),
   );
 
@@ -19,11 +20,11 @@
   <title>진행 중인 업로드</title>
 </svelte:head>
 
-<div class="flex h-full flex-col">
-  <TopBar />
-  <div class="space-y-2">
+<TopBar />
+<FullscreenDiv>
+  <div class="space-y-2 pb-4">
     {#each uploadingFiles as status}
       <File {status} />
     {/each}
   </div>
-</div>
+</FullscreenDiv>

@@ -8,10 +8,12 @@ import {
   setDirectoryEncName,
   unregisterDirectory,
   getAllFilesByParent,
-  type NewDirectoryParams,
+  type DirectoryId,
+  type NewDirectory,
 } from "$lib/server/db/file";
+import type { Ciphertext } from "$lib/server/db/schema";
 
-export const getDirectoryInformation = async (userId: number, directoryId: "root" | number) => {
+export const getDirectoryInformation = async (userId: number, directoryId: DirectoryId) => {
   const directory = directoryId !== "root" ? await getDirectory(userId, directoryId) : undefined;
   if (directory === null) {
     error(404, "Invalid directory id");
@@ -53,11 +55,10 @@ export const renameDirectory = async (
   userId: number,
   directoryId: number,
   dekVersion: Date,
-  newEncName: string,
-  newEncNameIv: string,
+  newEncName: Ciphertext,
 ) => {
   try {
-    await setDirectoryEncName(userId, directoryId, dekVersion, newEncName, newEncNameIv);
+    await setDirectoryEncName(userId, directoryId, dekVersion, newEncName);
   } catch (e) {
     if (e instanceof IntegrityError) {
       if (e.message === "Directory not found") {
@@ -70,7 +71,7 @@ export const renameDirectory = async (
   }
 };
 
-export const createDirectory = async (params: NewDirectoryParams) => {
+export const createDirectory = async (params: NewDirectory) => {
   const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
   const oneMinuteLater = new Date(Date.now() + 60 * 1000);
   if (params.dekVersion <= oneMinuteAgo || params.dekVersion >= oneMinuteLater) {

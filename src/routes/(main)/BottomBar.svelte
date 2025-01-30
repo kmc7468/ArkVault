@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import { AdaptiveDiv } from "$lib/components/divs";
+  import { AdaptiveDiv } from "$lib/components/atoms";
 
   import IconHome from "~icons/material-symbols/home";
   import IconFolder from "~icons/material-symbols/folder";
@@ -19,20 +19,20 @@
 </script>
 
 <div class="sticky bottom-0 h-20 flex-shrink-0 rounded-t-2xl border-t border-gray-300 bg-white">
-  <AdaptiveDiv>
-    <div class="flex justify-evenly px-4 py-2">
-      {#each pages as { path, label, icon: Icon }}
-        {@const textColor = !page.url.pathname.startsWith(path) ? "text-gray-600" : ""}
-        <button
-          onclick={() => goto(path)}
-          class="w-16 active:rounded-xl active:bg-gray-100 {textColor}"
-        >
-          <div class="flex flex-col items-center gap-y-1 p-1 transition active:scale-95">
-            <Icon class="text-xl" />
-            <p class="text-sm">{label}</p>
-          </div>
-        </button>
-      {/each}
-    </div>
+  <AdaptiveDiv class="flex justify-evenly px-4 py-2">
+    {#each pages as { path, label, icon: Icon }}
+      <button
+        onclick={() => goto(path)}
+        class={[
+          "w-16 active:rounded-xl active:bg-gray-100",
+          !page.url.pathname.startsWith(path) && "text-gray-600",
+        ]}
+      >
+        <div class="flex flex-col items-center gap-y-1 p-1 transition active:scale-95">
+          <Icon class="text-xl" />
+          <p class="text-sm">{label}</p>
+        </div>
+      </button>
+    {/each}
   </AdaptiveDiv>
 </div>

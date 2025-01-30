@@ -3,8 +3,5 @@ package-lock.json
 pnpm-lock.yaml
 yarn.lock
 
-# Output
-/drizzle
-
 # Documents
 *.md
