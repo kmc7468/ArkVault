@@ -114,7 +114,7 @@ export const uploadFile = async (
 
   try {
     const hashStream = createHash("sha256");
-    const [_, hash] = await Promise.all([
+    const [, hash] = await Promise.all([
       pipeline(
         encContentStream,
         async function* (source) {
@@ -127,7 +127,7 @@ export const uploadFile = async (
       ),
       encContentHash,
     ]);
-    if (hashStream.digest("base64") != hash) {
+    if (hashStream.digest("base64") !== hash) {
       throw new Error("Invalid checksum");
     }
 
